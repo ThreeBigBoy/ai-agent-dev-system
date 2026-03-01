@@ -1,0 +1,27 @@
+{
+    "name": "cursor-agent-extension",
+    "displayName": "Cursor Agent Auto Feedback",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "cursor-agent-extension.listenFeedback",
+                "title": "Listen Agent Feedback"
+            }
+        ]
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": ["cursor", "agent", "feedback", "auto"],
+    "author": "",
+    "license": "MIT",
+    "description": "监听 Agent Skill 反馈文件，复制到剪贴板并提示用户在 Cursor Chat 中粘贴"
+}
