@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import sys
+from dataclasses import dataclass
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
@@ -9,6 +10,8 @@ from langchain.schema import StrOutputParser
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
+
+from runtime_config import load_runtime_config
 
 # 配置日志
 logging.basicConfig(
@@ -22,9 +25,16 @@ logger = logging.getLogger("DynamicAgentSkill")
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_API_BASE_URL = (os.getenv("OPENAI_API_BASE_URL") or "").strip() or None
-if not OPENAI_API_KEY:
-    logger.error("未配置OPENAI_API_KEY，请检查.env文件")
-    sys.exit(1)
+RUNTIME_CONFIG = load_runtime_config()
+EXECUTORS = RUNTIME_CONFIG["executors"]
+BACKEND_NAME = RUNTIME_CONFIG["backend_name"]
+
+
+@dataclass
+class ModelCandidate:
+    provider: str
+    model_name: str
+    mode: str = ""
 
 # --------------------------
 # 1. 定义LangGraph状态模型（存储协作全量信息）
@@ -40,21 +50,74 @@ class AgentState(BaseModel):
 # --------------------------
 # 2. 定义下游执行Agent（产品/架构/前端/后端/测试）
 # --------------------------
-def _make_llm(task_complexity: str):
+def _make_api_llm(model_name: str):
+    if not OPENAI_API_KEY:
+        raise RuntimeError("未配置 OPENAI_API_KEY，无法使用 API 模型链路")
     kwargs = {
-        "model_name": "gpt-4-turbo" if task_complexity in ["中等", "复杂"] else "gpt-3.5-turbo",
-        "temperature": 0.1,
+        "model_name": model_name,
+        "temperature": RUNTIME_CONFIG["llm"]["temperature"],
         "api_key": OPENAI_API_KEY,
-        "timeout": 60,
+        "timeout": RUNTIME_CONFIG["llm"]["timeout_seconds"],
     }
     if OPENAI_API_BASE_URL:
         kwargs["base_url"] = OPENAI_API_BASE_URL
     return ChatOpenAI(**kwargs)
 
+
+def _build_model_candidates(task_complexity: str) -> list[ModelCandidate]:
+    strategy = RUNTIME_CONFIG["model_strategy"]
+    candidates: list[ModelCandidate] = []
+    scene = "complex" if task_complexity in ["中等", "复杂"] else "simple"
+
+    if strategy.get("cursor_builtin", {}).get("enabled", False):
+        candidates.append(
+            ModelCandidate(
+                provider="cursor_builtin",
+                model_name="Cursor 内置模型",
+                mode=strategy["cursor_builtin"].get("mode", "Auto"),
+            )
+        )
+
+    if strategy.get("api", {}).get("enabled", False):
+        for model_name in strategy["api"]["models"][scene]:
+            candidates.append(ModelCandidate(provider="api", model_name=model_name))
+
+    return candidates
+
+
+def _invoke_with_candidate(prompt, payload: dict, candidate: ModelCandidate, output_parser: StrOutputParser) -> str:
+    if candidate.provider == "cursor_builtin":
+        # 当前运行时 backend 尚未接入 Cursor 内置模型的官方/稳定桥接能力。
+        raise RuntimeError(
+            f"未接入 Cursor 内置模型桥接器（模式: {candidate.mode}），按策略降级到 API 链路"
+        )
+
+    if candidate.provider == "api":
+        llm = _make_api_llm(candidate.model_name)
+        chain = prompt | llm | output_parser
+        return chain.invoke(payload)
+
+    raise RuntimeError(f"未知模型提供方：{candidate.provider}")
+
+
+def _build_executor_agents(task_complexity: str) -> dict[str, "ExecutorAgent"]:
+    return {executor: ExecutorAgent(executor, task_complexity) for executor in EXECUTORS}
+
+
+def _normalize_task_results(task_results: dict) -> dict[str, str]:
+    normalized = {}
+    for key, value in task_results.items():
+        normalized[str(key)] = value
+    return normalized
+
+
+def _build_task_meta(task_list: list[dict]) -> dict[str, dict]:
+    return {str(task["task_id"]): task for task in task_list}
+
 class ExecutorAgent:
     def __init__(self, role: str, task_complexity: str):
         self.role = role
-        self.llm = _make_llm(task_complexity)
+        self.task_complexity = task_complexity
         self.output_parser = StrOutputParser()
 
     def run_task(self, task_name: str, input_content: str) -> tuple[str, str]:
@@ -64,8 +127,35 @@ class ExecutorAgent:
                 ("system", f"你是资深{self.role}，专业能力极强。执行任务后需判断是否有问题，输出1句话反馈（无问题则填'无'）。"),
                 ("user", f"任务名称：{task_name}\n输入要求：{input_content}\n输出格式：先输出完整的任务结果，换行后单独输出【反馈】：你的反馈内容")
             ])
-            chain = prompt | self.llm | self.output_parser
-            raw_result = chain.invoke({"input": input_content})
+            raw_result = None
+            errors = []
+            for candidate in _build_model_candidates(self.task_complexity):
+                try:
+                    logger.info(
+                        "尝试模型链路: provider=%s model=%s mode=%s",
+                        candidate.provider,
+                        candidate.model_name,
+                        candidate.mode or "-",
+                    )
+                    raw_result = _invoke_with_candidate(
+                        prompt,
+                        {"input": input_content},
+                        candidate,
+                        self.output_parser,
+                    )
+                    logger.info(
+                        "模型链路成功: provider=%s model=%s",
+                        candidate.provider,
+                        candidate.model_name,
+                    )
+                    break
+                except Exception as candidate_error:
+                    error_text = f"{candidate.provider}:{candidate.model_name} -> {candidate_error}"
+                    errors.append(error_text)
+                    logger.warning("模型链路失败，尝试降级: %s", error_text)
+
+            if raw_result is None:
+                raise RuntimeError("；".join(errors) or "未找到可用模型链路")
 
             if "【反馈】：" in raw_result:
                 result, feedback = raw_result.split("【反馈】：", 1)
@@ -88,21 +178,21 @@ class ExecutorAgent:
 # 3. 定义LangGraph节点逻辑（动态协作核心）
 # --------------------------
 def execute_tasks(state: AgentState) -> AgentState:
-    executor_agents = {
-        "产品经理": ExecutorAgent("产品经理", state.task_complexity),
-        "架构师": ExecutorAgent("架构师", state.task_complexity),
-        "前端工程师": ExecutorAgent("前端工程师", state.task_complexity),
-        "后端工程师": ExecutorAgent("后端工程师", state.task_complexity),
-        "测试工程师": ExecutorAgent("测试工程师", state.task_complexity)
-    }
+    executor_agents = _build_executor_agents(state.task_complexity)
     new_feedbacks = []
-    new_task_results = state.task_results.copy()
+    new_task_results = _normalize_task_results(state.task_results.copy())
 
     for task in sorted(state.task_list, key=lambda x: x["task_id"]):
-        task_id = task["task_id"]
+        task_id = str(task["task_id"])
         if task_id in new_task_results:
             continue
         executor = task["executor"]
+        if executor not in executor_agents:
+            error_msg = f"未配置的执行角色：{executor}"
+            logger.error(error_msg)
+            new_task_results[task_id] = ""
+            new_feedbacks.append(f"任务{task_id}（{executor}）：{error_msg}")
+            continue
         input_content = task["input_requirement"]
         for dep_id in str(task["dependency"]).split(","):
             dep_id = dep_id.strip()
@@ -167,7 +257,7 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
         if os.path.exists("agent_state.json"):
             with open("agent_state.json", "r", encoding="utf-8") as f:
                 history_state = json.load(f)
-            initial_state.task_results = history_state.get("task_results", {})
+            initial_state.task_results = _normalize_task_results(history_state.get("task_results", {}))
             logger.info("加载历史协作状态，跳过已完成任务")
         graph = build_dynamic_graph()
         final_state = graph.invoke(initial_state)
@@ -182,13 +272,19 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
 {json.dumps(final_state.feedbacks, ensure_ascii=False, indent=2)}
 """
         else:
-            task_list = final_state.task_list
+            task_meta = _build_task_meta(final_state.task_list)
+            generated_files = [
+                f"task_{task_id}_{task_meta[task_id]['executor']}.txt"
+                for task_id in sorted(final_state.task_results.keys(), key=int)
+                if task_id in task_meta
+            ]
             summary = f"""
 ### 动态协作执行结果（完成）
+0. 运行后端：{BACKEND_NAME}
 1. 任务复杂度：{final_state.task_complexity}
-2. 总任务数：{len(task_list)}
+2. 总任务数：{len(final_state.task_list)}
 3. 已完成任务数：{len(final_state.task_results)}
-4. 生成文件列表：{list(final_state.task_results.keys())}
+4. 生成文件列表：{generated_files}
 5. 所有任务执行完成，无需调整。
 """
         with open("cursor_feedback.txt", "w", encoding="utf-8") as f:

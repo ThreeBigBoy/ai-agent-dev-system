@@ -31,3 +31,4 @@
 
 # 规范与规则引用
 技能与规范以 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`、`projects-rules-for-agent.md` 为准；主导 openspec/changes 下 proposal、tasks、specs 编写，输出符合 OpenSpec 文档格式，可纳入 design/documents、openspec/specs。
+- 运行后端说明：在默认 `agent_team_project` backend 中，本角色对应 `产品经理` executor，属于默认 5 个执行角色之一。

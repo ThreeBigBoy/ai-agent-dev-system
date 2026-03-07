@@ -11,7 +11,9 @@ alwaysApply: true
 
 **技能触发约定**：当用户指令匹配某技能的触发场景时，执行方（由 **`agents/`** 下角色与本节「Agents 与 Skills 赋能对应关系」表确定）须**先读取 `ai-agent-dev-system/skills/` 下该技能目录的 SKILL.md**，再按其中步骤执行；否则易出现「按常识执行、产出物不符合技能约定」等问题。采用本规范的项目应在 `openspec/AGENTS.md` 中为**所有有主导/联动技能的 Agent** 列出触发词与技能路径（见本节「项目 openspec/AGENTS.md 建议」），便于 AI 一致遵守。
 
-**执行后必做收尾（通用，所有技能均适用）**：在某一 **change-id** 上下文中执行**任意**技能并产出后，执行方**必须在本轮对话内、向用户作出完成性/交付性回复之前**，向 **`design/documents/[change-id]/records/迭代日志.md`**（或 `[change-id]-iteration-log.md`）**追加一条**记录，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」（含使用模型）；文件不存在则新建。未完成不得视为该次任务完成；作出完成性/交付性回复前须自检，未追加则**先追加再**回复。无明确 change-id 时可跳过。
+**执行后必做收尾（通用，所有技能均适用）**：在某一 **change-id** 上下文中执行**任意**技能并产出后，执行方**必须在本轮对话内、向用户作出完成性/交付性回复之前**，向项目级 **`design/documents/迭代日志.md`** **追加一条**记录，并在记录中明确写出当前 `change-id`，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」（含使用模型）；文件不存在则新建。未完成不得视为该次任务完成；作出完成性/交付性回复前须自检，未追加则**先追加再**回复。无明确 change-id 时可跳过。
+
+**运行后端说明（V2.1）**：当项目选择某个运行时后端（如 `agent_team_project`）承接默认执行链路时，该后端属于**执行实现**而非**治理权威源**。角色边界、技能映射、日志与验收要求仍以 OpenSpec、`projects-rules-for-agent.md` 与本文件为准。
 
 ---
 
@@ -56,7 +58,7 @@ alwaysApply: true
   3. 识别本次需求为**新增类**或**修改类**，并在 `openspec/changes/[change-id]/` 下创建或更新需求变更目录：产出 `proposal.md`、`tasks.md`、可选 `design.md` 以及 `specs/[capability]/spec.md` 结构化需求分析文档（ADDED / MODIFIED / REMOVED Requirements + Scenario）。
   4. 任务拆分遵循该技能 REFERENCE 中的「任务拆分 spec」，输出可勾选任务列表至 `tasks.md`。
   5. **records/ 归类**：以「反思-」「复盘-」「对齐结论」、「XX验收记录」、「XX测试记录」等命名的过程反思、复盘、对齐结论及验收/测试记录类文档应置于 **`design/documents/[change-id]/records/`**，与功能验收/代码评审记录一起便于按变更聚合与归档（与 OpenSpec 1.1 表一致）。
-  6. **迭代日志（强制，执行后必做收尾）**：每次在本变更上下文中调用 `agents/` 下 Agent 或 `skills/` 下技能时，**必须在本轮对话内、任务闭环前**在 **`design/documents/[change-id]/records/迭代日志.md`**（或 `[change-id]-iteration-log.md`）中**追加**一条记录，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」（含使用模型）；文件不存在则新建。**未完成不得视为该次任务完成**。本约定为主 Agent 及所有子 Agent 的必做收尾动作，适用于所有采用 OpenSpec 的项目与所有迭代/变更。
+  6. **迭代日志（强制，执行后必做收尾）**：每次在本变更上下文中调用 `agents/` 下 Agent 或 `skills/` 下技能时，**必须在本轮对话内、任务闭环前**在项目级 **`design/documents/迭代日志.md`** 中**追加**一条记录，并在记录中明确写出当前 `change-id`，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」（含使用模型）；文件不存在则新建。**未完成不得视为该次任务完成**。本约定为主 Agent 及所有子 Agent 的必做收尾动作，适用于所有采用 OpenSpec 的项目与所有迭代/变更。
 - **联动**：若需求涉及前端或含设计图/截图，可同时加载 **image-analysis** 技能解析图片，将解析结果纳入需求说明与 spec 中的场景描述。
 
 将本规范与 request-analysis 技能配合使用，可在「分析需求」场景下自动产出符合 OpenSpec 的文档与变更结构，便于后续实施与归档。

@@ -25,3 +25,4 @@
 
 # 规范与规则引用
 技能与规范以 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`、`projects-rules-for-agent.md` 为准；验收记录与任务更新须符合 OpenSpec 及 design/documents、openspec/changes 目录约定，可追溯、可复用。
+- 运行后端说明：在默认 `agent_team_project` backend 中，本角色对应 `测试工程师` executor，属于默认 5 个执行角色之一。

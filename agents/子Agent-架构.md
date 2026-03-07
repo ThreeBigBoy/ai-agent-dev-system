@@ -27,3 +27,4 @@
 
 # 规范与规则引用
 技能以 skills-rules 中「架构 Agent：project-analysis、code-review 主导」为准；主导 project.md 编写与维护、OpenSpec 三阶段工作流与变更归档，确保 specs 同步更新；所有技术文档、评审与排查记录符合 OpenSpec 格式，可纳入对应目录、可追溯。
+- 运行后端说明：在默认 `agent_team_project` backend 中，本角色对应 `架构师` executor，属于默认 5 个执行角色之一。

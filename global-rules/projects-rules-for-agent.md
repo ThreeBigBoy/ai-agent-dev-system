@@ -31,8 +31,8 @@ alwaysApply: true
 
 **无论用户发起何种类型的任务**，均须遵循以下机制（见 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`）：
 
-- **主 Agent（或当前统筹方）**：识别用户任务，拆解并**指派给子 Agent 或自己**执行。确定执行方时，须根据任务性质对应到 **`skills-rules-for-agent.md`** 中「Agents 与 Skills 赋能对应关系」表：该表覆盖 **`agents/`** 下所有 Agent 角色与 **`skills/`** 下各技能的对应关系；任务类型与执行方、技能的对应见 1.2。
-- **被指派执行的子 Agent（或主 Agent 自己执行时）**：按 **`skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」对应关系，**先读取**该技能在 **`ai-agent-dev-system/skills/`** 下对应目录中的 **SKILL.md**，再按其中步骤执行；技能由**执行方角色 + skills-rules 表**决定，不按「任务类型」反推。
+- **主 Agent（或当前统筹方）**：识别用户任务，拆解并**指派给对应子 Agent**执行。确定执行方时，须根据任务性质对应到 **`skills-rules-for-agent.md`** 中「Agents 与 Skills 赋能对应关系」表：该表覆盖 **`agents/`** 下所有 Agent 角色与 **`skills/`** 下各技能的对应关系；任务类型与执行方、技能的对应见 1.2。若项目启用了某个运行时后端（如 `agent_team_project`），则由主 Agent 选择该后端承接执行，但**执行方语义仍以被指派的子 Agent 角色为准**。
+- **被指派执行的子 Agent**：按 **`skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」对应关系，**先读取**该技能在 **`ai-agent-dev-system/skills/`** 下对应目录中的 **SKILL.md**，再按其中步骤执行；技能由**执行方角色 + skills-rules 表**决定，不按「任务类型」反推。
 - **不得**在未明确执行方、未按 skills-rules 确定本角色技能并读取 SKILL 的情况下直接实施。
 
 ### 1.2 任务类型与执行方、技能对应（通用）
@@ -88,7 +88,7 @@ alwaysApply: true
 当用户**发起新需求、新建变更或迭代**（如「帮我做 XXX 功能」「做一个 YYY 的迭代」「按这个需求出方案」等）时，在遵循**一、任务执行通用机制**的前提下，**第一步必须**：
 
 1. **先读取**同仓库或可访问路径下的 **`ai-agent-dev-system/OpenSpec.md`** 的**第六节「变更启动顺序与检查清单」**及**第 4.3 节（proposal 建议结构）**，再按该节顺序与检查清单执行，确保「先 design/documents，再 openspec/changes」及多 Agent × 多 Skill 机制（见 `skills-rules-for-agent.md`）被触发。
-2. **若当前项目尚未有 `openspec/` 目录**（新项目 0-1）：先按 OpenSpec.md 第一节「新项目第一件事」创建 `openspec/` 并填写 `AGENTS.md`、`project.md`；**项目前期的任何任务**（立项研究、需求分析等）使用保留的 change-id **`project-early-phase`**，须建 `design/documents/project-early-phase/` 及 `records/迭代日志.md`（见 OpenSpec 5.1、6.3）。当项目决定启动**首个研发变更**时，再按第六节执行（先建 `design/documents/[change-id]/`，再建 `openspec/changes/[change-id]/`）。
+2. **若当前项目尚未有 `openspec/` 目录**（新项目 0-1）：先按 OpenSpec.md 第一节「新项目第一件事」创建 `openspec/` 并填写 `AGENTS.md`、`project.md`；**项目前期的任何任务**（立项研究、需求分析等）使用保留的 change-id **`project-early-phase`**，须建 `design/documents/project-early-phase/`，并在项目级 **`design/documents/迭代日志.md`** 中记录相关调用（见 OpenSpec 5.1、6.3）。当项目决定启动**首个研发变更**时，再按第六节执行（先建 `design/documents/[change-id]/`，再建 `openspec/changes/[change-id]/`）。
 3. **不得**在未读 OpenSpec.md 第六节与 4.3 节、未建 `design/documents/[change-id]/` 的情况下，直接创建 `openspec/changes/[change-id]/` 或开始编码。
 
 4. **路径不可达时的降级**：当无法访问 **`ai-agent-dev-system/OpenSpec.md`** 或 **`ai-agent-dev-system/skills/`**（例如仅打开单项目且未挂载 ai-agent-dev-system）时，以**当前项目**根目录下的 **`.cursorrules`**、**`openspec/AGENTS.md`**（若存在）及本项目内可见的 proposal、tasks 为准；仍须遵守「先 design/documents 再 openspec/changes」的目录顺序（若本项目已有或即将创建 openspec）。**change-id 确定时机**：新需求/新建变更时，change-id 由主 Agent 或产品经理 Agent 在产出 proposal 时确定，须符合 `openspec/project.md` 中的命名规则；若用户已指定则从其指定。
@@ -97,8 +97,8 @@ alwaysApply: true
 
 当用户要求**推进某变更的某任务**或**落地 tasks 中某条**（如「推进 1.4」「完成 2.2」）时，在遵循**一、任务执行通用机制**的前提下：
 
-1. **主 Agent（或当前统筹方）**：读取该变更的 `openspec/changes/[change-id]/proposal.md`、`tasks.md`、`design.md`（如有）及 `design/documents/[change-id]/` 下至少一份需求/验收文档，明确该任务的定义与验收标准；根据 tasks.md 中该任务的**负责人**（对应子 Agent）确定执行方，若未标注则按任务性质指派给对应子 Agent 或由主 Agent 自己执行。
-2. **被指派执行的子 Agent（或主 Agent 自己执行时）**：按 **`skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」，**先读取**该技能 **SKILL.md** 再按其中步骤执行；不得跳过「按角色 → 查 skills-rules → 读 SKILL」直接改代码或写验收清单。
+1. **主 Agent（或当前统筹方）**：读取该变更的 `openspec/changes/[change-id]/proposal.md`、`tasks.md`、`design.md`（如有）及 `design/documents/[change-id]/` 下至少一份需求/验收文档，明确该任务的定义与验收标准；根据 tasks.md 中该任务的**负责人**（对应子 Agent）确定执行方，若未标注则按任务性质指派给对应子 Agent。若项目启用了运行时后端（如 `agent_team_project`），则由该后端承接执行，但不改变执行方角色语义。
+2. **被指派执行的子 Agent**：按 **`skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」，**先读取**该技能 **SKILL.md** 再按其中步骤执行；不得跳过「按角色 → 查 skills-rules → 读 SKILL」直接改代码或写验收清单。
 3. **不得**在未明确执行方、未按 skills-rules 确定技能并读取 SKILL 的情况下直接实施。
 4. **验证类任务**（任务描述中含「在…中验证」「确认…一致」等）：若 tasks.md 已标注负责人与验收清单，须由该负责人按验收清单执行并通过后**再由验收方或主 Agent 勾选**；若未标注，须先补全负责人与验收清单路径（或约定由整变更验收如 6.2 覆盖），**不得由实现方在未经验收时单独勾选**。
 
@@ -112,9 +112,9 @@ alwaysApply: true
 
 - **总则（与 OpenSpec 一致）**：**所有项目从一开始的所有任务，都必须有 change-id**。凡在某一项目上下文中调用 **`/ai-agent-dev-system/agents/`** 下某 Agent 或 **`/ai-agent-dev-system/skills/`** 下某技能，**均须**归属于某一 change-id，并在该项目的统一迭代日志文档 **`design/documents/迭代日志.md`** 中追加一条记录（记录中须包含该 change-id）；须在**本次调用产出完成后、完成性回复前**完成追加。
 
-- **保留的 change-id：项目前期**（见 **OpenSpec 5.1**）：立项研究、需求分析、市场研究、产品方案等**尚未进入研发迭代**的阶段，使用各项目通用的保留 change-id **`project-early-phase`**（非研发迭代变更性质，供主 Agent、产品经理 Agent 开展早期工作）。**必须**在首次进行项目前期工作时创建 **`design/documents/project-early-phase/`** 及 **`design/documents/project-early-phase/records/迭代日志.md`**；产出存放于 `design/documents/project-early-phase/`，每次在该上下文中调用 Agent 或技能时须向该迭代日志追加一条，格式同 3.2。**不要求**创建 `openspec/changes/project-early-phase/`（项目可自愿创建）。
+- **保留的 change-id：项目前期**（见 **OpenSpec 5.1**）：立项研究、需求分析、市场研究、产品方案等**尚未进入研发迭代**的阶段，使用各项目通用的保留 change-id **`project-early-phase`**（非研发迭代变更性质，供主 Agent、产品经理 Agent 开展早期工作）。**必须**在首次进行项目前期工作时创建 **`design/documents/project-early-phase/`**；每次在该上下文中调用 Agent 或技能时，须向项目级 **`design/documents/迭代日志.md`** 追加一条记录，格式同 3.2。**不要求**创建 `openspec/changes/project-early-phase/`（项目可自愿创建）。
 
-- **研发迭代变更的 change-id**：当任务归属于某一研发迭代变更（新建功能/迭代/小版本）时，使用该变更的自定 change-id；迭代日志路径为 **`design/documents/[change-id]/records/`**，文件名 **`迭代日志.md`** 或 **`[change-id]-iteration-log.md`**。若该文件不存在则**新建**，若已存在则**在本次调用产出完成后立即追加**一条记录。
+- **研发迭代变更的 change-id**：当任务归属于某一研发迭代变更（新建功能/迭代/小版本）时，使用该变更的自定 change-id；相关调用统一记录到项目级 **`design/documents/迭代日志.md`** 中。若该文件不存在则**新建**，若已存在则**在本次调用产出完成后立即追加**一条记录，并在记录中写明当前 change-id。
 
 - **单次编码/重构等用户未指明变更单的任务**：若当前项目已有进行中的变更（如 tasks 或对话上下文已指明某 change-id），则归属该 change-id；否则归属 **`project-early-phase`**（视为项目前期或未归类的项目内工作）。
 
@@ -146,7 +146,7 @@ alwaysApply: true
 
 ### 3.4 执行到位与示例
 
-- **执行到位**：主 Agent 在统筹、验收或归档前可核对该变更的 `records/迭代日志.md` 是否与本次迭代内的 Agent/技能调用一致；若发现缺失，须补录或要求执行方补录后再闭环。
+- **执行到位**：主 Agent 在统筹、验收或归档前可核对项目级 `design/documents/迭代日志.md` 中与该 change-id 相关的记录是否与本次迭代内的 Agent/技能调用一致；若发现缺失，须补录或要求执行方补录后再闭环。
 - **示例**：`2025年02月17日 14:30:00：产品经理 Agent，调用了 request-analysis 技能，处理迭代需求说明与 specs 初稿，输出 design/documents/xxx/ 与 proposal、tasks；使用模型 Claude 4.6 Sonnet。`
 
 ---
@@ -314,7 +314,7 @@ alwaysApply: true
 3. **外部模型只做「第二层保险」，不替代项目内规范**  
    - 外部模型（如 DeepSeek）仅作为「额外一层审核与推演」，不是对项目规范的替代：  
      - 仍须遵守 OpenSpec、项目内安全/代码规范与本文件其它章节；  
-     - 仍须在 `design/documents/[change-id]/records/迭代日志.md` 中记录本次使用的**内部模型**与是否建议了「外部模型复核」；  
+     - 仍须在项目级 `design/documents/迭代日志.md` 中记录本次使用的**内部模型**、对应的 `change-id` 与是否建议了「外部模型复核」；  
      - 是否真的调用外部模型，由独立开发者本人依据预算与风险判断决定。
 
 ### 6.4 未来模型适配策略（Cursor 推出更新版模型时）

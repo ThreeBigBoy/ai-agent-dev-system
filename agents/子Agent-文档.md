@@ -22,3 +22,4 @@
 
 # 规范与规则引用
 角色以 skills-rules 中「文档 Agent：无单独技能，联动 request-analysis、project-analysis」为准；所有输出符合 OpenSpec 文档格式与目录约定，不编造、可复用、可追溯。
+- 运行后端说明：默认 `agent_team_project` backend 不直接调度文档 Agent；本角色属于治理层角色，由主 Agent 按需调用。

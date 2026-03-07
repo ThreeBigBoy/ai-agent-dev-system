@@ -14,6 +14,12 @@ except ImportError:
 
 import jsonschema
 
+from runtime_config import load_runtime_config
+
+
+RUNTIME_CONFIG = load_runtime_config()
+EXECUTORS = RUNTIME_CONFIG["executors"]
+
 DECISION_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -39,13 +45,7 @@ DECISION_SCHEMA = {
                     "task_name": {"type": "string"},
                     "executor": {
                         "type": "string",
-                        "enum": [
-                            "产品经理",
-                            "架构师",
-                            "前端工程师",
-                            "后端工程师",
-                            "测试工程师",
-                        ],
+                        "enum": EXECUTORS,
                     },
                     "input_requirement": {"type": "string"},
                     "dependency": {
@@ -86,7 +86,7 @@ def write_decision(decision: dict) -> dict:
           {
             "task_id": int >= 1,
             "task_name": str,
-            "executor": "产品经理|架构师|前端工程师|后端工程师|测试工程师",
+            "executor": "默认 runtime backend 支持的 executor 之一",
             "input_requirement": str,
             "dependency": int or str
           }
@@ -143,4 +143,3 @@ def write_decision(decision: dict) -> dict:
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
-

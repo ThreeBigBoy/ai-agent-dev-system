@@ -21,3 +21,4 @@
 
 # 规范与规则引用
 角色以 skills-rules 中「Bug 修复 Agent：无单独技能，联动 code-review、func-test」为准；所有修复与输出符合 OpenSpec 命名、安全与文档规范，可追溯、可回归验证。
+- 运行后端说明：默认 `agent_team_project` backend 不直接调度 Bug 修复 Agent；本角色属于治理层角色，由主 Agent 按需调用。

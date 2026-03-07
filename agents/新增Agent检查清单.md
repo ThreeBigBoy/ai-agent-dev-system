@@ -18,7 +18,7 @@
 | 序号 | 项 | 说明 | 勾选 |
 |------|----|------|------|
 | 2.1 | 「Agents 与 Skills 赋能对应关系」表 | 在表中新增一行：Agent 名称、主导技能、联动技能、说明。 | ☐ |
-| 2.2 | 技能触发约定（若为新技能） | 若该 Agent 对应新 Skill，在 skills-rules 中增加对应 9.x 小节（技能路径、触发场景、核心职责/产出）；若产出含**记录文件**（如验收/评审记录），路径须与 OpenSpec 1.1 表及该技能 SKILL.md 一致（如 design/documents/[change-id]/records/）。若复用现有技能则跳过。 | ☐ |
+| 2.2 | 技能触发约定（若为新技能） | 若该 Agent 对应新 Skill，在 skills-rules 中增加对应 9.x 小节（技能路径、触发场景、核心职责/产出）；若产出含**记录文件**（如验收/评审记录），路径须与 OpenSpec 1.1 表及该技能 SKILL.md 一致（如 `design/documents/[change-id]/records/`）。若涉及**迭代日志**，须统一遵循项目级 `design/documents/迭代日志.md` 口径。若复用现有技能则跳过。 | ☐ |
 | 2.3 | 使用说明 | 若主 Agent 分配任务逻辑需体现新角色，可酌情在「使用说明」段补充一句。 | ☐ |
 
 ### 3. 配额说明（按需）
@@ -33,15 +33,16 @@
 | 序号 | 项 | 说明 | 勾选 |
 |------|----|------|------|
 | 4.1 | 技能触发约定 / 与 AI 协作时 | 若该 Agent 对应某技能，在 AGENTS.md 的「技能触发约定」或「与 AI 协作时」中补充触发词与技能路径（如「功能验收 → func-test/SKILL.md」），便于 AI 一致遵守。 | ☐ |
-| 4.2 | 子 Agent 名单（若项目内显式列出） | 若项目 AGENTS.md 或 .cursorrules 中列了 7 个子 Agent 名单，更新为 8 个并加入新角色。 | ☐ |
+| 4.2 | 子 Agent 名单（若项目内显式列出） | 若项目 AGENTS.md 或 .cursorrules 中显式列出了治理层子 Agent 名单，新增角色后须同步补入该名单。 | ☐ |
 | 4.3 | 规则加载与路径可达（可选） | 若项目单独打开、未含 ai-agent-dev-system，确认 AGENTS.md 或 .cursorrules 中已说明须能访问 ai-agent-dev-system，或已复制新角色最小必要摘要到项目内，避免路径不可达导致新角色约定未加载。 | ☐ |
 
 ### 5. agents/主Agent.md
 
 | 序号 | 项 | 说明 | 勾选 |
 |------|----|------|------|
-| 5.1 | 「7 个子 Agent」→「8 个子 Agent」 | 角色定位、配置统筹、配额分配指导等处的「7 个」改为「8 个」，并写上新角色名称（如「…产品经理、前端、后端、测试、文档、架构、Bug 修复、{新角色}」）。 | ☐ |
+| 5.1 | 子 Agent 数量与名单同步更新 | 当前治理层由主 Agent 与既有子 Agent 名单共同构成；新增角色后，涉及角色总数、名单或角色全集说明的文档（如主Agent.md、agents/README.md）须同步改为新增后的数量与名单。 | ☐ |
 | 5.2 | 权责与协同 | 确认主 Agent 的「权责边界」「多 Agent 协同规范」中无需因新角色单独增条；若有新职责（如新角色需主 Agent 专门审核），补充一句。 | ☐ |
+| 5.3 | 运行后端子集说明（按需） | 若新角色会进入默认 backend 的 executor 子集，须同步更新 `agents/README.md`、`agents/主Agent.md`、`agent_team_project/README.md`、`agent_team_project/runtime_config.json` 与 `agent_team_project/agent_team_mcp_server.py` 的相关说明；若不进入，也须明确其为治理层角色但非默认 executor。 | ☐ |
 
 ### 6. 其他（按需）
 
@@ -61,8 +62,9 @@
 | C2 | 技能对应一致 | skills-rules 表中该 Agent 的「主导/联动技能」与 子Agent-xxx.md、SKILL.md 中的约定一致；主 Agent 拆任务时能正确指派到该角色并触发对应技能。 | ☐ |
 | C3 | 配额无冲突 | 新角色配额（强模型/快速/慢速/是否建议外部复核等）与 projects-rules、主 Agent 的「配额分配指导」一致；主 Agent 不会误把「需要强模型或外部复核」的任务派给「仅慢速/禁止快速请求」的新角色。若子Agent-xxx 有特殊配额，projects-rules 第六章中应有对应一句或汇总，便于单处查阅。 | ☐ |
 | C4 | 产出路径与规范 | 新角色的产出物（如验收记录、任务更新）路径与 OpenSpec（含 1.1 表）、对应技能 SKILL.md 约定一致；验收/评审类**记录路径**（如 design/documents/[change-id]/records/）以 OpenSpec 与 SKILL 为准，skills-rules 9.x 小节须与之一致。 | ☐ |
-| C5 | 主 Agent 描述已更新 | 主 Agent.md 中 7→8、新角色名称、配置统筹/配额处已更新，主 Agent 在「配置核对报告」等输出中能覆盖新角色。 | ☐ |
+| C5 | 主 Agent 描述已更新 | 主 Agent.md 中角色总数、角色全集、配置统筹/配额处已更新，主 Agent 在「配置核对报告」等输出中能覆盖新角色。 | ☐ |
 | C6 | 多规则表述一致 | 同一约定（如配额、技能、产出路径）若出现在多处（子Agent .md、skills-rules、projects-rules、AGENTS.md），表述一致。**权威来源**：配额/行为以 projects-rules、skills-rules 与主Agent 为准；**产出/记录路径**以 OpenSpec 1.1 表与各技能 SKILL.md 为准，skills-rules 9.x 仅摘要须与之一致。若有分歧，按上述权威同步修正。 | ☐ |
+| C6.1 | 迭代日志口径一致 | 若新增或调整角色涉及日志表述，须确认所有文档统一采用项目级 `design/documents/迭代日志.md`，不再使用“逐 change-id 的 records 目录迭代日志”作为主口径。 | ☐ |
 | C7 | 改版后行为校验（建议） | 改完后用 1～2 次高置信场景试跑（如变更启动、主 Agent 拆任务→新角色执行→验收），确认新角色与主 Agent 协同、技能触发、产出路径无异常后再正式采用。 | ☐ |
 
 ---

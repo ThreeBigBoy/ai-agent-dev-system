@@ -24,3 +24,4 @@
 
 # 规范与规则引用
 技能以 skills-rules 中「前端 Agent：coding-implement（前端）主导、image-analysis 联动」为准；输出符合 OpenSpec 目录结构、命名与文件格式，与 openspec/、design/ 一致。
+- 运行后端说明：在默认 `agent_team_project` backend 中，本角色对应 `前端工程师` executor，属于默认 5 个执行角色之一。

@@ -3,17 +3,23 @@ import json
 import subprocess
 import time
 import logging
+import sys
+from pathlib import Path
+
+from runtime_config import load_runtime_config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 logger = logging.getLogger("RunSkill")
 
-DECISION_FILE = "cursor_decision.json"
-SKILL_SCRIPT = "dynamic_agent_skill.py"
-FEEDBACK_FILE = "cursor_feedback.txt"
-TIMEOUT = 300
+BASE_DIR = Path(__file__).resolve().parent
+RUNTIME_CONFIG = load_runtime_config()
+DECISION_FILE = BASE_DIR / "cursor_decision.json"
+SKILL_SCRIPT = BASE_DIR / "dynamic_agent_skill.py"
+FEEDBACK_FILE = BASE_DIR / "cursor_feedback.txt"
+TIMEOUT = RUNTIME_CONFIG["run_skill"]["timeout_seconds"]
 
 def read_cursor_decision():
-    if not os.path.exists(DECISION_FILE):
+    if not DECISION_FILE.exists():
         logger.error(f"❌ 未找到决策文件：{DECISION_FILE}")
         logger.info("请先让Cursor Chat生成决策并写入该文件")
         return None
@@ -30,17 +36,15 @@ def read_cursor_decision():
         return None
 
 def trigger_skill(decision_json):
-    escaped_json = decision_json.replace("'", "\\'").replace("\n", " ").replace('"', '\\"')
-    cmd = f'python3 "{SKILL_SCRIPT}" \'{escaped_json}\''
-    logger.info(f"🚀 执行Skill命令：{cmd[:100]}...")
+    cmd = [sys.executable, str(SKILL_SCRIPT), decision_json]
+    logger.info(f"🚀 执行Skill命令：{cmd[0]} {SKILL_SCRIPT.name} <decision_json>")
     try:
         process = subprocess.Popen(
             cmd,
-            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
-            cwd=os.getcwd()
+            cwd=BASE_DIR
         )
         for line in process.stdout:
             logger.info(f"📝 Skill输出：{line.strip()}")
@@ -48,7 +52,7 @@ def trigger_skill(decision_json):
         if process.returncode == 0:
             logger.info("✅ Skill执行成功！")
             time.sleep(1)
-            if os.path.exists(FEEDBACK_FILE):
+            if FEEDBACK_FILE.exists():
                 logger.info(f"📄 反馈结果已写入：{FEEDBACK_FILE}，插件将复制到剪贴板并提示粘贴到 Chat")
             return True
         error = process.stderr.read()

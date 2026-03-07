@@ -1,0 +1,38 @@
+{
+  "backend_name": "inline-langgraph",
+  "executors": [
+    "产品经理",
+    "架构师",
+    "前端工程师",
+    "后端工程师",
+    "测试工程师"
+  ],
+  "model_strategy": {
+    "preferred_provider": "cursor_builtin",
+    "fallback_provider": "api",
+    "cursor_builtin": {
+      "enabled": true,
+      "mode": "Auto"
+    },
+    "api": {
+      "enabled": true,
+      "models": {
+        "simple": [
+          "Qwen/Qwen3-8B",
+          "Qwen/Qwen3.5-4B"
+        ],
+        "complex": [
+          "Pro/deepseek-ai/DeepSeek-V3.2",
+          "Pro/MiniMaxAI/MiniMax-M2.5"
+        ]
+      }
+    }
+  },
+  "llm": {
+    "temperature": 0.1,
+    "timeout_seconds": 60
+  },
+  "run_skill": {
+    "timeout_seconds": 300
+  }
+}
