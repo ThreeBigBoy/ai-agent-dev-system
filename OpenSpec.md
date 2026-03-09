@@ -224,13 +224,14 @@ openspec/changes/[change-id]/
 
 ### 6.4 规则加载与「用户一发起需求就触发」的前提
 
-本节（变更启动顺序与检查清单）与「OpenSpec 变更入口」（在 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中）**只有在被 Cursor 加载为规则时才会生效**。Cursor 的规则加载取决于工作区是否包含 ai-agent-dev-system、Settings → Rules 是否引用 global-rules、项目内是否有 .cursor/rules 等。**无法在任意环境下保证 100% 一上来就加载** projects-rules-for-agent.md。
+本节（变更启动顺序与检查清单）与「OpenSpec 变更入口」（在 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中）只有在**当前宿主已成功加载治理规则**时才会生效。不同宿主的加载方式不同，无法保证任意环境下都能在对话一开始 100% 自动加载 `projects-rules-for-agent.md`。
 
 为尽量做到「用户一发起新需求/新建变更就触发先读本节与 4.3 节再执行」，建议：
 
-1. **工作区**：将 ai-agent-dev-system 加入 Cursor 工作区（多根），并确保 `ai-agent-dev-system/global-rules/*.md` 被配置为规则来源。
-2. **全局规则**：在 Cursor 用户级/全局 Rules 中增加一条：「当用户提出新功能、新建变更、迭代、出方案等时，先读取 OpenSpec.md 第六节与 4.3 节，再按该节执行。」
-3. **项目内双保险**：在每个采用 OpenSpec 的项目根目录添加 `.cursorrules` 或 `.cursor/rules`，内容为：当用户发起新需求、新建变更或迭代时，须先读取 `ai-agent-dev-system/OpenSpec.md` 第六节与 4.3 节（若可访问），再按变更启动顺序执行（先 design/documents，再 openspec/changes）。这样仅打开该项目时也能触发入口。
+1. **工作区 / 规则来源**：确保 `ai-agent-dev-system` 或其导出的治理规则文件可被当前宿主访问，并已被配置为规则来源。
+2. **宿主入口文件**：在对应宿主的入口文件中增加一条：“当用户提出新功能、新建变更、迭代、出方案等时，先读取 OpenSpec.md 第六节与 4.3 节，再按该节执行。”
+3. **项目内双保险**：在每个采用 OpenSpec 的项目根目录中放置当前宿主可识别的最薄入口文件，要求 Agent 在处理新需求 / 新变更前先读取 `ai-agent-dev-system/OpenSpec.md` 第六节与 4.3 节，再按变更启动顺序执行。
+4. **宿主差异化说明**：具体到 Cursor / VS Code / 第三方插件的加载方式，分别见 `platform-adapters/cursor/`、`platform-adapters/vscode/`、`platform-adapters/generic/`。
 
 ---
 

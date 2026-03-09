@@ -10,8 +10,8 @@ alwaysApply: true
 **在响应用户第一条消息时**，必须先执行以下动作，再根据约定进行回复与操作：
 
 1. **读取**以下两份规范文件（若路径可访问）：
-   - **`ai-agent-dev-system/global-rules/projects-rules-for-agent.md`** — 项目通用规则（代码、安全、配额、Agent 行为、OpenSpec 变更入口等）
-   - **`ai-agent-dev-system/global-rules/skills-rules-for-agent.md`** — 技能与 Agent 对应、先读 SKILL 再执行等
+   - **`ai-agent-dev-system/global-rules/projects-rules-for-agent.md`** — 项目通用规则（代码、安全、配额、Agent 行为、OpenSpec 变更入口等，宿主无关）
+   - **`ai-agent-dev-system/global-rules/skills-rules-for-agent.md`** — 技能与 Agent 对应、先读 SKILL 再执行等（宿主无关）
 
 2. **根据**上述文件中的「任务执行通用机制」与「Agents 与 Skills 赋能对应关系」表：
    - 确定当前任务的**执行方**（对应 `ai-agent-dev-system/agents/` 下的主 Agent 或某一子 Agent 角色）
@@ -20,4 +20,5 @@ alwaysApply: true
 
 3. 若任务类型在表中未明确对应某一 Agent，由主 Agent 按最相近的 `agents/` 角色与 `skills-rules` 表中的技能指派执行方，并仍须先读对应 SKILL 再执行。
 
-读取上述文件并完成执行方与技能判定后，在后续回复与操作中严格遵循其中的约定。
+读取上述文件并完成执行方与技能判定后，在后续回复与操作中严格遵循其中的约定。  
+不同宿主如何加载这些规则（例如 Cursor / VS Code），请参考 `platform-adapters/*/` 下对应 adapter 文档。

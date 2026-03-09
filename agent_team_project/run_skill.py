@@ -13,27 +13,60 @@ logger = logging.getLogger("RunSkill")
 
 BASE_DIR = Path(__file__).resolve().parent
 RUNTIME_CONFIG = load_runtime_config()
-DECISION_FILE = BASE_DIR / "cursor_decision.json"
 SKILL_SCRIPT = BASE_DIR / "dynamic_agent_skill.py"
-FEEDBACK_FILE = BASE_DIR / "cursor_feedback.txt"
 TIMEOUT = RUNTIME_CONFIG["run_skill"]["timeout_seconds"]
 
-def read_cursor_decision():
-    if not DECISION_FILE.exists():
-        logger.error(f"❌ 未找到决策文件：{DECISION_FILE}")
-        logger.info("请先让Cursor Chat生成决策并写入该文件")
-        return None
-    try:
-        with open(DECISION_FILE, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-        json.loads(content)
-        return content
-    except json.JSONDecodeError:
-        logger.error(f"❌ {DECISION_FILE} 文件内容不是合法JSON，请让Cursor重新生成")
-        return None
-    except Exception as e:
-        logger.error(f"❌ 读取决策文件失败：{str(e)}")
-        return None
+
+def _workspace_root() -> Path | None:
+    root = os.environ.get("AGENT_TEAM_PROJECT_ROOT", "").strip()
+    if root and Path(root).is_dir():
+        return Path(root)
+    return None
+
+
+def _decision_candidates() -> list[Path]:
+    roots = []
+    workspace_root = _workspace_root()
+    if workspace_root:
+        roots.append(workspace_root)
+    roots.append(BASE_DIR)
+    candidates = []
+    for root in roots:
+        candidates.extend([root / "agent_decision.json", root / "cursor_decision.json"])
+    return candidates
+
+
+def _feedback_candidates() -> list[Path]:
+    roots = []
+    workspace_root = _workspace_root()
+    if workspace_root:
+        roots.append(workspace_root)
+    roots.append(BASE_DIR)
+    candidates = []
+    for root in roots:
+        candidates.extend([root / "agent_feedback.txt", root / "cursor_feedback.txt"])
+    return candidates
+
+
+def read_agent_decision():
+    for decision_file in _decision_candidates():
+        if not decision_file.exists():
+            continue
+        try:
+            with open(decision_file, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            json.loads(content)
+            logger.info(f"📥 使用决策文件：{decision_file}")
+            return content
+        except json.JSONDecodeError:
+            logger.error(f"❌ {decision_file} 文件内容不是合法JSON，请让宿主重新生成")
+            return None
+        except Exception as e:
+            logger.error(f"❌ 读取决策文件失败：{decision_file}，原因：{str(e)}")
+            return None
+    logger.error(f"❌ 未找到决策文件，已检查：{_decision_candidates()}")
+    logger.info("请先让宿主侧主 Agent 生成决策并写入 decision sink")
+    return None
 
 def trigger_skill(decision_json):
     cmd = [sys.executable, str(SKILL_SCRIPT), decision_json]
@@ -52,8 +85,9 @@ def trigger_skill(decision_json):
         if process.returncode == 0:
             logger.info("✅ Skill执行成功！")
             time.sleep(1)
-            if FEEDBACK_FILE.exists():
-                logger.info(f"📄 反馈结果已写入：{FEEDBACK_FILE}，插件将复制到剪贴板并提示粘贴到 Chat")
+            feedbacks = [path for path in _feedback_candidates() if path.exists()]
+            if feedbacks:
+                logger.info(f"📄 反馈结果已写入：{feedbacks}")
             return True
         error = process.stderr.read()
         logger.error(f"❌ Skill执行失败：{error[:200]}...")
@@ -68,13 +102,13 @@ def trigger_skill(decision_json):
 
 def main():
     logger.info("=============== 开始执行Agent团队Skill ===============")
-    decision_json = read_cursor_decision()
+    decision_json = read_agent_decision()
     if not decision_json:
         logger.info("=============== Skill执行终止 ===============")
         return
     success = trigger_skill(decision_json)
     if success:
-        logger.info("🎉 Skill执行完成！请将剪贴板中的反馈粘贴到 Cursor Chat 并发送，或等待插件提示后粘贴")
+        logger.info("🎉 Skill执行完成！请将剪贴板中的反馈粘贴回当前主 Agent 会话，或等待宿主侧提示后继续")
     else:
         logger.error("❌ Skill执行失败，请查看agent_skill.log日志排查问题")
     logger.info("=============== Skill执行流程结束 ===============")

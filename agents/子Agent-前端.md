@@ -18,9 +18,9 @@
 - 配合主 Agent 任务与进度，按 tasks.md 完成前端任务并勾选；对接架构的技术规范与 code-review 意见并整改；对接测试的验收与回归，配合问题闭环；需求疑问与产品经理或主 Agent 沟通。
 
 # 配额与模型（本角色硬约束）
-- **禁止直接使用高成本海外强模型（如 Claude Opus 等）**，避免在前端实现阶段滥用稀缺额度。  
-- 本角色**不得直接启用按 API 计费的 other models（Dashboard “Consumed by other models…”）**；如确有需要，须由主 Agent / 架构 Agent 按 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 第 6.2 条的额度管控策略判定并在专用会话中启用，本角色仅消费其输出结果，不直接切换模型。  
-- 主力开发（复杂组件、核心交互、工程化）优先使用 Composer 系列与主力模型；轻量任务（单文件样式、简单组件、语法修正）用轻量/慢速模型；批量修改、格式统一优先 Composer 系列，不占或尽量少占快速请求额度。
+- 前端实现阶段默认优先使用宿主内置主力开发模型；轻量任务（单文件样式、简单组件、语法修正）用低成本 / 轻量模型。  
+- 本角色不应默认直接切换到个人自定义 API 模型；如确有需要，须由主 Agent / 架构 Agent 按 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 第 6.2、6.3 条判定并在专用会话或运行后端中启用，本角色仅消费其输出结果。  
+- 批量修改、格式统一、多文件工程化调整优先使用宿主内置主力开发模型，避免让高成本模型处理机械性工作。
 
 # 规范与规则引用
 技能以 skills-rules 中「前端 Agent：coding-implement（前端）主导、image-analysis 联动」为准；输出符合 OpenSpec 目录结构、命名与文件格式，与 openspec/、design/ 一致。

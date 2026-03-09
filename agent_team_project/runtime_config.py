@@ -19,6 +19,28 @@ DEFAULT_CONFIG = {
         "后端工程师",
         "测试工程师",
     ],
+    "host_policy": {
+        "default_host": "cursor",
+        "builtin_preferred_hosts": [
+            "cursor",
+            "vscode",
+        ],
+        "api_preferred_hosts": [
+            "continue",
+            "openai-codex",
+        ],
+        "subagent_provider_policy": {
+            "default": "builtin_first",
+            "builtin_first_hosts": [
+                "cursor",
+                "vscode",
+            ],
+            "api_first_hosts": [
+                "continue",
+                "openai-codex",
+            ],
+        },
+    },
     "model_strategy": {
         "preferred_provider": "cursor_builtin",
         "fallback_provider": "api",
@@ -31,11 +53,12 @@ DEFAULT_CONFIG = {
             "models": {
                 "simple": [
                     "Qwen/Qwen3-8B",
-                    "Qwen/Qwen3.5-4B",
+                    "Pro/deepseek-ai/DeepSeek-V3.2",
                 ],
                 "complex": [
                     "Pro/deepseek-ai/DeepSeek-V3.2",
                     "Pro/MiniMaxAI/MiniMax-M2.5",
+                    "Pro/moonshotai/Kimi-K2.5",
                 ],
             },
         },

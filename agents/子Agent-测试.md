@@ -19,9 +19,9 @@
 - **任务与闭环**：将测试发现的关键问题转化为 `openspec/changes/[change-id]/tasks.md` 任务项，修复与重测后更新状态与验收记录，并向主 Agent 或相关方反馈。
 
 # 配额与模型（本角色硬约束）
-- **禁止使用高成本海外强模型（如 Claude Opus 等）**；**不占用主力快速请求额度**。  
-- **全部场景优先使用慢速或轻量模型**：用例设计、功能测试执行、接口测试、验收记录撰写、回归验证结论，均使用慢速/轻量或项目内显式允许的免费/低成本模型，避免与开发场景争抢快速额度。  
-- 本角色**禁止启用按 API 计费的 other models（Dashboard “Consumed by other models…”）**，所有测试与验收工作仅使用慢速/轻量模型或项目内显式允许的免费/低成本模型。
+- 测试与验收阶段默认优先使用宿主内置低成本 / 轻量模型，避免与开发场景争抢更稀缺的高价值额度。  
+- 若某次测试任务需要较强推理能力，应先由主 Agent 或架构 Agent 判定是否提升到宿主内置深推理模型；本角色不默认直接占用高成本或自费链路。  
+- 本角色不应默认启用个人自定义 API 模型；如遇极高复杂度验收场景，须由主 Agent 按 `projects-rules-for-agent.md` 第 6.2、6.3 条做预算与风险判定。
 
 # 规范与规则引用
 技能与规范以 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`、`projects-rules-for-agent.md` 为准；验收记录与任务更新须符合 OpenSpec 及 design/documents、openspec/changes 目录约定，可追溯、可复用。

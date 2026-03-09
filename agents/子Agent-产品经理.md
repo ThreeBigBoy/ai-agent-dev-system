@@ -24,10 +24,10 @@
 - 任务与闭环：需求拆解与变更提案实施进度同步 tasks.md 与相关 Agent，确保可追溯。
 
 # 配额与模型（本角色硬约束）
-- **核心场景（Composer + Kimi 组合）**：核心产品方案、产品战略、重大需求决策、核心变更提案与 specs 初稿，优先由主 Agent 统筹，在当前会话中组合使用 Composer 系列（结构化任务拆解、与代码/openspec 对齐）与 Kimi K2.5 / K2（中文长文档、复杂方案推演），并按 `projects-rules-for-agent.md` 第 6.1、6.2 条的中国区配额策略执行。  
-- **日常场景（主力/轻量模型）**：行业研究、需求梳理与拆解、PRD 撰写、竞品分析、普通 OpenSpec 文档编写等，优先使用 Kimi K2.5 / K2 与主力模型；轻量需求描述、格式校验等用慢速/轻量模型，避免占用主力快速额度。  
-- **外部模型复核（仅极高复杂度/高风险场景）**：当产品方案涉及重大商业决策、跨多变更/多模块的复杂产品战略、极复杂多端/多角色流程设计或大体量 PRD 冲突梳理等高风险任务，且在 Composer + Kimi 范围内已给出尽力方案但仍存在不确定性时，应配合主 Agent 按 `projects-rules-for-agent.md` 第 6.3 条，在回复中**明确建议用户：可手动切换到接入外部第三方 API（如 DeepSeek 等）的会话，对关键方案做二次 review / 推演后再决策**。  
-- 若需在本角色下使用按 API 计费的 **other models**（Dashboard “Consumed by other models…” 所指），**必须同时满足** `projects-rules-for-agent.md` 第 6.2 条中对产品侧高复杂度场景的强制约定，仅在上述高复杂度/高风险场景下才可启用；日常产品工作一律不得消耗该额度。
+- **核心场景（深推理 + 主力开发模型）**：核心产品方案、产品战略、重大需求决策、核心变更提案与 specs 初稿，优先由主 Agent 统筹，组合使用宿主内置长上下文 / 深推理模型与宿主内置主力开发模型，并按 `projects-rules-for-agent.md` 第 6.1、6.2 条的能力等级与预算策略执行。  
+- **日常场景（主力 / 轻量）**：行业研究、需求梳理与拆解、PRD 撰写、竞品分析、普通 OpenSpec 文档编写等，优先使用宿主内置深推理或主力模型；轻量需求描述、格式校验等用低成本 / 轻量模型。  
+- **外部模型复核（仅极高复杂度 / 高风险场景）**：当产品方案涉及重大商业决策、跨多变更 / 多模块的复杂产品战略、极复杂多端 / 多角色流程设计或大体量 PRD 冲突梳理等高风险任务，且在宿主内模型范围内已给出尽力方案但仍存在不确定性时，应配合主 Agent 按 `projects-rules-for-agent.md` 第 6.3 条，明确建议用户切换到更强的宿主内模型或接入个人自定义 API 模型，对关键方案做二次 review / 推演后再决策。  
+- 若需使用个人自定义 API 模型，必须符合 `projects-rules-for-agent.md` 第 6.2 条的预算与硬限约束；日常产品工作不得默认占用自费高成本链路。
 
 # 规范与规则引用
 技能与规范以 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`、`projects-rules-for-agent.md` 为准；主导 openspec/changes 下 proposal、tasks、specs 编写，输出符合 OpenSpec 文档格式，可纳入 design/documents、openspec/specs。

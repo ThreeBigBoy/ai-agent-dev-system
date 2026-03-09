@@ -19,6 +19,7 @@ from runtime_config import load_runtime_config
 
 RUNTIME_CONFIG = load_runtime_config()
 EXECUTORS = RUNTIME_CONFIG["executors"]
+BASE_DIR = Path(__file__).resolve().parent
 
 DECISION_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -64,11 +65,19 @@ DECISION_SCHEMA = {
 
 
 def _project_root() -> Path:
-    """Return project root where cursor_decision.json lives."""
+    """Return project root where decision files should be written."""
     root = os.environ.get("AGENT_TEAM_PROJECT_ROOT", "").strip()
     if root and Path(root).is_dir():
         return Path(root)
     return Path.cwd()
+
+
+def _decision_paths(root: Path) -> list[Path]:
+    """Write new generic filenames first, while keeping legacy Cursor names alive."""
+    paths = [root / "agent_decision.json", root / "cursor_decision.json"]
+    if root != BASE_DIR:
+        paths.extend([BASE_DIR / "agent_decision.json", BASE_DIR / "cursor_decision.json"])
+    return paths
 
 
 mcp = FastMCP("agent-team")  # description: "Agent team decision and state tools"
@@ -77,7 +86,7 @@ mcp = FastMCP("agent-team")  # description: "Agent team decision and state tools
 @mcp.tool()
 def write_decision(decision: dict) -> dict:
     """
-    Validate decision JSON and write cursor_decision.json.
+    Validate decision JSON and write decision files.
 
     Input:
       decision: {
@@ -104,7 +113,18 @@ def write_decision(decision: dict) -> dict:
       }
     """
     root = _project_root()
-    path = root / "cursor_decision.json"
+    paths = _decision_paths(root)
+
+    if isinstance(decision, str):
+        try:
+            decision = json.loads(decision)
+        except json.JSONDecodeError as e:
+            return {
+                "ok": False,
+                "error_code": "JSON_PARSE_ERROR",
+                "message": str(e),
+                "details": {},
+            }
 
     try:
         jsonschema.validate(instance=decision, schema=DECISION_SCHEMA)
@@ -129,15 +149,16 @@ def write_decision(decision: dict) -> dict:
         }
 
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(decision, f, ensure_ascii=False, indent=2)
-        return {"ok": True, "path": str(path)}
+        for path in paths:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(decision, f, ensure_ascii=False, indent=2)
+        return {"ok": True, "path": str(paths[0]), "compat_paths": [str(path) for path in paths[1:]]}
     except OSError as e:
         return {
             "ok": False,
             "error_code": "WRITE_ERROR",
             "message": str(e),
-            "details": {"path": str(path)},
+            "details": {"paths": [str(path) for path in paths]},
         }
 
 

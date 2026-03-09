@@ -14,6 +14,8 @@ description: 主Agent 参考文档 - Cursor Chat 总指挥入口模板（来源�
 
 - 本文档是**参考模板文档**，不是治理层最高权威源。
 - 若其内容与 `OpenSpec.md`、`global-rules/*.md`、`agents/*.md` 中的 V2.1 治理规则不一致，以治理层规则为准。
+- 当前运行时已将决策与反馈文件主命名收敛为 `agent_decision.json` / `agent_feedback.txt`，并兼容旧名 `cursor_decision.json` / `cursor_feedback.txt`；下方模板正文保留的是 2.0 历史原文。
+- 当前模型策略已收敛为「宿主内置模型优先，异常或不可用时再降级到个人自定义 OpenAI 兼容 API 模型链路」；下方模板正文未覆盖该后续演进说明。
 
 ## 模板正文
 

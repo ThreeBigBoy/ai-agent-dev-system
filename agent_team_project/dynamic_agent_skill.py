@@ -2,14 +2,23 @@ import os
 import json
 import logging
 import sys
+from pathlib import Path
 from dataclasses import dataclass
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
+
+try:
+    from langchain.prompts import ChatPromptTemplate
+except ImportError:
+    from langchain_core.prompts import ChatPromptTemplate
+
+try:
+    from langchain.schema import StrOutputParser
+except ImportError:
+    from langchain_core.output_parsers import StrOutputParser
 
 from runtime_config import load_runtime_config
 
@@ -28,6 +37,7 @@ OPENAI_API_BASE_URL = (os.getenv("OPENAI_API_BASE_URL") or "").strip() or None
 RUNTIME_CONFIG = load_runtime_config()
 EXECUTORS = RUNTIME_CONFIG["executors"]
 BACKEND_NAME = RUNTIME_CONFIG["backend_name"]
+BASE_DIR = Path(__file__).resolve().parent
 
 
 @dataclass
@@ -35,6 +45,50 @@ class ModelCandidate:
     provider: str
     model_name: str
     mode: str = ""
+
+
+def _workspace_root() -> Path | None:
+    root = os.environ.get("AGENT_TEAM_PROJECT_ROOT", "").strip()
+    if root and Path(root).is_dir():
+        return Path(root)
+    return None
+
+
+def _current_host_type() -> str:
+    env_host = os.environ.get("AGENT_HOST_TYPE", "").strip().lower()
+    if env_host:
+        return env_host
+    return (
+        RUNTIME_CONFIG.get("host_policy", {})
+        .get("default_host", "cursor")
+        .strip()
+        .lower()
+    )
+
+
+def _feedback_output_paths() -> list[Path]:
+    roots = []
+    workspace_root = _workspace_root()
+    if workspace_root:
+        roots.append(workspace_root)
+    roots.append(BASE_DIR)
+    paths = []
+    for root in roots:
+        paths.extend([root / "agent_feedback.txt", root / "cursor_feedback.txt"])
+    deduped = []
+    seen = set()
+    for path in paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        deduped.append(path)
+    return deduped
+
+
+def _write_feedback(content: str) -> None:
+    for path in _feedback_output_paths():
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
 
 # --------------------------
 # 1. 定义LangGraph状态模型（存储协作全量信息）
@@ -66,21 +120,40 @@ def _make_api_llm(model_name: str):
 
 def _build_model_candidates(task_complexity: str) -> list[ModelCandidate]:
     strategy = RUNTIME_CONFIG["model_strategy"]
+    host_policy = RUNTIME_CONFIG.get("host_policy", {})
+    provider_policy = host_policy.get("subagent_provider_policy", {})
+    current_host = _current_host_type()
     candidates: list[ModelCandidate] = []
     scene = "complex" if task_complexity in ["中等", "复杂"] else "simple"
+    order = provider_policy.get("default", "builtin_first")
 
-    if strategy.get("cursor_builtin", {}).get("enabled", False):
-        candidates.append(
-            ModelCandidate(
-                provider="cursor_builtin",
-                model_name="Cursor 内置模型",
-                mode=strategy["cursor_builtin"].get("mode", "Auto"),
+    if current_host in provider_policy.get("api_first_hosts", []):
+        order = "api_first"
+    elif current_host in provider_policy.get("builtin_first_hosts", []):
+        order = "builtin_first"
+
+    def append_builtin() -> None:
+        if strategy.get("cursor_builtin", {}).get("enabled", False):
+            candidates.append(
+                ModelCandidate(
+                    provider="cursor_builtin",
+                    model_name="Cursor 内置模型",
+                    mode=strategy["cursor_builtin"].get("mode", "Auto"),
+                )
             )
-        )
 
-    if strategy.get("api", {}).get("enabled", False):
-        for model_name in strategy["api"]["models"][scene]:
-            candidates.append(ModelCandidate(provider="api", model_name=model_name))
+    def append_api() -> None:
+        if strategy.get("api", {}).get("enabled", False):
+            for model_name in strategy["api"]["models"][scene]:
+                candidates.append(ModelCandidate(provider="api", model_name=model_name))
+
+    if order == "api_first":
+        append_api()
+    else:
+        append_builtin()
+        append_api()
+
+    logger.info("当前宿主类型=%s，子Agent模型链路策略=%s", current_host, order)
 
     return candidates
 
@@ -223,7 +296,7 @@ def adjust_tasks(state: AgentState) -> AgentState:
 
 请作为总指挥，根据以上反馈调整任务分工：
 1. 补充/修改相关子任务（保持原JSON格式）
-2. 输出新的任务分工JSON，覆盖写入cursor_decision.json
+2. 输出新的任务分工JSON，覆盖写入agent_decision.json（兼容旧名 cursor_decision.json）
 3. 无需额外解释，仅输出JSON
     """
     logger.info(f"生成调整指令：{state.adjust_instruction[:100]}...")
@@ -249,7 +322,7 @@ def build_dynamic_graph() -> CompiledStateGraph:
 def run_dynamic_agent_team(manager_decision_json: str) -> str:
     try:
         manager_decision = json.loads(manager_decision_json.strip())
-        logger.info(f"接收到Cursor决策：任务复杂度={manager_decision['task_complexity']}，子任务数={len(manager_decision['task_list'])}")
+        logger.info(f"接收到运行决策：任务复杂度={manager_decision['task_complexity']}，子任务数={len(manager_decision['task_list'])}")
         initial_state = AgentState(
             task_complexity=manager_decision["task_complexity"],
             task_list=manager_decision["task_list"]
@@ -287,21 +360,18 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
 4. 生成文件列表：{generated_files}
 5. 所有任务执行完成，无需调整。
 """
-        with open("cursor_feedback.txt", "w", encoding="utf-8") as f:
-            f.write(summary)
-        logger.info("执行结果已写入cursor_feedback.txt，插件将读取并复制到剪贴板")
+        _write_feedback(summary)
+        logger.info(f"执行结果已写入反馈文件：{_feedback_output_paths()}")
         return summary
     except json.JSONDecodeError as e:
         error_msg = f"JSON解析失败：{str(e)}"
         logger.error(error_msg)
-        with open("cursor_feedback.txt", "w", encoding="utf-8") as f:
-            f.write(f"执行失败：{error_msg}")
+        _write_feedback(f"执行失败：{error_msg}")
         return error_msg
     except Exception as e:
         error_msg = f"动态协作执行失败：{str(e)}"
         logger.error(error_msg)
-        with open("cursor_feedback.txt", "w", encoding="utf-8") as f:
-            f.write(f"执行失败：{error_msg}")
+        _write_feedback(f"执行失败：{error_msg}")
         return error_msg
 
 # --------------------------

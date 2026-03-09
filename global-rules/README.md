@@ -1,45 +1,54 @@
-# global-rules 说明与规则来源配置
+# global-rules 目录说明（宿主无关）
 
-本目录（`ai-agent-dev-system/global-rules/`）下为全局规则 Markdown 文件，供多项目复用。  
-**仅把文件放在此目录并不会让 Cursor 自动加载为规则**，需在 Cursor 中显式配置为规则来源后才会生效。
+`ai-agent-dev-system/global-rules/` 下存放的是 **可被多个项目、多种宿主复用的全局规则文档**。  
+这些规则与具体 IDE / 插件无关，任何宿主只要能读取本目录的 Markdown 文件，就可以据此约束多 Agent 的行为。
+
+本目录下除本 README 外的所有 `.md` 都应被视为**治理内核的一部分**，而非某个宿主的专用扩展文档。
 
 ---
 
-## 检查结论：是否已配置为规则来源？
+## 目录内主要规则文件
 
-- **项目内（仓库内）**：ai-agent-dev-system 下无 `.cursor/rules/`，Proj01ShopifyTheme 仅有根目录 `.cursorrules`，**仓库内未**将 `global-rules/*.md` 配置为规则来源。
-- **用户级**：若你已在 **Cursor 用户级 Rules** 中增加「读取并遵循 `ai-agent-dev-system/global-rules/` 下对应 md 文件」的规则，则 **`global-rules` 已作为规则来源之一生效**。用户级 Rules 存于 Cursor 应用配置中，本仓库无法直接读取，需你在 Cursor Settings → Rules for AI 中自行确认该条已保存且路径正确。
-
-**需遵循的规则文件**（本目录下除 README 外的 .md，供你与用户级规则表述核对）：
-
-| 文件 | 用途 |
+| 文件 | 定位 |
 |------|------|
-| `projects-rules-for-agent.md` | 项目通用规则：代码/安全/配额/行为、OpenSpec 变更入口等 |
-| `skills-rules-for-agent.md` | 技能与 Agent 对应、先读 SKILL 再执行等 |
-| `readme-rules-for-agent.md` | README 编写与维护规范 |
+| `projects-rules-for-agent.md` | 项目通用规则：任务执行机制、变更入口、代码/安全/配额/行为规范、迭代日志要求等 |
+| `skills-rules-for-agent.md` | Agents 与 Skills 的赋能关系：各角色主导/联动技能、技能触发约定、产出与日志要求 |
+| `readme-rules-for-agent.md` | README 与文档编写规范：结构、层级、命名与维护约定 |
+
+> 使用本仓库时，应假设以上文件**在所有宿主下都有效**；若某宿主暂时无法自动加载这些文件，可以通过人工复制、宿主侧配置或脚本接线来补足。
 
 ---
 
-## 如何将 global-rules 配置为规则来源（二选一或兼用）
+## 不同宿主下如何加载 global-rules（概要）
 
-### 方式一：多根工作区 + 第一个根目录的 .cursor/rules（推荐）
+global-rules 本身不绑定任何宿主，实现加载方式由各自的 adapter 决定：
 
-1. 用 Cursor 打开**多根工作区**，且把 **ai-agent-dev-system** 包含进来（并尽量作为第一个根目录，因 Cursor 多根时仅从“第一个”项目加载 `.cursor/rules/`）。
-2. 在 **ai-agent-dev-system** 下创建 **`.cursor/rules/`**，并在其中添加 `.mdc` 规则文件，在规则**内容**中引用或摘录本目录下的规范，例如：
-   - 创建 `ai-agent-dev-system/.cursor/rules/global-rules.mdc`，frontmatter 设 `alwaysApply: true`，正文里用「请始终遵循以下规范」并粘贴或引用 `projects-rules-for-agent.md`、`skills-rules-for-agent.md` 等关键内容；或
-   - 在 `.mdc` 中写：打开对话时先读取 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 与 `skills-rules-for-agent.md`，再按其中约定执行。
-3. 保存后，在包含 ai-agent-dev-system 的多根工作区中，Cursor 会从该第一个项目的 `.cursor/rules/` 加载规则，从而间接使 `global-rules` 的约定生效。
+- **Cursor 宿主**  
+  - 通过工作区根目录下的 `.cursor/rules/*.mdc` 作为入口壳，引导当前会话在对话开始时读取：  
+    - `ai-agent-dev-system/global-rules/projects-rules-for-agent.md`  
+    - `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`  
+  - 具体说明见：`platform-adapters/cursor/rule-loading.md`。
 
-### 方式二：用户级 / 全局 Rules
+- **VS Code 宿主**  
+  - 通过根 `AGENTS.md` 与 `.github/agents/*.agent.md` 说明当前 Agent 角色，并在入口中要求加载上述全局规则文件；  
+  - 具体说明见：`platform-adapters/vscode/README.md` 与 `agents-entry.md`。
 
-1. 打开 Cursor → **Settings** → **Rules for AI**（或 **Cursor Settings → General → Rules**，以实际界面为准）。
-2. 在**用户级 / 全局规则**中增加一条，内容示例：
-   - 「当在本工作区或 ai-agent-dev-system 相关项目中时，须先读取并遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 与 `ai-agent-dev-system/global-rules/skills-rules-for-agent.md`；若工作区中包含 ai-agent-dev-system，则打开对话时优先加载上述两文件作为规则。」
-3. 保存后，只要 Cursor 能访问到 ai-agent-dev-system 路径（例如多根工作区中包含该文件夹），全局规则即会引用 `global-rules` 下的内容。
+- **其他宿主 / 第三方插件**  
+  - 建议先对照 `platform-adapters/generic/host-capability-checklist.md` 评估能力，再按 `adapter-template.md` 编写适配文档；  
+  - 入口位置视宿主而定，但都应在入口中显式引用本目录下的规则文件。
 
 ---
 
-## 验证是否生效
+## 宿主侧需要做到的最小约定
 
-- 在对话中发起与新需求/新建变更相关的请求（如「帮我做 XXX 功能」），看 AI 是否**先**提及或执行「读取 OpenSpec 第六节与 4.3 节」「先 design/documents 再 openspec/changes」等来自 `projects-rules-for-agent.md` 的约定；若会，则说明 `global-rules` 已被作为规则来源之一生效。
-- 若不会，则需按上节任一方式补配规则来源，或确认 ai-agent-dev-system 是否在 Cursor 当前工作区内且路径正确。
+无论宿主是谁，只要满足以下条件，就可以复用本目录规则：
+
+1. 能为某个 Agent 会话配置「系统级说明 / instructions」；  
+2. 在会话开始时，能够让 Agent 读取并遵循：  
+   - `OpenSpec.md`；  
+   - `global-rules/projects-rules-for-agent.md`；  
+   - `global-rules/skills-rules-for-agent.md`；  
+3. 在执行具体任务前，为对应角色加载正确的 `agents/*.md` 与 `skills/*/SKILL.md`。
+
+如果某个宿主无法自动达成上述条件，可以通过手动复制规则内容或使用脚本辅助加载，仍然可以遵循同一治理内核。
+

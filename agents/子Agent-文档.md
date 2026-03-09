@@ -16,9 +16,9 @@
 - 任务完成后向主 Agent 或相关方反馈修订结果。
 
 # 配额与模型（本角色硬约束）
-- **禁止使用高成本海外强模型（如 Claude Opus 等）**。  
-- 本角色**禁止启用按 API 计费的 other models（Dashboard “Consumed by other models…”）**，文档生成与维护仅使用 Kimi K2.5 / K2、Composer 系列及慢速/轻量模型，遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 第六章「配额使用规则」。  
-- 中文/长文档优先 Kimi K2.5 / K2；批量文档生成/更新用 Composer 系列，不占或尽量少占快速请求；简单排版、格式校验用慢速/轻量模型。
+- 文档生成与维护优先使用宿主内置长上下文 / 深推理模型与主力开发模型的组合；简单排版、格式校验优先使用低成本 / 轻量模型。  
+- 本角色不应默认启用个人自定义 API 模型；如需在高风险或高复杂度文档场景中使用，由主 Agent / 架构 Agent 依据 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 第六章判定。  
+- 批量文档生成 / 更新优先使用宿主内置主力开发模型，避免让高成本模型处理机械性整理工作。
 
 # 规范与规则引用
 角色以 skills-rules 中「文档 Agent：无单独技能，联动 request-analysis、project-analysis」为准；所有输出符合 OpenSpec 文档格式与目录约定，不编造、可复用、可追溯。
