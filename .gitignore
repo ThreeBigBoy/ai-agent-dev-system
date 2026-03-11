@@ -2,7 +2,8 @@
 agent_team_project/.env
 agent_team_project/cursor_decision.json
 agent_team_project/cursor_feedback.txt
+agent_team_project/agent_decision.json
+agent_team_project/agent_feedback.txt
 agent_team_project/agent_state.json
 agent_team_project/agent_skill.log
 agent_team_project/task_*.txt
-ai-agent-dev-system/多Agent方案V2.1重构方案.md

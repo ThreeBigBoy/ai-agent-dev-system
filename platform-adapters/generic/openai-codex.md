@@ -7,7 +7,7 @@
 - OpenAI-Codex 属于 **第三方宿主**，不在当前白名单宿主范围内。  
 - 因此模型策略采用：
   - 主 Agent：优先使用 OpenAI-Codex 宿主内置模型能力
-  - 子 Agent / 运行后端：直接走个人自定义 OpenAI 兼容 API 模型调度策略
+  - 子 Agent / 运行后端：**也优先使用 OpenAI-Codex 宿主内置模型能力**，仅在宿主内置模型不可用时再降级到个人自定义 OpenAI 兼容 API 模型调度策略
 
 ### 2. 建议接线方式
 
@@ -25,7 +25,7 @@
 ### 3. 模型策略
 
 - 主 Agent：优先使用宿主内置模型
-- 子 Agent：由 `agent_team_project` 按 `AGENT_HOST_TYPE=openai-codex` 识别为第三方宿主，直接走个人 API 模型候选链路
+- 子 Agent：由 `agent_team_project` 按 `AGENT_HOST_TYPE=openai-codex` 识别为第三方宿主，但**子 Agent 也优先使用宿主内置模型**，仅当宿主内置模型链路不可用或失败时，才走个人 API 模型候选链路
 - 当前默认 API 候选策略见：
   - `agent_team_project/runtime_config.json`
   - `agent_team_project/README.md`

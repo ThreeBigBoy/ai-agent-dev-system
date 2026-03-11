@@ -126,9 +126,10 @@
    - 默认模式为 Cursor `Auto`
    - 目标是优先走宿主内置模型链路，而不是优先走 `.env` 中 API 模型链路
 
-3. **第三方宿主下，子 Agent 直接走 API 链路**
+3. **第三方宿主下，子 Agent 模型链路按宿主策略配置**
    - 当前明确支持的第三方宿主为 Continue、OpenAI-Codex
-   - 在这些宿主下，主 Agent 可继续使用宿主内置模型，但 `agent_team_project` 承接的子 Agent 执行链路直接使用个人 API 模型候选
+   - Continue：主 Agent 可继续使用宿主内置模型，`agent_team_project` 承接的子 Agent 执行链路**直接使用个人 API 模型候选**
+   - OpenAI-Codex：主 Agent 与 `agent_team_project` 承接的子 Agent **都优先使用宿主内置模型**，仅在宿主内置模型不可用时，才降级到个人 API 模型候选链路
 
 4. **若宿主内置模型链路失败，则自动 fallback 到 API 链路**
    - 当前运行时 backend 已支持该降级顺序

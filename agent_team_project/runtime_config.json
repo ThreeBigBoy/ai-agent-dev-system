@@ -11,21 +11,21 @@
     "default_host": "cursor",
     "builtin_preferred_hosts": [
       "cursor",
-      "vscode"
+      "vscode",
+      "openai-codex"
     ],
     "api_preferred_hosts": [
-      "continue",
-      "openai-codex"
+      "continue"
     ],
     "subagent_provider_policy": {
       "default": "builtin_first",
       "builtin_first_hosts": [
         "cursor",
-        "vscode"
+        "vscode",
+        "openai-codex"
       ],
       "api_first_hosts": [
-        "continue",
-        "openai-codex"
+        "continue"
       ]
     }
   },

@@ -24,20 +24,20 @@ DEFAULT_CONFIG = {
         "builtin_preferred_hosts": [
             "cursor",
             "vscode",
+            "openai-codex",
         ],
         "api_preferred_hosts": [
             "continue",
-            "openai-codex",
         ],
         "subagent_provider_policy": {
             "default": "builtin_first",
             "builtin_first_hosts": [
                 "cursor",
                 "vscode",
+                "openai-codex",
             ],
             "api_first_hosts": [
                 "continue",
-                "openai-codex",
             ],
         },
     },

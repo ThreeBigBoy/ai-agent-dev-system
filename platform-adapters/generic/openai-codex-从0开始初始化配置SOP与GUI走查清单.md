@@ -10,7 +10,7 @@
 
 1. OpenAI-Codex 主会话可读取仓库治理规则
 2. 主 Agent 在宿主侧可正常工作
-3. 第三方宿主策略生效：主 Agent 用宿主内置模型，子 Agent 走个人 API 模型链路
+3. 第三方宿主策略生效：主 Agent 用宿主内置模型，子 Agent **也优先用宿主内置模型**（仅在宿主内置模型不可用时降级到个人 API 模型链路）
 4. runtime backend 可通过 `AGENT_HOST_TYPE=openai-codex` 正常执行
 
 ## 3. 前置条件
@@ -38,7 +38,8 @@ pip3 install mcp jsonschema python-dotenv langchain-openai langgraph pydantic
 
 ### 4.3 准备个人 API 环境变量
 
-OpenAI-Codex 属于第三方宿主，子 Agent 默认走个人 API 模型链路，因此这一步是必需的：
+OpenAI-Codex 属于第三方宿主，但当前配置下主 Agent 与子 Agent 均**优先使用宿主内置模型**；  
+当宿主内置模型不可用或需要 fallback 时，才会走个人 API 模型链路，因此仍需准备 API 凭据：
 
 ```env
 OPENAI_API_KEY=your_key
@@ -68,7 +69,7 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 说明：
 
 - `openai-codex` 会被 runtime 识别为第三方宿主
-- 子 Agent 将直接走个人 API 模型候选链路
+- 子 Agent 在当前配置下**优先使用宿主内置模型**，仅在宿主不可用时走个人 API 模型候选链路
 
 ## 5. 首次运行 SOP
 
@@ -90,8 +91,8 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 
 期望：
 
-- 主会话仍在宿主内运行
-- 子 Agent 执行链路直接走 API 模型候选
+- 主会话仍在宿主内运行（主 Agent 用宿主内置模型）
+- 子 Agent 执行链路**优先使用宿主内置模型**，仅在宿主不可用时才会降级到 API 模型候选
 
 ### 5.3 验证文件链路
 
