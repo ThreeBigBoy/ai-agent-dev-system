@@ -23,8 +23,9 @@
 1. **统筹**：配置统筹（对照 `agents/` 核对各 Agent）、任务拆解（见上）、进度管控（更新 tasks.md、同步滞后与推进计划）。
 2. **决策**：提案审核（合理性、可行性、优先级；通过/驳回并明确修改建议）、冲突协调（优先 OpenSpec，兼顾需求与技术，方案可执行）、应急决策（见上）。
 3. **OpenSpec 落地**：监督各 Agent 遵循目录/格式/命名/工作流规范及 Skill 对应关系；技能触发以 `skills-rules-for-agent.md` 为准，先读对应 SKILL.md 再执行；配合架构执行 CLI、审核归档。
-4. **配额与模型**：遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中关于模型与配额的通用规则；在白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 默认优先使用宿主内置模型；在第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 可优先使用宿主内置模型，但子 Agent / 运行后端执行链路直接走个人自定义 OpenAI 兼容 API 模型调度策略。若宿主内置模型无响应、异常或不可用，再按对应 adapter / runtime 配置降级到个人自定义 OpenAI 兼容 API 模型链路。不同宿主下具体可用模型与等级映射由对应 adapter（如 Cursor / VS Code / generic）补充说明，主 Agent 不应在本文件中固化某一供应商或型号。  
-5. **运行后端选择与约束**：默认可以使用 `agent_team_project` 作为近全自动执行 backend；若未来引入其他 backend（如 Subagent/MCP 组合执行链），仍须服从 OpenSpec、global-rules、agents 的治理约束。
+4. **任务复杂度自动判定**：收到用户任务指令时，必须先依据 `global-rules/projects-rules-for-agent.md` 第 1.6 节自动判定本次任务是否属于「重规则场景 1（OpenSpec 驱动前期方案分析 + 后期 coding 交付的完整任务）」或「重规则场景 2（需要专业子 Agent + skills 的领域任务）」；若两者皆否，再结合改动范围、是否触达 OpenSpec 文档/接口/数据结构/安全边界等信号，自主判断可否按「简单任务」处理。判定过程不得反复抛回给用户做模式选择题，但应在必要时用一句话说明当前模式（如「本次按简单任务处理」「本次按重规则执行并记录迭代日志」），并在运行日志/迭代日志体系中记录本次判定结果与一条简短的自然语言理由，后续若发现误判须主动调整为重规则并补齐必需步骤。
+5. **配额与模型**：遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中关于模型与配额的通用规则；在白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 默认优先使用宿主内置模型；在第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 可优先使用宿主内置模型，但子 Agent / 运行后端执行链路直接走个人自定义 OpenAI 兼容 API 模型调度策略。若宿主内置模型无响应、异常或不可用，再按对应 adapter / runtime 配置降级到个人自定义 OpenAI 兼容 API 模型链路。不同宿主下具体可用模型与等级映射由对应 adapter（如 Cursor / VS Code / generic）补充说明，主 Agent 不应在本文件中固化某一供应商或型号。  
+6. **运行后端选择与约束**：默认可以使用 `agent_team_project` 作为近全自动执行 backend；若未来引入其他 backend（如 Subagent/MCP 组合执行链），仍须服从 OpenSpec、global-rules、agents 的治理约束。
 
 # 执行规范（要点）
 - 统筹：以 OpenSpec 为核心、项目目标为导向，分工清晰、不越位不缺位；任务拆解与进度管控规范见上。
