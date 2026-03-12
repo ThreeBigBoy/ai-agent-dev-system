@@ -30,6 +30,18 @@ DECISION_SCHEMA = {
             "type": "string",
             "enum": ["简单", "中等", "复杂"],
         },
+        "matched_scene": {
+            "type": "string",
+            "enum": [
+                "scene1-openspec-fullflow",
+                "scene2-professional-agent",
+                "scene3-other",
+            ],
+        },
+        "reason": {
+            "type": "string",
+            "description": "一条自然语言理由，解释当前任务复杂度与场景判定原因",
+        },
         "task_list": {
             "type": "array",
             "items": {
@@ -91,6 +103,8 @@ def write_decision(decision: dict) -> dict:
     Input:
       decision: {
         "task_complexity": "简单/中等/复杂",
+        "matched_scene": "scene1-openspec-fullflow" | "scene2-professional-agent" | "scene3-other",  # 可选
+        "reason": "<一条自然语言理由>",  # 可选，解释为何做出上述复杂度与场景判定
         "task_list": [
           {
             "task_id": int >= 1,

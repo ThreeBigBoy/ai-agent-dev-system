@@ -347,7 +347,15 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
         if not raw:
             raise ValueError("决策内容为空，请先通过 MCP write_decision 写入 agent_decision.json")
         manager_decision = json.loads(raw)
-        logger.info(f"接收到运行决策：任务复杂度={manager_decision['task_complexity']}，子任务数={len(manager_decision['task_list'])}")
+        matched_scene = manager_decision.get("matched_scene", "scene3-other")
+        decision_reason = (manager_decision.get("reason") or "").strip()
+        logger.info(
+            "接收到运行决策：任务复杂度=%s，场景=%s，子任务数=%s，判定理由=%s",
+            manager_decision.get("task_complexity"),
+            matched_scene,
+            len(manager_decision.get("task_list", [])),
+            decision_reason or "（未提供）",
+        )
         initial_state = AgentState(
             task_complexity=manager_decision["task_complexity"],
             task_list=manager_decision["task_list"]
@@ -369,9 +377,11 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
             final_state = AgentState(**final_state)
         with open(BASE_DIR / "agent_state.json", "w", encoding="utf-8") as f:
             f.write(final_state.model_dump_json(ensure_ascii=False, indent=2))
+        decision_header = f"Task decision: [complexity={manager_decision.get('task_complexity')}, scene={matched_scene}, reason={decision_reason or '（未提供）'}]"
         if final_state.need_adjust:
             summary = f"""
 ### 动态协作执行结果（需调整）
+{decision_header}
 1. 任务复杂度：{final_state.task_complexity}
 2. 已完成任务数：{len(final_state.task_results)} / {len(final_state.task_list)}
 3. 反馈问题列表：
@@ -386,6 +396,7 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
             ]
             summary = f"""
 ### 动态协作执行结果（完成）
+{decision_header}
 0. 运行后端：{BACKEND_NAME}
 1. 任务复杂度：{final_state.task_complexity}
 2. 总任务数：{len(final_state.task_list)}
