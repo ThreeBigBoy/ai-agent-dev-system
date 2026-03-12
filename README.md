@@ -134,6 +134,28 @@
 
 ---
 
+## 更新日志
+
+- **V2.0**  
+  - Cursor + LangGraph + 自定义 Skill + 本地插件，实现「决策 → 执行 → 反馈 → 调整」近全自动闭环。  
+  - 以 MCP `write_decision` 为主写入决策并做 JSON schema 校验，避免自然语言约束写文件的可靠性问题。  
+  - 插件监听反馈文件 → 复制到剪贴板 → 提示用户在 Chat 中粘贴（降级方案）。  
+  - 明确 `agent_team_project` 目录结构：`run_skill.py`、`dynamic_agent_skill.py`、决策/反馈文件、`.vscode/extensions` 下反馈插件。
+
+- **V2.1**  
+  - 治理层（OpenSpec + global-rules + agents + skills）为唯一权威；`agent_team_project` 仅作默认运行后端，不再参与规范定义。  
+  - 入口瘦身：`.cursor/rules/agent.mdc` 仅做总指挥入口与优先级声明，不堆厚制度正文。  
+  - 统一日志口径为项目级 `design/documents/迭代日志.md`。  
+  - 明确默认 backend 的 5 个 executor 与治理层角色全集区分（主 Agent、文档 Agent、Bug 修复 Agent 不进入 executor 枚举）。
+
+- **V2.2**  
+  - 治理内核宿主无关；宿主专属内容下沉到 `platform-adapters/*`（cursor / vscode / generic），各宿主入口做「最薄入口壳」。  
+  - 运行协议抽象为 decision_sink、runtime_trigger、feedback_bridge、workspace_binding；文件命名统一为 `agent_decision.json`、`agent_feedback.txt`。  
+  - 白名单宿主（Cursor、VS Code）与第三方宿主（Continue、OpenAI-Codex）的模型策略区分，通过 `AGENT_HOST_TYPE` 与 `runtime_config.json` 配置。  
+  - 支持四宿主初始化 SOP 与新用户快速开始总入口；反馈闭环时主 Agent 须写收尾决策以显式标记本轮结束。
+
+---
+
 ## 使用方式
 
 - **作为人类读者**：  
