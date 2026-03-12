@@ -22,11 +22,17 @@ except ImportError:
 
 from runtime_config import load_runtime_config
 
-# 配置日志
+# 先解析 BASE_DIR，再配置日志与路径，保证所有产物落在脚本所在目录
+BASE_DIR = Path(__file__).resolve().parent
+
+# 配置日志（固定写入 agent_team_project，不随 cwd 变化）
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("agent_skill.log"), logging.StreamHandler()]
+    handlers=[
+        logging.FileHandler(BASE_DIR / "agent_skill.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger("DynamicAgentSkill")
 
@@ -37,7 +43,6 @@ OPENAI_API_BASE_URL = (os.getenv("OPENAI_API_BASE_URL") or "").strip() or None
 RUNTIME_CONFIG = load_runtime_config()
 EXECUTORS = RUNTIME_CONFIG["executors"]
 BACKEND_NAME = RUNTIME_CONFIG["backend_name"]
-BASE_DIR = Path(__file__).resolve().parent
 
 
 @dataclass
@@ -74,7 +79,7 @@ def _feedback_output_paths() -> list[Path]:
     roots.append(BASE_DIR)
     paths = []
     for root in roots:
-        paths.extend([root / "agent_feedback.txt", root / "cursor_feedback.txt"])
+        paths.append(root / "agent_feedback.txt")
     deduped = []
     seen = set()
     for path in paths:
@@ -193,8 +198,8 @@ class ExecutorAgent:
         self.task_complexity = task_complexity
         self.output_parser = StrOutputParser()
 
-    def run_task(self, task_name: str, input_content: str) -> tuple[str, str]:
-        """执行任务并返回结果+反馈（无问题反馈为"无"）"""
+    def run_task(self, task_id: str, task_name: str, input_content: str) -> tuple[str, str]:
+        """执行任务并返回结果+反馈（无问题反馈为"无"）。task_id 用于产出文件名 task_{task_id}_{role}.txt"""
         try:
             prompt = ChatPromptTemplate.from_messages([
                 ("system", f"你是资深{self.role}，专业能力极强。执行任务后需判断是否有问题，输出1句话反馈（无问题则填'无'）。"),
@@ -236,9 +241,8 @@ class ExecutorAgent:
                 result = raw_result
                 feedback = "无"
 
-            task_id = task_name.split("-")[0] if "-" in task_name else "unknown"
-            with open(f"task_{task_id}_{self.role}.txt", "w", encoding="utf-8") as f:
-                f.write(result)
+            snap_path = BASE_DIR / f"task_{task_id}_{self.role}.txt"
+            snap_path.write_text(result, encoding="utf-8")
 
             logger.info(f"{self.role}完成任务：{task_name}，反馈：{feedback}")
             return result.strip(), feedback.strip()
@@ -257,9 +261,16 @@ def execute_tasks(state: AgentState) -> AgentState:
 
     for task in sorted(state.task_list, key=lambda x: x["task_id"]):
         task_id = str(task["task_id"])
-        if task_id in new_task_results:
-            continue
         executor = task["executor"]
+        if task_id in new_task_results:
+            # 已有结果（含历史加载），跳过执行，但补写快照以便本轮回显与「生成文件列表」一致
+            snap_path = BASE_DIR / f"task_{task_id}_{executor}.txt"
+            try:
+                snap_path.write_text(new_task_results[task_id] or "", encoding="utf-8")
+                logger.info(f"已补写快照（跳过执行）：{snap_path}")
+            except OSError as e:
+                logger.warning(f"补写快照失败 {snap_path}: {e}")
+            continue
         if executor not in executor_agents:
             error_msg = f"未配置的执行角色：{executor}"
             logger.error(error_msg)
@@ -271,7 +282,7 @@ def execute_tasks(state: AgentState) -> AgentState:
             dep_id = dep_id.strip()
             if dep_id != "0" and dep_id in new_task_results:
                 input_content += f"\n\n依赖任务{dep_id}结果：\n{new_task_results[dep_id]}"
-        result, feedback = executor_agents[executor].run_task(task["task_name"], input_content)
+        result, feedback = executor_agents[executor].run_task(str(task["task_id"]), task["task_name"], input_content)
         new_task_results[task_id] = result
         if feedback and feedback != "无":
             new_feedbacks.append(f"任务{task_id}（{executor}）：{feedback}")
@@ -296,7 +307,7 @@ def adjust_tasks(state: AgentState) -> AgentState:
 
 请作为总指挥，根据以上反馈调整任务分工：
 1. 补充/修改相关子任务（保持原JSON格式）
-2. 输出新的任务分工JSON，覆盖写入agent_decision.json（兼容旧名 cursor_decision.json）
+2. 输出新的任务分工JSON，覆盖写入agent_decision.json
 3. 无需额外解释，仅输出JSON
     """
     logger.info(f"生成调整指令：{state.adjust_instruction[:100]}...")
@@ -319,22 +330,44 @@ def build_dynamic_graph() -> CompiledStateGraph:
 # --------------------------
 # 5. Skill核心执行函数
 # --------------------------
+def _clear_previous_task_snapshots() -> None:
+    """清理本轮运行前的 task_*.txt 快照（在 BASE_DIR 下），避免目录下文件持续累积。"""
+    for f in BASE_DIR.glob("task_*.txt"):
+        try:
+            f.unlink()
+            logger.info(f"已清理旧快照：{f.name}")
+        except OSError as e:
+            logger.warning(f"清理快照失败 {f}: {e}")
+
+
 def run_dynamic_agent_team(manager_decision_json: str) -> str:
     try:
-        manager_decision = json.loads(manager_decision_json.strip())
+        _clear_previous_task_snapshots()
+        raw = (manager_decision_json or "").strip()
+        if not raw:
+            raise ValueError("决策内容为空，请先通过 MCP write_decision 写入 agent_decision.json")
+        manager_decision = json.loads(raw)
         logger.info(f"接收到运行决策：任务复杂度={manager_decision['task_complexity']}，子任务数={len(manager_decision['task_list'])}")
         initial_state = AgentState(
             task_complexity=manager_decision["task_complexity"],
             task_list=manager_decision["task_list"]
         )
-        if os.path.exists("agent_state.json"):
-            with open("agent_state.json", "r", encoding="utf-8") as f:
-                history_state = json.load(f)
-            initial_state.task_results = _normalize_task_results(history_state.get("task_results", {}))
-            logger.info("加载历史协作状态，跳过已完成任务")
+        state_file = BASE_DIR / "agent_state.json"
+        if state_file.exists():
+            try:
+                raw_state = state_file.read_text(encoding="utf-8").strip()
+                if raw_state:
+                    history_state = json.loads(raw_state)
+                    initial_state.task_results = _normalize_task_results(history_state.get("task_results", {}))
+                    logger.info("加载历史协作状态，跳过已完成任务")
+            except (json.JSONDecodeError, OSError) as e:
+                logger.warning(f"agent_state.json 为空或无效，将视为无历史状态：{e}")
         graph = build_dynamic_graph()
         final_state = graph.invoke(initial_state)
-        with open("agent_state.json", "w", encoding="utf-8") as f:
+        # LangGraph 部分版本 invoke 返回 dict，需统一为 AgentState 以便序列化与属性访问
+        if isinstance(final_state, dict):
+            final_state = AgentState(**final_state)
+        with open(BASE_DIR / "agent_state.json", "w", encoding="utf-8") as f:
             f.write(final_state.model_dump_json(ensure_ascii=False, indent=2))
         if final_state.need_adjust:
             summary = f"""
@@ -364,7 +397,12 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
         logger.info(f"执行结果已写入反馈文件：{_feedback_output_paths()}")
         return summary
     except json.JSONDecodeError as e:
-        error_msg = f"JSON解析失败：{str(e)}"
+        error_msg = f"决策 JSON 解析失败：{str(e)}（请确认 agent_decision.json 内容完整且为合法 JSON）"
+        logger.error(error_msg)
+        _write_feedback(f"执行失败：{error_msg}")
+        return error_msg
+    except ValueError as e:
+        error_msg = str(e)
         logger.error(error_msg)
         _write_feedback(f"执行失败：{error_msg}")
         return error_msg
@@ -379,8 +417,14 @@ def run_dynamic_agent_team(manager_decision_json: str) -> str:
 # --------------------------
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        logger.error("用法：python3 dynamic_agent_skill.py '初始决策JSON字符串'")
+        logger.error("用法：python3 dynamic_agent_skill.py <决策JSON字符串或 agent_decision.json 的路径>")
         sys.exit(1)
-    manager_decision_json = sys.argv[1]
+    arg = sys.argv[1].strip()
+    # 若参数为已存在文件路径，则从文件读取，避免命令行长度与转义问题
+    if Path(arg).is_file():
+        manager_decision_json = Path(arg).read_text(encoding="utf-8")
+        logger.info(f"从文件读取决策：{arg}")
+    else:
+        manager_decision_json = arg
     result = run_dynamic_agent_team(manager_decision_json)
     print(result)

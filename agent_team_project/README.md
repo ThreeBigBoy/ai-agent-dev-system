@@ -79,10 +79,10 @@
 - `dynamic_agent_skill.py`：执行默认 5 角色协作链路
 - `runtime_config.json`：统一声明 backend 名称、executor 子集、模型调用策略、LLM 参数与运行超时
 - `runtime_config.py`：为运行脚本提供统一配置加载入口
-- `agent_decision.json` / `cursor_decision.json`：决策文件（新旧命名兼容）
-- `agent_feedback.txt` / `cursor_feedback.txt`：执行反馈（新旧命名兼容）
+- `agent_decision.json`：决策文件
+- `agent_feedback.txt`：执行反馈
 - `agent_state.json`：运行状态
-- `task_*.txt`：任务产出快照
+- `task_*.txt`：当次运行的任务产出快照（仅用于反馈中「生成文件列表」与人工查看；每次运行前会清理上一轮的快照，避免目录下文件累积）
 
 ## 6. runtime_config.json 字段说明
 

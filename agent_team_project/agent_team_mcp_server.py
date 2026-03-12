@@ -73,10 +73,10 @@ def _project_root() -> Path:
 
 
 def _decision_paths(root: Path) -> list[Path]:
-    """Write new generic filenames first, while keeping legacy Cursor names alive."""
-    paths = [root / "agent_decision.json", root / "cursor_decision.json"]
+    """写入决策文件路径（仅 agent_decision.json，V2.2 多宿主通用命名）."""
+    paths = [root / "agent_decision.json"]
     if root != BASE_DIR:
-        paths.extend([BASE_DIR / "agent_decision.json", BASE_DIR / "cursor_decision.json"])
+        paths.append(BASE_DIR / "agent_decision.json")
     return paths
 
 

@@ -5,9 +5,7 @@ const path = require('path');
 function resolveFeedbackFile(workspaceFolder) {
     const candidates = [
         path.join(workspaceFolder, 'agent_feedback.txt'),
-        path.join(workspaceFolder, 'cursor_feedback.txt'),
         path.join(workspaceFolder, 'agent_team_project', 'agent_feedback.txt'),
-        path.join(workspaceFolder, 'agent_team_project', 'cursor_feedback.txt'),
     ];
     for (const candidate of candidates) {
         if (fs.existsSync(candidate)) {
@@ -22,7 +20,7 @@ function resolveFeedbackFile(workspaceFolder) {
 }
 
 function buildMessageForChat(feedbackContent) {
-    return `### Agent团队执行反馈\n${feedbackContent}\n请根据反馈判断是否需要调整任务分工，输出新的JSON决策并更新agent_decision.json（兼容旧名 cursor_decision.json）`;
+    return `### Agent团队执行反馈\n${feedbackContent}\n请根据反馈判断：若为「所有任务执行完成，无需调整」，须调用 MCP write_decision 写一条收尾决策到 agent_decision.json 显式标记本轮闭环；若需调整则输出新的任务分工 JSON 并更新 agent_decision.json。`;
 }
 
 function activate(context) {
@@ -64,7 +62,7 @@ function activate(context) {
                 vscode.env.clipboard.writeText(messageForChat);
                 vscode.window.showInformationMessage("✅ 反馈已复制到剪贴板，请在 Cursor Chat 中粘贴并发送！");
             } else {
-                vscode.window.showInformationMessage("⚠️ 尚无反馈文件，请先执行 Skill 生成 agent_feedback.txt（兼容旧名 cursor_feedback.txt）");
+                vscode.window.showInformationMessage("⚠️ 尚无反馈文件，请先执行 Skill 生成 agent_feedback.txt");
             }
         } catch (e) {
             vscode.window.showErrorMessage(`❌ 读取失败：${e.message}`);

@@ -1,8 +1,0 @@
-2026-03-10 01:56:26,479 - INFO - 当前宿主类型=cursor，子Agent模型链路策略=builtin_first
-2026-03-10 01:56:26,480 - INFO - 当前宿主类型=cursor，子Agent模型链路策略=builtin_first
-2026-03-10 01:56:26,480 - INFO - 当前宿主类型=vscode，子Agent模型链路策略=builtin_first
-2026-03-10 01:56:26,481 - INFO - 当前宿主类型=vscode，子Agent模型链路策略=builtin_first
-2026-03-10 01:56:26,481 - INFO - 当前宿主类型=continue，子Agent模型链路策略=api_first
-2026-03-10 01:56:26,482 - INFO - 当前宿主类型=continue，子Agent模型链路策略=api_first
-2026-03-10 01:56:26,483 - INFO - 当前宿主类型=openai-codex，子Agent模型链路策略=api_first
-2026-03-10 01:56:26,483 - INFO - 当前宿主类型=openai-codex，子Agent模型链路策略=api_first
