@@ -218,3 +218,7 @@ OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
 - `platform-adapters/cursor/mcp-setup.md`
 - `platform-adapters/cursor/runtime-integration.md`
 - `platform-adapters/cursor/extension/README.md`
+- `platform-adapters/cursor/runtime-logging-implementation.md`
+- `platform-adapters/cursor/memory-implementation.md`
+
+> 进阶能力：当你希望对模型调用成本/稳定性进行量化监控，或将多次复盘中提炼出的经验沉淀为长期记忆时，可按上述文档启用 `runtime-logs/` 与根级 `memory/` 能力，并结合 `agents/主Agent.md` 中的运行日志与长期记忆规则使用。

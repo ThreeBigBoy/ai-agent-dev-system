@@ -135,3 +135,9 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 
 - `platform-adapters/generic/openai-codex.md`
 - `platform-adapters/generic/README.md`
+- `platform-adapters/generic/runtime-logging-implementation.md`
+- `scripts/runtime-logging/README.md`
+- `scripts/memory/README.md`
+
+> 进阶能力：在 OpenAI-Codex 宿主下，如需对模型调用情况进行本地统计（runtime-logs），或将跨多次变更提炼出的经验沉淀为长期记忆（memory/），可参考上述文档与脚本接口，在主 Agent 判定合适时调用统一脚本写入对应文件。
+

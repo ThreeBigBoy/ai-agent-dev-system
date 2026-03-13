@@ -68,6 +68,11 @@
   - `agent_team_project/` 是当前默认运行后端，只是实现层；  
   - 仅覆盖 5 个执行角色（产品经理、架构师、前端工程师、后端工程师、测试工程师），不改变治理层角色全集。
 
+- **运行日志与长期记忆（V2.3 扩展能力）**：  
+  - 运行日志：在仓库根级 `runtime-logs/` 下，以 JSON Lines 与文本日志形式记录模型调用的技术指标与系统事件（不记录业务内容），由脚本 `scripts/runtime-logging/append_cursor_model_call.py` 写入，并由各宿主的 `runtime-logging-implementation.md` 文档说明如何触发；  
+  - 长期记忆：在根级 `memory/` 目录下，以 frontmatter + Markdown 的形式沉淀跨 change-id 的 patterns / anti-patterns / preferences / playbooks / reflections，由脚本 `scripts/memory/create_memory_entry.py` 创建；  
+  - 主 Agent 在 `agents/主Agent.md` 中对「何时记录 runtime-logs」「何时沉淀 memory」给出了统一规则（基于 change-id 关键节点、基础设施类变更、多次复现经验与用户显式意图等），并通过上述脚本与 adapter 文档实现跨宿主的一致行为。
+
 - **模型使用策略**：  
   - 白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 均优先使用宿主内置模型；  
   - 第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 优先使用宿主内置模型，但子 Agent / 运行后端直接走个人自定义 OpenAI 兼容 API 模型调度策略；  
@@ -98,6 +103,24 @@
   - `platform-adapters/cursor/*`：Cursor 规则加载、MCP 接线、反馈桥等；  
   - `platform-adapters/vscode/*`：VS Code Agent Chat 入口与模式映射；  
   - `platform-adapters/generic/*`：第三方插件的能力检查清单与适配模板。
+
+- `runtime-logs/`  
+  运行日志体系根目录，包含：
+  - `runtime-logs/README.md`：字段约定与宿主适配说明；  
+  - `model-calls/`：按日期分片的 JSON Lines 模型调用日志；  
+  - `system-events/`：系统事件文本日志；  
+  - `adapters/`：各宿主如何采集并写入运行日志的说明（cursor/vscode/generic 等）。
+
+- `memory/`  
+  长期记忆库根目录，包含：
+  - `memory/README.md`：记忆库定位与使用方式；  
+  - `memory/schema.md`：frontmatter 字段规范；  
+  - `patterns/`、`anti-patterns/`、`preferences/`、`playbooks/`、`reflections/` 等子目录，用于按类型存放长期记忆条目。
+
+- `scripts/runtime-logging/` 与 `scripts/memory/`  
+  运行日志与长期记忆的辅助脚本目录：
+  - `scripts/runtime-logging/append_cursor_model_call.py`：向 `runtime-logs/model-calls/*.jsonl` 追加一条模型调用记录的统一脚本接口；  
+  - `scripts/memory/create_memory_entry.py`：在 `memory/*/` 下创建带 frontmatter 的长期记忆条目的统一脚本接口。
 
 - `AGENTS.md`  
   根级别的多宿主 Agent 说明与规则优先级，供 VS Code 等支持根 AGENTS 的宿主加载。
@@ -153,6 +176,20 @@
   - 运行协议抽象为 decision_sink、runtime_trigger、feedback_bridge、workspace_binding；文件命名统一为 `agent_decision.json`、`agent_feedback.txt`。  
   - 白名单宿主（Cursor、VS Code）与第三方宿主（Continue、OpenAI-Codex）的模型策略区分，通过 `AGENT_HOST_TYPE` 与 `runtime_config.json` 配置。  
   - 支持四宿主初始化 SOP 与新用户快速开始总入口；反馈闭环时主 Agent 须写收尾决策以显式标记本轮结束。
+
+- **V2.3（运行日志与长期记忆）**  
+  - 在仓库根级新增 `runtime-logs/` 运行日志体系：  
+    - `model-calls/*.jsonl` 记录按 change-id/Agent 维度的模型调用技术指标（host、model_family、status、tokens、duration 等）；  
+    - `system-events/events.log` 记录关键运行事件；  
+    - 通过 `scripts/runtime-logging/append_cursor_model_call.py` 提供统一写入接口，并在各宿主 adapter 中给出触发说明。  
+  - 在仓库根级新增 `memory/` 长期记忆库：  
+    - 通过 frontmatter 标记记忆类型（pattern/anti-pattern/preference/playbook/reflection）、适用项目/宿主与来源 change-id；  
+    - 使用 `scripts/memory/create_memory_entry.py` 生成带骨架正文的记忆条目，供主 Agent 在复盘阶段按规则沉淀。  
+  - 在 `agents/主Agent.md` 中补充「运行日志与长期记忆」规则：  
+    - 定义何时记录 runtime-logs（基于 change-id 关键节点、基础设施/成本相关变更、错误/限流等）；  
+    - 定义 memory 候选判定与类型区分（含 preference 写入前需用户确认）；  
+    - 约定主 Agent 通过统一脚本接口与宿主 adapter 触发 runtime-logs 与 memory 的写入。  
+  - 在 `platform-adapters/*` 与各宿主从 0 初始化 SOP 中，增补对 `runtime-logs/` 与 `memory/` 能力的「进阶能力」说明，保持治理层统一、宿主实现可插拔。
 
 ---
 

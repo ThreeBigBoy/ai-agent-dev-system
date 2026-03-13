@@ -151,3 +151,9 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 - `platform-adapters/vscode/README.md`
 - `platform-adapters/vscode/agents-entry.md`
 - `platform-adapters/vscode/chat-mode-mapping.md`
+- `platform-adapters/vscode/runtime-logging-implementation.md`
+- `scripts/runtime-logging/README.md`
+- `scripts/memory/README.md`
+
+> 进阶能力：若你希望在 VS Code 场景下同样记录模型调用成本/状态（runtime-logs），或沉淀可复用经验（memory/），可参考上述文档以及 `agents/主Agent.md` 中的运行日志与长期记忆规则，为 VS Code 扩展挂接统一脚本接口，做到一键追加日志或创建长期记忆条目。
+

@@ -34,6 +34,29 @@
 - 协同：主动对接所有 Agent，同步指令/进度/决策；建立反馈机制，收集规范与配额建议；需要运行时执行时，由主 Agent 触发或选择合适的 backend。
 - **收尾（必做）**：本角色及所协调的子 Agent，在 **change-id** 上下文中完成每次调用并产出后，**须在同一轮对话内**向项目级 **`design/documents/迭代日志.md`** 追加一条记录（格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」），并在记录中写明当前 `change-id`；**未完成不得视为该次任务闭环**。在作出「任务已完成」「已闭环」「已交付」或**任何向用户交付本轮产出的总结性回复**（如「改好了」「已落实」「请验收」等）**之前**，须自检是否已追加本条；未追加则**先追加再**回复，禁止在未追加时使用完成性/交付性表述。
 - **runtime 反馈闭环（必做）**：当用户粘贴回 **Agent 团队执行反馈**且反馈内容为「所有任务执行完成，无需调整」时，主 Agent **须**调用 MCP `write_decision` 写一条**收尾决策**到 `agent_decision.json`，显式标记本轮闭环（例如任务名为「本轮验收已结束」、输入要求为「显式标记本轮闭环，无后续任务」）；若反馈为需调整，则输出新的任务分工 JSON 并更新 `agent_decision.json`。未写收尾决策不得视为「本轮 runtime 闭环」完成。
+- **运行日志与长期记忆（V2.3 扩展）**：
+  - **何时记录 runtime-logs**：当满足以下任一条件时，主 Agent 应考虑追加一条 `model-calls` / `system-events` 记录：
+    - 针对某个 `change-id` 完成了一个关键阶段，并已在 `design/documents/迭代日志.md` 追加记录（如：需求分析 + tasks 拆分、大块实现/重构、完整验收通过等）；
+    - 当前 `change-id` 属于基础设施 / 运行成本相关变更（如 ID 包含 `sys-`、`infra`、`logging`、`memory`，或在 proposal 中声明为系统级能力）；
+    - 用户在对话中明确关心成本、调用情况或卡顿感；
+    - 本次执行过程中出现了错误、限流或明显降级重试，需要在技术指标层面留痕。
+  - **记录方式（跨宿主统一脚本接口）**：在上述条件满足时，主 Agent 应优先：
+    - 已按常规要求在 `design/documents/迭代日志.md` 记录业务过程与 Agent/技能调用；
+    - 参考 `platform-adapters/<host>/runtime-logging-implementation.md`，在当前宿主下调用统一脚本接口，例如：  
+      `python3 scripts/runtime-logging/append_cursor_model_call.py --change-id <id> --agent-role <role> --skill <skill> [--model-name <name>]`，由宿主或用户补充 `host` / `model_family` 等参数并执行，将一条记录追加到 `runtime-logs/model-calls/*.jsonl`，必要时在 `runtime-logs/system-events/events.log` 中追加一条事件日志。
+    - 当用户显式询问「本轮调用成本/成功率情况」或需要对某一时间段/某个 change-id 做简单统计时，主 Agent 可直接调用汇总脚本：  
+       `python3 scripts/runtime-logging/summarize_model_calls.py --group-by day|change-id|host`，并根据输出结果给出简要结论（例如：某 change-id 在本次迭代中总共调用了多少次、失败/限流次数等）。
+  - **长期记忆沉淀（memory/）**：
+    - **候选判定**：在复盘 `design/documents/[change-id]/records/` 时，主 Agent 应判断本次经验是否具备长期复用价值，至少满足以下之一：
+      - 同类问题/模式已在 ≥2 个不同 `change-id` 的 records/ 中出现；
+      - 本次复盘中已抽象出清晰的模式/反模式/偏好/剧本/反思，而非仅事件描述；
+      - 用户在对话中明确要求将某条经验写入长期记忆（尤其是 preference 类）。
+    - **类型与安全约束**：
+      - `pattern` / `anti-pattern` / `playbook` / `reflection`：可在候选判定通过后由主 Agent 直接触发脚本沉淀；
+      - `preference`：在调用脚本前必须获得用户确认，并默认以 `maturity: draft` 写入。
+    - **执行方式（统一脚本接口）**：当决定沉淀长期记忆时，主 Agent 应建议（或在宿主允许的前提下直接调用）统一脚本接口，例如：  
+      `python3 scripts/memory/create_memory_entry.py --type <type> --title "<title>" --change-id <id> --tags tag1,tag2 --applicable-projects ai-agent-dev-system --host-scope <host>`  
+      由脚本在根级 `memory/` 下创建对应条目（pattern / anti-pattern / preference / playbook / reflection），并在复盘记录末尾引用该条目。
 
 # 产出物质量审核与改进（必落实）
 以下子 Agent 产出物须有明确**审核方**、**涉及技能**（若有）与**改进闭环**；主 Agent 负责推动审核落地并跟踪改进。

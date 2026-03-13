@@ -139,3 +139,9 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 
 - `platform-adapters/generic/continue.md`
 - `platform-adapters/generic/README.md`
+- `platform-adapters/generic/runtime-logging-implementation.md`
+- `scripts/runtime-logging/README.md`
+- `scripts/memory/README.md`
+
+> 进阶能力：在 Continue 宿主下，如需记录模型调用成本/状态（runtime-logs）或沉淀跨 change-id 的经验（memory/），可参考上述文档，通过在合适的命令或任务中调用统一脚本接口，向 `runtime-logs/` 与 `memory/` 追加记录。
+

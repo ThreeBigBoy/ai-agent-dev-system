@@ -39,6 +39,10 @@ description: 分析与管理工程结构与技术实现方案；在采用 OpenSp
 
 ## 二、总体工作流程
 
+0. **（可选）加载工程结构相关的长期记忆**  
+   - 在根级 `memory/` 目录下，根据当前项目与宿主筛选与「工程结构」「架构」「project-rules」等标签相关的 pattern / anti-pattern / playbook / reflection 条目；  
+   - 在分析与更新 `openspec/project.md` 和 `design/project-rules/` 之前，先阅读这些记忆，用于校准本次结构性决策，避免重复踩坑。
+
 1. **读取上下文与需求意图**
    - 结合用户输入与 `request-analysis` 产出内容，明确：
      - 当前处于哪个项目（根目录）与工程类型（如：Shopify 主题、Web 应用等）。

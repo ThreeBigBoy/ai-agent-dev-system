@@ -13,6 +13,10 @@ description: 分析用户需求并产出结构化文档；当用户输入「分�
 
 ## 整体流程
 
+0. **（可选）加载与本次任务相关的长期记忆**  
+   - 根据当前项目根目录、宿主类型与本次任务的关键词（如「openspec」「change-flow」等），在根级 `memory/` 目录下检索符合 `applicable_projects`、`host_scope` 与 `tags` 条件的 pattern / anti-pattern / preference / playbook / reflection 条目；  
+   - 将筛选出的少量高相关记忆作为参考上下文，用于优化后续需求分析与任务拆分，但不替代本技能自身的规范流程。
+
 1. **确定本次需求与 change-id**  
    - 从用户输入与上下文中识别本次需求的名称与范围。  
    - 若已给出或已存在对应变更目录，则沿用 `openspec/changes/[change-id]/`；否则按 OpenSpec 规范为本次需求确定一个新的 `change-id`（kebab-case，动词开头，如 `add-health-food-theme-mvp`）。
