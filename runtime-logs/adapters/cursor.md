@@ -11,7 +11,7 @@
 
 ### 可能的采集途径
 
-- 利用已有的 `tools/cursor-usage-to-iteration-log` 脚本获取最近一次模型调用的使用信息；
+- 利用已有的 `scripts/cursor-usage-to-iteration-log` 脚本获取最近一次模型调用的使用信息；
 - 在执行关键任务（如某个 change-id 的实现或评审）结束后，由主 Agent 调用脚本并将结果转换为 `runtime-logs/model-calls/*.jsonl` 中的一条记录；
 - 对于系统事件，可在关键节点（如「开始执行 sys-infra-memory-v1 第一阶段」）由脚本或 Agent 写入 `system-events/events.log`。
 

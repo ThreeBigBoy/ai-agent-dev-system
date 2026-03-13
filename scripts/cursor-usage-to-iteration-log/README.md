@@ -10,18 +10,18 @@
 │ 2. Cursor 后端：记录用量事件（含 model、tokens、cost）                       │
 │ 3. Cursor Usage Monitor 插件：用 session token 调用 Cursor API 拉取用量     │
 └─────────────────────────────────────────────────────────────────────────┘
-                                        │
-                                        ▼
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ 4. 本方案：Agent 在「追加迭代日志」前执行 get_last_model.py                  │
 │    - 脚本从 Cursor 本地 state.vscdb 读取 token（与插件同源）                 │
 │    - 或从环境变量 CURSOR_SESSION_TOKEN 读取                                │
-│    - 调用 Cursor API: POST /api/dashboard/get-filtered-usage-events        │
+│    - 调用 Cursor API: POST /dashboard/get-filtered-usage-events        │
 │    - 解析 usageEventsDisplay，取最近一条的 model 字段                        │
 │    - 将模型名输出到 stdout                                                  │
 └─────────────────────────────────────────────────────────────────────────┘
-                                        │
-                                        ▼
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ 5. Agent 按全局规范：先执行脚本（或读取其输出），将 stdout 作为「使用模型」     │
 │    写入 design/documents/迭代日志.md 的单条记录（记录中写明 change-id）       │
@@ -51,7 +51,7 @@
 # 在项目根或任意目录
 python get_last_model.py
 # 或指定 ai-agent-dev-system 下路径
-python ai-agent-dev-system/tools/cursor-usage-to-iteration-log/get_last_model.py
+python ai-agent-dev-system/scripts/cursor-usage-to-iteration-log/get_last_model.py
 ```
 
 - **成功**：stdout 输出一行，即最近一次用量事件的模型名（如 `claude-sonnet-4-20250514`、`gpt-4o` 等）；若为 Auto 且 API 返回实际模型则为该模型名。
@@ -62,7 +62,7 @@ python ai-agent-dev-system/tools/cursor-usage-to-iteration-log/get_last_model.py
 
 在 `projects-rules-for-agent.md` 的迭代日志「使用模型」约定中：
 
-- 在**追加迭代日志前**，若项目或工作区存在可执行的 `get_last_model.py`（如 `ai-agent-dev-system/tools/cursor-usage-to-iteration-log/get_last_model.py` 或项目内复制），则**先执行**该脚本并读取其 **stdout**（trim 后）。
+- 在**追加迭代日志前**，若项目或工作区存在可执行的 `get_last_model.py`（如 `ai-agent-dev-system/scripts/cursor-usage-to-iteration-log/get_last_model.py` 或项目内复制），则**先执行**该脚本并读取 **stdout**（trim 后）。
 - 若 stdout 非空且非占位符（非 `—`、非 `Auto（具体模型未暴露）` 时可视为具体模型），则**使用该输出**作为本条记录的「使用模型」。
 - 若脚本执行失败、超时或 stdout 为空/占位符，则按现有优先级：约定文件 → 用户说明 → 指定模型 → Auto（具体模型未暴露）→ `—`。
 
@@ -82,3 +82,4 @@ python ai-agent-dev-system/tools/cursor-usage-to-iteration-log/get_last_model.py
 | `get_last_model.py` | 主脚本：取 token → 调 API → 解析最近一条 model → 打印到 stdout。 |
 | `requirements.txt` | Python 依赖（requests）。 |
 | `README.md` | 本说明。 |
+

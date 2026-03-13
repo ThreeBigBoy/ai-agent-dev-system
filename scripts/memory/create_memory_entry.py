@@ -22,9 +22,10 @@ The script will:
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 
 TYPE_TO_SUBDIR = {
@@ -115,9 +116,25 @@ def skeleton_body(mem_type: str, title: str) -> str:
   return f"# {title}\n\n"
 
 
+def read_body_from_file(path: Path) -> str:
+  return path.read_text(encoding="utf-8")
+
+
+def read_body_from_stdin() -> str:
+  # 读取整个 stdin；去掉首尾空白后为空则视为无正文
+  data = sys.stdin.read()
+  if not data.strip():
+    return ""
+  return data
+
+
 def main() -> None:
   parser = argparse.ArgumentParser(
-    description="Create a new memory entry under memory/*/ with frontmatter skeleton.",
+    description=(
+      "Create a new memory entry under memory/*/ with frontmatter.\n\n"
+      "- 若提供 --body-file 或通过 stdin 传入正文，将使用该正文作为条目内容；\n"
+      "- 否则仅生成带最小小节骨架的空白正文，并在 stdout 提示需手动补充。"
+    ),
   )
   parser.add_argument(
     "--type",
@@ -165,6 +182,13 @@ def main() -> None:
     "--owner",
     default=None,
     help="Optional owner (e.g. @billhu).",
+  )
+
+  parser.add_argument(
+    "--body-file",
+    default=None,
+    help="Optional path to a Markdown body file; if provided, its content will be used as the entry body "
+    "instead of the default skeleton.",
   )
 
   args = parser.parse_args()
@@ -218,7 +242,28 @@ def main() -> None:
   lines.append("---")
   lines.append("")
 
-  body = skeleton_body(mem_type, title)
+  body: Optional[str] = None
+
+  body_file_arg = args.body_file
+  if body_file_arg:
+    body_path = Path(body_file_arg)
+    if not body_path.exists():
+      raise SystemExit(f"--body-file not found: {body_path}")
+    body = read_body_from_file(body_path)
+  else:
+    # 尝试从 stdin 读取正文；若为空则退回骨架模式
+    if not sys.stdin.isatty():
+      stdin_body = read_body_from_stdin()
+      if stdin_body:
+        body = stdin_body
+
+  if body is None:
+    # 仅生成骨架，并显式提示调用方需要手动补充正文
+    body = skeleton_body(mem_type, title)
+    print(
+      "Created memory entry with skeleton body only. "
+      "原因：未提供 --body-file 且 stdin 为空，脚本只自动生成最小结构，小节内容需由人工或 Agent 后续补充。",
+    )
 
   content = "\n".join(lines) + body
 

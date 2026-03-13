@@ -20,7 +20,7 @@
 
 当前仓库已有用于「从 Cursor 使用信息写入迭代日志」的工具链：
 
-- 路径示例：`tools/cursor-usage-to-iteration-log/`
+- 路径示例：`scripts/cursor-usage-to-iteration-log/`
   - 其中包含 `get_last_model.py` 等脚本，可在本地读取最近一次模型调用使用信息，并返回模型名称或占位符。
 
 在 V2.3 阶段，推荐的最小方案是：
@@ -28,7 +28,7 @@
 1. **主 Agent 在完成一次重要任务后**（例如某个 `change-id` 的需求分析或实现阶段结束）：
    - 先按 `projects-rules-for-agent.md` 要求，将调用记录写入 `design/documents/迭代日志.md`。
 2. **随后由用户触发一次本地命令**：
-   - 可选：通过 `python3 tools/cursor-usage-to-iteration-log/get_last_model.py` 获取最近一次模型名称；
+   - 可选：通过 `python3 scripts/cursor-usage-to-iteration-log/get_last_model.py` 获取最近一次模型名称；
    - 执行：  
      `python3 scripts/runtime-logging/append_cursor_model_call.py --change-id <id> --agent-role <role> --skill <skill> [--model-name <name>]`  
      由脚本在 `runtime-logs/model-calls/YYYY-MM-DD.jsonl` 中追加一条记录。

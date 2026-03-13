@@ -33,3 +33,17 @@ memory/
 - 记忆条目应在复盘阶段由主 Agent 明确判断与创建，避免自动化记录导致噪音和误导；
 - 具体 frontmatter 字段与沉淀流程见 `schema.md`。
 
+### 文件命名建议
+
+为便于人类与 Agent 快速浏览与检索，建议在 `memory/*/` 下为 Markdown 文件采用以下命名约定：
+
+- 基本格式：`{type}-{1~3个英文/拼音关键词}-{可选版本号}.md`
+  - `type`：与 frontmatter 中的 `type` 一致，例如 `pattern` / `anti-pattern` / `preference` / `playbook` / `reflection`；
+  - 关键词：概括记忆主题的 1～3 个英文或拼音短语（如 `openspec-change-workflow`、`runtime-logs-memory-minimal-practice`）；
+  - 版本号（可选）：当同一主题存在多轮演进时，可在末尾追加 `-v1` / `-v2` 等。
+- 示例：
+  - `pattern-openspec-change-workflow.md`
+  - `pattern-runtime-logs-memory-minimal-practice.md`
+  - `anti-pattern-runtime-logs-business-data-pitfall.md`
+  - `preference-user-coding-style.md`
+

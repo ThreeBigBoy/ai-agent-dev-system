@@ -54,9 +54,35 @@
     - **类型与安全约束**：
       - `pattern` / `anti-pattern` / `playbook` / `reflection`：可在候选判定通过后由主 Agent 直接触发脚本沉淀；
       - `preference`：在调用脚本前必须获得用户确认，并默认以 `maturity: draft` 写入。
-    - **执行方式（统一脚本接口）**：当决定沉淀长期记忆时，主 Agent 应建议（或在宿主允许的前提下直接调用）统一脚本接口，例如：  
-      `python3 scripts/memory/create_memory_entry.py --type <type> --title "<title>" --change-id <id> --tags tag1,tag2 --applicable-projects ai-agent-dev-system --host-scope <host>`  
-      由脚本在根级 `memory/` 下创建对应条目（pattern / anti-pattern / preference / playbook / reflection），并在复盘记录末尾引用该条目。
+    - **执行方式（统一脚本接口，支持自动正文写入）**：当决定沉淀长期记忆时，主 Agent 应优先尝试：
+      - 在当前对话中，根据本次 `change-id` 的 proposal / tasks / records 及对话内容，生成一段符合记忆类型的 Markdown 正文草稿，仅包含 `# 标题` 与各小节内容，不包含 frontmatter；
+      - 通过统一脚本接口一次性创建带 frontmatter + 正文的条目，例如（从仓库根目录运行）：  
+        ```bash
+        python3 scripts/memory/create_memory_entry.py \
+          --type pattern \
+          --title "<记忆标题>" \
+          --change-id <change-id> \
+          --tags tag1,tag2 \
+          --applicable-projects ai-agent-dev-system \
+          --host-scope cursor,vscode << 'EOF'
+        # <记忆标题>
+
+        ## 背景与适用场景
+        ...
+
+        ## 推荐做法（步骤 / Checklist）
+        ...
+
+        ## 反例与常见误区（如有）
+        ...
+
+        ## 与现有规范/技能的关系
+        ...
+        EOF
+        ```
+      - 或将上述正文草稿先写入一个临时 Markdown 文件，再使用 `--body-file path/to/body.md` 方式调用同一脚本。  
+      - 若因上下文不足或其他原因无法生成可靠正文，可退回到仅调用脚本生成带骨架的条目（不传正文），脚本会在 stdout 中显式提示「只生成骨架，需后续手动补充内容」；此时主 Agent 应在合适时机提醒用户或在后续迭代中补全正文。  
+      - 无论采用哪种方式创建 memory 条目，都建议在本次 `change-id` 的复盘记录末尾追加一行引用新建条目路径，便于从 records 跳转到长期记忆。
 
 # 产出物质量审核与改进（必落实）
 以下子 Agent 产出物须有明确**审核方**、**涉及技能**（若有）与**改进闭环**；主 Agent 负责推动审核落地并跟踪改进。

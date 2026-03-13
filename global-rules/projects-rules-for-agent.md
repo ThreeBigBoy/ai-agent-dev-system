@@ -178,8 +178,8 @@ alwaysApply: true
 
 | 优先级 | 条件 | 取值方式 |
 |--------|------|----------|
-| ① | 可执行 `get_last_model.py` | 先执行该脚本（路径示例：`ai-agent-dev-system/tools/cursor-usage-to-iteration-log/get_last_model.py`）并读取 **stdout**（trim 后）；若输出非空且非占位符（非「—」、非「Auto（具体模型未暴露）」），则以该输出作为使用模型。详见 `ai-agent-dev-system/tools/cursor-usage-to-iteration-log/README.md`。 |
-| ② | 项目内约定「当前模型」文件存在且可读 | 取该文件内容（trim 后）。约定路径示例：`.cursor/current-model-for-iteration-log.txt`。详见 `ai-agent-dev-system/tools/cursor-usage-to-iteration-log/前期设计/迭代日志-获取使用模型-解决方案.md`。 |
+| ① | 可执行 `get_last_model.py` | 先执行该脚本（路径示例：`ai-agent-dev-system/scripts/cursor-usage-to-iteration-log/get_last_model.py`）并读取 **stdout**（trim 后）；若输出非空且非占位符（非「—」、非「Auto（具体模型未暴露）」），则以该输出作为使用模型。详见 `ai-agent-dev-system/scripts/cursor-usage-to-iteration-log/README.md`。 |
+| ② | 项目内约定「当前模型」文件存在且可读 | 取该文件内容（trim 后）。约定路径示例：`.cursor/current-model-for-iteration-log.txt`。详见 `ai-agent-dev-system/scripts/cursor-usage-to-iteration-log/设计-方案与自检/迭代日志-获取使用模型-解决方案.md`。 |
 | ③ | 用户在本轮任务中说明本次使用模型 | 按用户说明填写。 |
 | ④ | 用户已指定具体模型 | 按指定名称填写（如某宿主内置模型、某外部 API 模型等）。 |
 | ⑤ | Cursor 使用 Auto 模式且无法获知具体模型 | 填写 **「Auto（具体模型未暴露）」**。 |
