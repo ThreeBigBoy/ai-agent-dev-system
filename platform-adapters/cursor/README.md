@@ -37,3 +37,21 @@
      - 核心开发任务优先 `Pro/deepseek-ai/DeepSeek-V3.2`
      - 特殊复杂场景再提升到 `Pro/MiniMaxAI/MiniMax-M2.5`
      - `Pro/moonshotai/Kimi-K2.5` 作为补充可用模型保留
+
+## 默认加载顺序规范（V2.4.2）
+
+在 Cursor 宿主下，主 Agent 与子 Agent 应遵循以下「rules → SKILL/memory」渐进式加载顺序：
+
+1. **simple 任务（轻量场景）**  
+   - 首轮仅依赖：`.cursor/rules/*.mdc` 中的入口规则 + 当前会话上下文；  
+   - 必要时按主题少量加载 `memory/` 条目（如与 runtime-logs、iteration-log 相关的 pattern/reflection）；  
+   - 不强制一次性读取完整 `global-rules/projects-rules-for-agent.md` 与 `global-rules/skills-rules-for-agent.md`。
+
+2. **heavy 任务（重规则场景）**  
+   - 当 simple/heavy 判定为 heavy 时，必须追加加载：  
+     - `global-rules/projects-rules-for-agent.md`（至少包含总则与当前任务相关章节）；  
+     - `global-rules/skills-rules-for-agent.md` 中的 Agents ↔ Skills 映射表；  
+     - 当前执行方对应的 `agents/*.md`。  
+   - 在需要具体 HOW 时，再根据 `skills-rules-for-agent.md` 指定的技能与当前 change-id/主题，**按需**加载少量 `skills/*/SKILL.md` 与 `memory/*` 条目，而不是一次性读完全部记忆。
+
+> 说明：本节仅约束加载顺序与职责分工；具体哪些章节或 memory 条目需要加载，仍以 `projects-rules-for-agent.md`、`skills-rules-for-agent.md` 与各 SKILL/memory pattern 为准。

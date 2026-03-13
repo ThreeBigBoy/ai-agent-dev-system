@@ -29,3 +29,20 @@
 - 若 VS Code 侧需要触发运行后端，建议向运行环境显式传入 `AGENT_HOST_TYPE=vscode`。
 
 > 具体 VS Code API 与配置方式可能随版本演进，本目录更关注「职责与抽象」，实现细节可按实际版本更新。
+
+## 默认加载顺序规范（V2.4.2 建议）
+
+当 VS Code Agent Chat 或相关插件在本仓库中工作时，推荐遵循与 Cursor 一致的「rules → SKILL/memory」渐进式加载顺序：
+
+1. **simple 任务**  
+   - 仅注入根级 `AGENTS.md` 与必要的入口规则（对应 `.cursor/rules/*.mdc` 在 Cursor 下的职责）；  
+   - 不强制一次性加载完整 `global-rules/projects-rules-for-agent.md` 与 `skills-rules-for-agent.md`，必要时按主题少量加载 `memory/` 条目。
+
+2. **heavy 任务**  
+   - 当 simple/heavy 判定结果为 heavy 时，应在 Agent 上下文中显式加载：  
+     - `global-rules/projects-rules-for-agent.md`；  
+     - `global-rules/skills-rules-for-agent.md`；  
+     - 当前执行方对应的 `agents/*.md`。  
+   - 需要具体执行步骤或模版时，再根据 `skills-rules-for-agent.md` 指定的技能路径，加载 `skills/*/SKILL.md` 与少量相关 `memory/*` 条目。
+
+> 说明：本节为 adapter 层建议，不改变治理内核规则的优先级；如 VS Code 官方能力发生变化，可在不违反 OpenSpec 与 global-rules 的前提下调整实现细节。

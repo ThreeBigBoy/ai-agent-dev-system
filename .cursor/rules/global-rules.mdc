@@ -1,24 +1,21 @@
 ---
-description: 全局规则入口 - 打开对话时先读取 global-rules 下规范再执行
+description: 全局规则入口 - 规则来源与加载/执行方判定指向
 alwaysApply: true
 ---
 
 # 请始终遵循以下规范
 
-## 1. 对话开始时必须执行的动作
+## 对话开始时必须知晓的规则来源与加载原则
 
-**在响应用户第一条消息时**，必须先执行以下动作，再根据约定进行回复与操作：
+**在响应用户第一条消息时**，须先明确规则来源与加载策略，再按约定回复与操作：
 
-1. **读取**以下两份规范文件（若路径可访问）：
-   - **`ai-agent-dev-system/global-rules/projects-rules-for-agent.md`** — 项目通用规则（代码、安全、配额、Agent 行为、OpenSpec 变更入口等，宿主无关）
-   - **`ai-agent-dev-system/global-rules/skills-rules-for-agent.md`** — 技能与 Agent 对应、先读 SKILL 再执行等（宿主无关）
+1. **规则来源（治理权威层）**  
+   OpenSpec.md；global-rules/projects-rules-for-agent.md；global-rules/skills-rules-for-agent.md；agents/*.md；memory/（模式 / 反模式 / 偏好 / 剧本 / 反思）。具体职责与结构见各文件正文。
 
-2. **根据**上述文件中的「任务执行通用机制」与「Agents 与 Skills 赋能对应关系」表：
-   - 确定当前任务的**执行方**（对应 `ai-agent-dev-system/agents/` 下的主 Agent 或某一子 Agent 角色）
-   - 确定执行方在该表中对应的**主导/联动技能**（对应 `ai-agent-dev-system/skills/` 下某技能目录）
-   - **执行方须先读取该技能目录下的 SKILL.md**，再按其中步骤执行；不得在未读 SKILL 的情况下直接实施。
+2. **加载策略**  
+   按 `projects-rules-for-agent.md` 第 1.6 节与 `agents/主Agent.md` 执行 simple/heavy 判定与规则/记忆加载，本文件不重复具体规则。
 
-3. 若任务类型在表中未明确对应某一 Agent，由主 Agent 按最相近的 `agents/` 角色与 `skills-rules` 表中的技能指派执行方，并仍须先读对应 SKILL 再执行。
+3. **执行方与技能判定**  
+   按 `skills-rules-for-agent.md` 中「Agents 与 Skills 赋能对应关系」表确定执行方与技能；执行方须先读取对应 `skills/` 下 SKILL.md 再执行。细节见该文件。
 
-读取上述文件并完成执行方与技能判定后，在后续回复与操作中严格遵循其中的约定。  
-不同宿主如何加载这些规则（例如 Cursor / VS Code），请参考 `platform-adapters/*/` 下对应 adapter 文档。
+不同宿主如何加载这些规则见 `platform-adapters/*/` 下对应 adapter 文档。

@@ -9,6 +9,9 @@ source_change_ids: [sys-infra-memory-v1]
 created_at: 2026-03-12
 last_reviewed_at: 2026-03-12
 maturity: draft
+related:
+  - memory/patterns/pattern-runtime-logs-usage-playbook-for-agents.md
+  - memory/reflections/reflection-runtime-logs-and-memory-collaboration-v2-4.md
 ---
 
 # 运行日志中混入业务数据的陷阱

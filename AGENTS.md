@@ -24,7 +24,8 @@
 7. 运行后端实现（如 `agent_team_project/`）  
 8. 用户本机配置（如 `~/.cursor/mcp.json`、插件设置、快捷键设置等）
 
-> 说明：宿主入口文件和本机配置只负责「如何加载与接线」，**不得提升自身为规则权威源**；若与治理内核冲突，一律以 1–4 层为准。
+> 说明：宿主入口文件和本机配置只负责「如何加载与接线」，**不得提升自身为规则权威源**；若与治理内核冲突，一律以 1–4 层为准。  
+> `memory/*` 目录中的条目（patterns / anti-patterns / reflections / playbooks / preferences）属于**长期经验层**，不属于规则权威源，只在执行时按需引用；其 frontmatter 与联动规范见 `memory/schema.md`。
 
 ---
 
@@ -73,6 +74,24 @@
   - `platform-adapters/cursor/README.md`
   - `platform-adapters/cursor/mcp-setup.md`
   - `agent_team_project/runtime_config.json`
+
+---
+
+## 记忆（memory）使用约定
+
+- `memory/`：用于存放跨 change-id / 跨项目可复用的模式（patterns）、反模式（anti-patterns）、反思（reflections）、剧本（playbooks）与偏好（preferences），其结构与 frontmatter 规范见：  
+  - `memory/README.md`  
+  - `memory/schema.md`  
+- **职责分工**（与 rules / skills 的关系）：  
+  - rules（`OpenSpec.md` 与 `global-rules/*.md`、`agents/*.md`、`skills-rules-for-agent.md`）只回答 When / Who / Must 与极薄的结论级 HOW；  
+  - skills（`skills/*/SKILL.md`）回答具体 How to do（步骤、输入输出、产出结构）；  
+  - memory（`memory/*`）沉淀「经验与模式」，为 rules 与 skills 提供可复用的背景、最佳实践和坑点，但不改变规则约束本身。  
+- **simple / heavy 下的加载原则**（摘要，以 `global-rules/projects-rules-for-agent.md` 与 `.cursor/rules/agent.mdc` 为准）：  
+  - simple 任务：可在宿主入口规则 + 少量按需加载的 `memory/` 条目基础上完成，不强制加载完整 rules；  
+  - heavy 任务：须按 rules 层要求加载完整 rules + 执行方 `agents/*.md`，在需要 HOW 与经验时再按需加载对应 SKILL 与 memory 条目。  
+- **类神经网络式联动与克制机制**：  
+  - 对关键记忆条目，可在 frontmatter 中使用 `related` 字段，并在正文中增加「关联模式」小节，形成一跳的簇状联动（如迭代日志 ↔ runtime-logs ↔ rules 演进）；  
+  - `memory/schema.md` 要求：单条记忆的 `related` 建议控制在 3–5 条以内，只保留强逻辑耦合的条目，加载时通常只按需读取当前条目及其一跳 `related`，不自动递归遍历，避免在 simple 模式下过度拉取记忆。
 
 ---
 

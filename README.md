@@ -9,7 +9,7 @@
 
 ---
 
-## V2.2 核心思想：治理内核宿主无关，宿主入口各归其位
+## 核心思想（自 V2.2 起至 V2.5）：治理内核宿主无关，宿主入口各归其位
 
 在 V2.1 的基础上，V2.2 进一步强调：
 
@@ -68,10 +68,14 @@
   - `agent_team_project/` 是当前默认运行后端，只是实现层；  
   - 仅覆盖 5 个执行角色（产品经理、架构师、前端工程师、后端工程师、测试工程师），不改变治理层角色全集。
 
-- **运行日志与长期记忆（V2.3 扩展能力）**：  
+- **运行日志与长期记忆（V2.3 扩展 + V2.4/V2.4.2 渐进加载 + V2.5 主动唤醒与克制）**：  
   - 运行日志：在仓库根级 `runtime-logs/` 下，以 JSON Lines 与文本日志形式记录模型调用的技术指标与系统事件（不记录业务内容），由脚本 `scripts/runtime-logging/append_cursor_model_call.py` 写入，并由各宿主的 `runtime-logging-implementation.md` 文档说明如何触发；  
   - 长期记忆：在根级 `memory/` 目录下，以 frontmatter + Markdown 的形式沉淀跨 change-id 的 patterns / anti-patterns / preferences / playbooks / reflections，由脚本 `scripts/memory/create_memory_entry.py` 创建；  
-  - 主 Agent 在 `agents/主Agent.md` 中对「何时记录 runtime-logs」「何时沉淀 memory」给出了统一规则（基于 change-id 关键节点、基础设施类变更、多次复现经验与用户显式意图等），并通过上述脚本与 adapter 文档实现跨宿主的一致行为。
+  - V2.4：规则瘦身与 memory 化，simple/heavy 下渐进加载（简单任务用会话上下文与相关 memory，重规则任务再加载完整 global-rules 与 agents）；  
+  - **V2.5 主动记忆唤醒与执行约束**：  
+    - **主动记忆唤醒**：主 Agent 在每次任务启动并完成 simple/heavy 判定后，按任务类型与上下文**主动**检索并按需加载相关 memory 条目（见 `agents/主Agent.md` 第 7 条与「运行日志与长期记忆」下列出的关键 memory 路径），不依赖用户提醒；  
+    - **改规则层必走 checklist**：凡涉及修改 `global-rules/*.md`、`agents/*.md`、`skills-rules-for-agent.md` 等规则层文件时，主 Agent 在实际改动前**必须先读取** `memory/patterns/pattern-rules-and-memory-evolution-governance.md` 并按其中 checklist 执行（含 change-id 挂载、design/records、迭代日志、以及 README / 新用户快速开始 / 宿主 SOP 是否需同步更新）；  
+    - **memory 克制机制**：单条记忆的 `related` 建议 3～5 条、只做一跳加载不递归遍历，详见 `memory/schema.md`。
 
 - **模型使用策略**：  
   - 白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 均优先使用宿主内置模型；  
@@ -88,9 +92,9 @@
 
 - `global-rules/`  
   全局规则目录入口。  
-  - `projects-rules-for-agent.md`：项目通用规则、变更入口、自检与迭代日志要求；  
-  - `skills-rules-for-agent.md`：Agent 与 Skills 映射及触发约定；  
-  - `readme-rules-for-agent.md`：README 编写与维护规范。
+  - `projects-rules-for-agent.md`：项目通用规则、变更入口、自检与迭代日志要求，**只回答「谁/何时/必须做什么」与极薄结论级 HOW**，更详细的执行步骤与示例统一由 `skills/*/SKILL.md` 与 `memory/` 承接；  
+  - `skills-rules-for-agent.md`：Agent 与 Skills 映射及触发约定，负责「角色 ↔ 技能」矩阵与「先读 SKILL 再执行」约束；  
+  - `readme-rules-for-agent.md`：README 编写与维护规范，多为 SHOULD 级建议。
 
 - `agents/`  
   角色治理层说明，定义主 Agent 与各子 Agent 的职责边界，以及与运行后端的关系。
@@ -115,7 +119,7 @@
   长期记忆库根目录，包含：
   - `memory/README.md`：记忆库定位与使用方式；  
   - `memory/schema.md`：frontmatter 字段规范；  
-  - `patterns/`、`anti-patterns/`、`preferences/`、`playbooks/`、`reflections/` 等子目录，用于按类型存放长期记忆条目。
+  - `patterns/`、`anti-patterns/`、`preferences/`、`playbooks/`、`reflections/` 等子目录，用于按类型存放长期记忆条目（包括规范体系概览、规则执行模拟与反思、配额治理实践等抽象经验）。
 
 - `scripts/runtime-logging/` 与 `scripts/memory/`  
   运行日志与长期记忆的辅助脚本目录：
@@ -190,6 +194,20 @@
     - 定义 memory 候选判定与类型区分（含 preference 写入前需用户确认）；  
     - 约定主 Agent 通过统一脚本接口与宿主 adapter 触发 runtime-logs 与 memory 的写入。  
   - 在 `platform-adapters/*` 与各宿主从 0 初始化 SOP 中，增补对 `runtime-logs/` 与 `memory/` 能力的「进阶能力」说明，保持治理层统一、宿主实现可插拔。
+
+- **V2.4（规则与 know-how 轻量化 + memory 化） / V2.4.2（rules × memory 瘦身新标准）**  
+  - 清理与收束早期 `know-how/` 目录，将规范体系总览与规则执行模拟等长文抽取为 `memory/` 条目（如 `pattern-spec-system-overview-v2-4.md`、`reflection-agent-execution-simulation-v2-4.md`），并在运行路径中移除原长文，避免与最新规则/记忆并存造成混淆；  
+  - 将全局规则加载从「首轮强制读完整 `projects-rules-for-agent.md` + `skills-rules-for-agent.md`」调整为依据 simple/heavy 任务模式渐进加载：简单任务优先使用现有会话上下文与相关 memory，重规则任务再加载完整 global-rules 与 agents 文档；  
+  - 在 `projects-rules-for-agent.md` 等规则文件中，将 SHOULD 及更低等级内容收束为概要与 memory 检索指引，详细示例、执行模拟与配额治理实践逐步迁移到 `memory/`，让治理层正文保持以 MUST 为主、结构更瘦、上下文占用更可控；  
+  - 在 V2.4.2 中进一步明确：rules 只保 When/Who/Must + 结论级 HOW，具体 HOW 与模版由 SKILL 与 memory 承接，并要求在规则演进时同步审视 README、`新用户快速开始.md` 与各宿主 SOP 是否需更新。
+
+- **V2.5（主动记忆唤醒与执行机制强化）**  
+  - 主 Agent 增加「主动记忆唤醒」：每次任务启动并完成 simple/heavy 判定后，按任务上下文主动检索并按需加载相关 memory（迭代日志、runtime-logs、规则演进等关键条目），不依赖用户外部提醒；关键 memory 路径在 `agents/主Agent.md` 的「运行日志与长期记忆」下显式列出。  
+  - 改规则层强制钩子：在 `.cursor/rules/agent.mdc` 中约定，凡修改 `global-rules/*.md`、`agents/*.md`、`skills-rules-for-agent.md` 前必须先读 `memory/patterns/pattern-rules-and-memory-evolution-governance.md` 并执行其 checklist（含 README/SOP 审视），不得跳过。  
+  - memory 联动与克制：memory 条目间通过 frontmatter `related` 与正文「关联模式」形成一跳簇状联动；`memory/schema.md` 明确克制机制（3～5 条 related、按需一跳加载、不递归遍历）。  
+  - 宿主入口与全局规则入口瘦身：`agent.mdc`、`global-rules.mdc` 仅保留身份/指向与强制钩子，具体 simple/heavy 与执行方判定规则不重复，见 `projects-rules-for-agent.md` 与 `agents/主Agent.md`。  
+  - `AGENTS.md` 补充「记忆（memory）使用约定」与规则优先级中对 memory 的定位。  
+  - **场景→必读 memory/清单的通用执行保障**：新增 `memory/patterns/pattern-scenario-memory-trigger-governance.md`，定义「治理关键场景 → 必读 memory / 必做 checklist」绑定表（改规则、收尾、写 runtime-logs、新建变更、判定 simple/heavy、新增 memory、提交前 review 等），并在 `agents/主Agent.md`、`projects-rules-for-agent.md`、`.cursor/rules/agent.mdc` 中补全各场景的触发与必读要求，使正确行为由结构化绑定保障而非临时记忆。
 
 ---
 

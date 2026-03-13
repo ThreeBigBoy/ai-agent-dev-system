@@ -159,7 +159,25 @@
   - `Pro/moonshotai/Kimi-K2.5` 作为补充可用模型保留，用于特定长文档或中文推理场景
 - 后续若补上 Cursor 内置模型桥接器，无需改变治理层规则，只需让 `cursor_builtin` provider 变为可执行实现即可。
 
-## 8. 使用边界
+## 8. 与规则 / 记忆加载顺序的关系（V2.4.2 补充）
+
+`agent_team_project` 作为运行后端，应遵循治理层在 V2.4.2 中约定的 simple/heavy 分层与加载顺序：
+
+1. **由宿主与主 Agent 共同决定 simple/heavy**  
+   - 宿主 adapter 负责在会话入口注入必要规则，并协助主 Agent 做 simple/heavy 判定；  
+   - 主 Agent 依据 `global-rules/projects-rules-for-agent.md` 第 1.6 节与相关 memory pattern 做最终判断。
+
+2. **heavy 模式下的最小前置加载要求**  
+   - 当某个任务被判定为 heavy 且决策文件需要交由 `agent_team_project` 执行时，应确保：  
+     - 已在 Agent 会话中加载 `global-rules/projects-rules-for-agent.md` 与 `global-rules/skills-rules-for-agent.md`；  
+     - 已加载当前执行方对应的 `agents/*.md`；  
+     - 需要具体 HOW 时，再根据 `skills-rules-for-agent.md` 选择性加载对应 `skills/*/SKILL.md` 与少量相关 `memory/*` 条目。
+
+3. **运行后端不直接决定规则加载内容**  
+   - 本 backend 只依赖决策文件与运行配置，不负责自行选择加载哪些 rules / skills / memory 文件；  
+   - 规则与记忆的加载策略由宿主 adapter 与主 Agent 根据治理内核约定负责，backend 只需确保在 heavy 场景下能够正确执行已经依据上述规则形成的决策链路。
+
+## 9. 使用边界
 
 - 本目录是**运行实现**，不是角色规范说明。
 - 本目录不得与 `agents/`、`global-rules/`、`OpenSpec.md` 形成平行治理体系。

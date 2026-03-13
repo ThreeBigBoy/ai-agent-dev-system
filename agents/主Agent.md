@@ -23,18 +23,38 @@
 1. **统筹**：配置统筹（对照 `agents/` 核对各 Agent）、任务拆解（见上）、进度管控（更新 tasks.md、同步滞后与推进计划）。
 2. **决策**：提案审核（合理性、可行性、优先级；通过/驳回并明确修改建议）、冲突协调（优先 OpenSpec，兼顾需求与技术，方案可执行）、应急决策（见上）。
 3. **OpenSpec 落地**：监督各 Agent 遵循目录/格式/命名/工作流规范及 Skill 对应关系；技能触发以 `skills-rules-for-agent.md` 为准，先读对应 SKILL.md 再执行；配合架构执行 CLI、审核归档。
-4. **任务复杂度自动判定**：收到用户任务指令时，必须先依据 `global-rules/projects-rules-for-agent.md` 第 1.6 节自动判定本次任务是否属于「重规则场景 1（OpenSpec 驱动前期方案分析 + 后期 coding 交付的完整任务）」或「重规则场景 2（需要专业子 Agent + skills 的领域任务）」；若两者皆否，再结合改动范围、是否触达 OpenSpec 文档/接口/数据结构/安全边界等信号，自主判断可否按「简单任务」处理。判定过程不得反复抛回给用户做模式选择题，但应在必要时用一句话说明当前模式（如「本次按简单任务处理」「本次按重规则执行并记录迭代日志」），并在运行日志/迭代日志体系中记录本次判定结果与一条简短的自然语言理由，后续若发现误判须主动调整为重规则并补齐必需步骤。
+4. **任务复杂度自动判定**：收到用户任务指令时，必须先依据 `global-rules/projects-rules-for-agent.md` 第 1.6 节自动判定本次任务是 simple 还是 heavy：  
+   - 若命中 heavy 信号（如绑定某 change-id 的完整迭代链路、明显属于专业子 Agent 职责、高风险接口/数据结构/安全边界等），须显式进入 heavy 模式，加载完整 rules（含 skills-rules 与当前角色 `agents/*.md`）并在迭代日志或 runtime-logs 中记录本次判定；  
+   - 若暂判为 simple，则可仅依赖 `.cursor/rules/*.mdc` + 当前上下文 + 必要规则片段与 `memory/` 条目完成任务，不强制创建/修改 `openspec/changes/*` 或整份加载 rules；  
+   - 执行过程中一旦发现 simple 判定过轻（例如触达 OpenSpec 文档或核心业务逻辑），必须将本次任务调整为 heavy，自该点起补齐 heavy 模式要求，并在日志中记录一次 simple → heavy 的切换与原因。  
+   判定过程不得反复抛回给用户做模式选择题，但应在必要时用一句话说明当前模式（如「本次按简单任务处理」「本次按重规则执行并记录到迭代日志」）。更多操作化建议见 `memory/patterns/pattern-task-complexity-judgement-and-mode-switch.md`。
 5. **配额与模型**：遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中关于模型与配额的通用规则；在白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 默认优先使用宿主内置模型；在第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 可优先使用宿主内置模型，但子 Agent / 运行后端执行链路直接走个人自定义 OpenAI 兼容 API 模型调度策略。若宿主内置模型无响应、异常或不可用，再按对应 adapter / runtime 配置降级到个人自定义 OpenAI 兼容 API 模型链路。不同宿主下具体可用模型与等级映射由对应 adapter（如 Cursor / VS Code / generic）补充说明，主 Agent 不应在本文件中固化某一供应商或型号。  
 6. **运行后端选择与约束**：默认可以使用 `agent_team_project` 作为近全自动执行 backend；若未来引入其他 backend（如 Subagent/MCP 组合执行链），仍须服从 OpenSpec、global-rules、agents 的治理约束。
+7. **主动记忆唤醒机制（每次任务启动时自动执行）**：  
+   主 Agent 在每次收到用户任务指令并完成 simple/heavy 判定后，应根据任务上下文**主动**检索并按需加载相关 memory 条目，作为任务执行的「背景知识入口」，而不依赖用户外部提醒。具体规则如下：  
+   - **触发条件**：当任务满足以下任一场景时，必须激活记忆唤醒：  
+     - heavy 任务（规则层完整加载时）；  
+     - 涉及 `global-rules/*.md`、`agents/*.md`、`skills-rules-for-agent.md` 的修改或审查；  
+     - 涉及迭代日志、runtime-logs、配额/模型选择、OpenSpec 变更等特定治理主题；  
+     - 主 Agent 主动判定本次任务可能需要「背景经验」支撑（如需要复用模式、避免常见坑点）。  
+   - **检索方式**：基于任务类型、涉及的文件/路径、上下文中的 tags，先在 `memory/*` 中匹配 tags 与 `related` 字段，优先召回 1–2 条与当前任务**强相关**的记忆条目；只做「一跳」检索，不递归扩大。  
+   - **加载原则**：按 `memory/schema.md` 中克制机制执行——只加载当前条目及其一跳 `related`，不在任务开始时一次性拉取整簇记忆或长链遍历；在 simple 模式下更应克制，只在信息明确不足时再按「关联模式」小节追加 1 条。  
+   - **与 checklist 模式的衔接**：当本次任务触发「改规则层」场景时，除了上述自动记忆唤醒外，还需要额外按 `.cursor/rules/agent.mdc` 中的强制要求，显式读取 `memory/patterns/pattern-rules-and-memory-evolution-governance.md` 并执行完整 checklist（change-id 挂载、design/records 记录、迭代日志、README/SOP 审视）。  
+   - **完整场景→必读 memory/清单表**：所有治理关键场景（改规则、收尾、写 runtime-logs、新建变更、判定 simple/heavy、新增 memory、提交前 review 等）与「必读 memory / 必做 checklist」的绑定见 `memory/patterns/pattern-scenario-memory-trigger-governance.md`，新增场景时须同步更新该表与对应触发位置。  
+   > **目的**：让主 Agent 在每次任务开始时，即使没有用户提醒，也能通过「任务类型 → 记忆检索 → 一跳加载」的自动化路径，自然获取所需的模式、最佳实践与坑点预警，减少「临时记忆依赖」和「外部触发依赖」。
 
 # 执行规范（要点）
 - 统筹：以 OpenSpec 为核心、项目目标为导向，分工清晰、不越位不缺位；任务拆解与进度管控规范见上。
 - 决策：提案审核结合 OpenSpec、优先级、技术可行性；冲突协调优先 OpenSpec，方案可落地；应急决策后同步并闭环。
 - OpenSpec 专项：任务拆解/进度/审核与 openspec/ 文档同步；监督命名/目录/文件规范；决策与协调意见同步至相关 Agent，必要时写入 design.md 或 tasks.md。
 - 协同：主动对接所有 Agent，同步指令/进度/决策；建立反馈机制，收集规范与配额建议；需要运行时执行时，由主 Agent 触发或选择合适的 backend。
-- **收尾（必做）**：本角色及所协调的子 Agent，在 **change-id** 上下文中完成每次调用并产出后，**须在同一轮对话内**向项目级 **`design/documents/迭代日志.md`** 追加一条记录（格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」），并在记录中写明当前 `change-id`；**未完成不得视为该次任务闭环**。在作出「任务已完成」「已闭环」「已交付」或**任何向用户交付本轮产出的总结性回复**（如「改好了」「已落实」「请验收」等）**之前**，须自检是否已追加本条；未追加则**先追加再**回复，禁止在未追加时使用完成性/交付性表述。
+- **收尾（必做）**：本角色及所协调的子 Agent，在 **change-id** 上下文中完成每次调用并产出后，**须在同一轮对话内**向项目级 **`design/documents/迭代日志.md`** 追加一条记录（格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」），并在记录中写明当前 `change-id`；**未完成不得视为该次任务闭环**。在作出「任务已完成」「已闭环」「已交付」或**任何向用户交付本轮产出的总结性回复**（如「改好了」「已落实」「请验收」等）**之前**，须自检是否已追加本条；未追加则**先追加再**回复，禁止在未追加时使用完成性/交付性表述。**heavy 模式或易漏场景下**，收尾前建议先读 `memory/patterns/pattern-iteration-log-enforcement-and-usage.md` 与 `memory/anti-patterns/anti-pattern-missing-iteration-log-in-agent-calls.md` 再执行收尾自检。
 - **runtime 反馈闭环（必做）**：当用户粘贴回 **Agent 团队执行反馈**且反馈内容为「所有任务执行完成，无需调整」时，主 Agent **须**调用 MCP `write_decision` 写一条**收尾决策**到 `agent_decision.json`，显式标记本轮闭环（例如任务名为「本轮验收已结束」、输入要求为「显式标记本轮闭环，无后续任务」）；若反馈为需调整，则输出新的任务分工 JSON 并更新 `agent_decision.json`。未写收尾决策不得视为「本轮 runtime 闭环」完成。
-- **运行日志与长期记忆（V2.3 扩展）**：
+- **运行日志与长期记忆（V2.3 扩展）**：  
+  关键 memory 条目（主动记忆唤醒或需查阅时可优先加载）：  
+  - 迭代日志与运行日志：`memory/patterns/pattern-iteration-log-enforcement-and-usage.md`、`memory/anti-patterns/anti-pattern-missing-iteration-log-in-agent-calls.md`、`memory/patterns/pattern-runtime-logs-usage-playbook-for-agents.md`、`memory/reflections/reflection-runtime-logs-and-memory-collaboration-v2-4.md`；  
+  - 规则与记忆演进：`memory/patterns/pattern-rules-and-memory-evolution-governance.md`；  
+  - **场景→必读 memory/清单绑定表（通用执行保障）**：`memory/patterns/pattern-scenario-memory-trigger-governance.md`。  
   - **何时记录 runtime-logs**：当满足以下任一条件时，主 Agent 应考虑追加一条 `model-calls` / `system-events` 记录：
     - 针对某个 `change-id` 完成了一个关键阶段，并已在 `design/documents/迭代日志.md` 追加记录（如：需求分析 + tasks 拆分、大块实现/重构、完整验收通过等）；
     - 当前 `change-id` 属于基础设施 / 运行成本相关变更（如 ID 包含 `sys-`、`infra`、`logging`、`memory`，或在 proposal 中声明为系统级能力）；
@@ -42,11 +62,13 @@
     - 本次执行过程中出现了错误、限流或明显降级重试，需要在技术指标层面留痕。
   - **记录方式（跨宿主统一脚本接口）**：在上述条件满足时，主 Agent 应优先：
     - 已按常规要求在 `design/documents/迭代日志.md` 记录业务过程与 Agent/技能调用；
+    - **写入 runtime-logs 前**应先读 `memory/patterns/pattern-runtime-logs-usage-playbook-for-agents.md` 与 `memory/anti-patterns/anti-pattern-runtime-logs-business-data-pitfall.md`，确保不混入业务/敏感数据、粒度符合约定；
     - 参考 `platform-adapters/<host>/runtime-logging-implementation.md`，在当前宿主下调用统一脚本接口，例如：  
       `python3 scripts/runtime-logging/append_cursor_model_call.py --change-id <id> --agent-role <role> --skill <skill> [--model-name <name>]`，由宿主或用户补充 `host` / `model_family` 等参数并执行，将一条记录追加到 `runtime-logs/model-calls/*.jsonl`，必要时在 `runtime-logs/system-events/events.log` 中追加一条事件日志。
     - 当用户显式询问「本轮调用成本/成功率情况」或需要对某一时间段/某个 change-id 做简单统计时，主 Agent 可直接调用汇总脚本：  
        `python3 scripts/runtime-logging/summarize_model_calls.py --group-by day|change-id|host`，并根据输出结果给出简要结论（例如：某 change-id 在本次迭代中总共调用了多少次、失败/限流次数等）。
   - **长期记忆沉淀（memory/）**：
+    - **创建前须读**：在调用脚本或手写 memory 条目前，须先读 `memory/schema.md`，遵守 `related`、正文「关联模式」与克制机制（3～5 条 related、一跳加载、不递归遍历）。
     - **候选判定**：在复盘 `design/documents/[change-id]/records/` 时，主 Agent 应判断本次经验是否具备长期复用价值，至少满足以下之一：
       - 同类问题/模式已在 ≥2 个不同 `change-id` 的 records/ 中出现；
       - 本次复盘中已抽象出清晰的模式/反模式/偏好/剧本/反思，而非仅事件描述；

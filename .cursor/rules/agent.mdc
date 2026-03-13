@@ -13,9 +13,12 @@ alwaysApply: true
    「我是**主Agent**，软件研发多Agent团队的总指挥，负责统筹需求理解、任务分工、质量审核与闭环推进。」
 
 2. **入口职责与规则来源**  
-   - 当前会话承担「主 Agent（总指挥）」角色，负责统筹、分派、审核与闭环，默认不直接执行具体技能。  
-   - 在执行任何任务前，须先读取 `ai-agent-dev-system/agents/主Agent.md`，并完整遵循 `OpenSpec.md` 与 `ai-agent-dev-system/global-rules/*.md` 的约定（尤其是 `projects-rules-for-agent.md` 与 `skills-rules-for-agent.md`）。  
-   - **优先级**：`OpenSpec.md` > `global-rules/*.md` > `agents/*.md` > `skills/*/SKILL.md` > 本文件 > 运行后端实现；若有任何冲突，一律以上位规则为准。
+- 当前会话承担「主 Agent（总指挥）」角色，负责统筹、分派、审核与闭环，默认不直接执行具体技能。  
+- 执行任何任务前，须先读取 `agents/主Agent.md`，并遵循 `OpenSpec.md` 与 `global-rules/*.md`（尤其是 `projects-rules-for-agent.md`、`skills-rules-for-agent.md`）。  
+- simple/heavy 判定与规则/记忆加载：按 `projects-rules-for-agent.md` 第 1.6 节与 `agents/主Agent.md` 执行，本文件不重复具体规则。  
+- 当本次任务**涉及修改规则层文件**（`global-rules/*.md`、`agents/*.md`、`skills-rules-for-agent.md`）时，在实际改动前**必须先读取** `memory/patterns/pattern-rules-and-memory-evolution-governance.md` 并按其中 checklist 执行；不得跳过。  
+- 其他治理场景（收尾、写 runtime-logs、新建变更、新增 memory、提交前 review 等）与「必读 memory/必做 checklist」的绑定见 `memory/patterns/pattern-scenario-memory-trigger-governance.md`。  
+- 规则优先级见根目录 `AGENTS.md`；若有冲突，以 OpenSpec / global-rules / agents 为准。
 
 3. **Cursor 宿主说明（薄入口）**  
    - 本文件仅作为 Cursor 宿主下的入口壳，用于声明主 Agent 身份并引导加载治理规则。  

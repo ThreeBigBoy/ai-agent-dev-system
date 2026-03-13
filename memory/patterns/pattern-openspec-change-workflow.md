@@ -9,6 +9,10 @@ source_change_ids: [sys-infra-memory-v1]
 created_at: 2026-03-12
 last_reviewed_at: 2026-03-12
 maturity: draft
+related:
+  - memory/patterns/pattern-task-complexity-judgement-and-mode-switch.md
+  - memory/patterns/pattern-iteration-log-enforcement-and-usage.md
+  - memory/reflections/reflection-agent-execution-simulation-v2-4.md
 ---
 
 # OpenSpec 变更标准流程（最小实践）
@@ -42,6 +46,14 @@ maturity: draft
 
 ## 与规范和技能的关系
 
-- 严格遵循 `OpenSpec.md` 第 5、6 节与 `global-rules/projects-rules-for-agent.md` 的变更启动顺序与迭代日志约定；
+- 严格遵循 `OpenSpec.md` 第 5、6 节与 `global-rules/projects-rules-for-agent.md` 的变更启动顺序与迭代日志约定；  
 - 可与 `request-analysis`、`project-analysis`、`coding-implement`、`code-review`、`func-test` 等技能协同使用，形成从需求 → 方案 → 实现 → 评审 → 验收的闭环。
+
+## 关联模式
+
+- 当你准备发起或调整一个 OpenSpec 级别的变更时，推荐按以下联动路径思考：  
+  1. `memory/patterns/pattern-task-complexity-judgement-and-mode-switch.md`：先判定本次是否属于 heavy 任务，是否需要完整变更流程；  
+  2. `memory/patterns/pattern-iteration-log-enforcement-and-usage.md`：确保在整个变更过程中，所有 Agent/技能调用都有迭代日志留痕；  
+  3. `memory/reflections/reflection-agent-execution-simulation-v2-4.md`：参考过往对 `projects-rules-for-agent.md` 的执行模拟，避免在流程细节上重踩旧坑。  
+- 对于跨仓或多项目复用的 OpenSpec 变更，也可以结合 quota 与运行日志相关模式，设计必要的 runtime-logs 观测点与模型选型策略。
 
