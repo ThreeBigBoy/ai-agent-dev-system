@@ -1,3 +1,7 @@
+# 以下目录及其下所有内容不纳入版本库、不推送
+design/
+openspec/
+
 # 多 Agent 运行实例：密钥与生成文件不提交
 agent_team_project/.env
 agent_team_project/cursor_decision.json
