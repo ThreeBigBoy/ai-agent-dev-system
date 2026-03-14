@@ -45,6 +45,18 @@
    - 再读取对应 `skills/<技能名>/SKILL.md`，按其中步骤执行；  
    - 执行完成后，将结果落到 OpenSpec / design 约定的路径，并在 `design/documents/迭代日志.md` 追加记录。
 
+> **结论级约定：基于 change-id 的智能触发运行后端**  
+> 当主 Agent 在任意宿主下收到用户指令时，若同时满足以下条件：  
+> - 文本中出现可在当前项目 `openspec/changes/[change-id]/` 下找到的合法 change-id；且  
+> - 同一句话中包含「推进」「落实」「执行」「完成」「验收」「测试」「回归」「归档」「这轮变更」「这个迭代」「这次发布」等变更推进类关键词；且  
+> - 文本中未明确声明本次为轻量操作（如「先别跑后端」「这次只是随便看下」「仅改文案，不需要协同」），  
+> 则主 Agent 应在完成 simple/heavy 判定后，**按 heavy + 运行后端流程执行**：  
+> 1. 识别并绑定当前 change-id；  
+> 2. 读取对应 `openspec/changes/[change-id]/tasks.md`，按任务章节对应的 Agent 角色构造或更新一份运行决策（如 `agent_decision.json` 或等价决策对象），为需由运行后端承接的任务设置 `executor`；  
+> 3. 通过约定入口（如 `agent_team_project` 或其 MCP 封装）触发运行后端，让对应执行角色按 `skills-rules-for-agent.md` 触发技能并完成任务；  
+> 4. 运行结束后，在当前项目的 `design/documents/迭代日志.md` 中追加一条包含 change-id、Agent、技能、任务与模型信息的记录。  
+> 各业务项目可在自身的 `openspec/AGENTS.md` 中，用自然语言补充示例与偏好（例如如何显式要求/禁止触发运行后端），但不得与上述结论级约定冲突。
+
 ---
 
 ## 在本仓库中工作的约定

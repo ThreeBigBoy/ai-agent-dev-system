@@ -9,6 +9,15 @@
         "AGENT_TEAM_PROJECT_ROOT": "/ABS/PATH/TO/ai-agent-dev-system/agent_team_project",
         "AGENT_HOST_TYPE": "cursor"
       }
+    },
+    "langgraph-backend": {
+      "command": "python3",
+      "args": [
+        "/ABS/PATH/TO/ai-agent-dev-system/agent_team_project/langgraph_mcp_server.py"
+      ],
+      "env": {
+        "LANGGRAPH_WORKSPACE_PROJECTS": ""
+      }
     }
   }
 }

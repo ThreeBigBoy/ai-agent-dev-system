@@ -1,8 +1,11 @@
 # agent_team_project 说明
 
+> **推荐路径（自 migrate-langgraph-backend 起）**：优先使用 **LangGraph 独立后端**（`langgraph_backend/` + `langgraph_mcp_server.py`），通过 MCP 工具 `run_langgraph`、`resume_langgraph` 触发执行，无需 `agent_decision.json` 与文件监听。  
+> 以下基于 `agent_decision.json` + `dynamic_agent_skill.py` + `agent_team_mcp_server.py` 的机制已标记为 **deprecated**，兼容期约 1 个月。迁移步骤见 **[MIGRATION.md](./MIGRATION.md)**。
+
 ## 1. 定位
 
-`agent_team_project/` 是本仓库默认的 **2.0 近全自动闭环运行时 backend**。
+`agent_team_project/` 是本仓库默认的 **2.0 近全自动闭环运行时 backend**（含旧机制与新增的 LangGraph 后端）。
 
 它负责：
 
@@ -74,9 +77,12 @@
 
 ## 5. 文件职责
 
-- `agent_team_mcp_server.py`：提供 `write_decision` 等运行侧工具能力
-- `run_skill.py`：读取决策并触发执行
-- `dynamic_agent_skill.py`：执行默认 5 角色协作链路
+- **LangGraph 新后端（推荐）**：`langgraph_backend/`、`langgraph_mcp_server.py` — 见 [langgraph_backend/README.md](./langgraph_backend/README.md) 与 [MIGRATION.md](./MIGRATION.md)。
+- **以下为 deprecated 旧机制（兼容期约 1 个月）**：
+  - `agent_team_mcp_server.py`：提供 `write_decision` 等运行侧工具能力
+  - `run_skill.py`：读取决策并触发执行
+  - `dynamic_agent_skill.py`：执行默认 5 角色协作链路
+  - 基于 `agent_decision.json` 的文件监听触发（如扩展内 `fs.watch`）— 已废弃，推荐改用 MCP `run_langgraph`
 - `runtime_config.json`：统一声明 backend 名称、executor 子集、模型调用策略、LLM 参数与运行超时
 - `runtime_config.py`：为运行脚本提供统一配置加载入口
 - `agent_decision.json`：决策文件

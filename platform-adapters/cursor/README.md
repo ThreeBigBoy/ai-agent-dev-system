@@ -20,6 +20,9 @@
 
 > 注意：Cursor 相关说明都是 **adapter 文档**，不改变 OpenSpec 与 `global-rules` / `agents` / `skills` 等治理内核的优先级。
 
+> **关于运行后端触发规则**：  
+> Cursor 下「根据用户指令何时触发 `agent_team_project` 等运行后端」的智能行为（例如检测到 change-id + 变更推进类关键词时自动按 heavy + 运行后端执行），以根仓库 `AGENTS.md` 中的结论级约定为准；本目录只需给出 Cursor 宿主下的接线方式与少量使用示例，不应在 adapter 层重新定义触发条件。
+
 ## 当前 Cursor adapter 的两项关键约束
 
 1. **运行目录绑定**

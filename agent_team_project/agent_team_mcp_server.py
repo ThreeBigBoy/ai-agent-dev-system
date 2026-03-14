@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""MCP server for agent-team: write_decision tool with JSON schema validation."""
+"""
+DEPRECATED（自 migrate-langgraph-backend 起）：
+本 MCP 服务（agent-team，write_decision + 文件驱动）已由 LangGraph 独立后端 MCP（langgraph-backend）替代。
+推荐使用 run_langgraph / resume_langgraph / get_langgraph_status 等工具调用新后端，无需再写 agent_decision.json。
+兼容期约 1 个月，详见 agent_team_project/MIGRATION.md。
+---
+MCP server for agent-team: write_decision tool with JSON schema validation.
+"""
 
 import json
 import os

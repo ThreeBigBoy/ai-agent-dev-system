@@ -18,6 +18,8 @@ DEFAULT_CONFIG = {
         "前端工程师",
         "后端工程师",
         "测试工程师",
+        "文档 Agent",
+        "Bug 修复 Agent",
     ],
     "host_policy": {
         "default_host": "cursor",

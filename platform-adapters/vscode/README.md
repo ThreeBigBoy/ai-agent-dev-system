@@ -30,6 +30,9 @@
 
 > 具体 VS Code API 与配置方式可能随版本演进，本目录更关注「职责与抽象」，实现细节可按实际版本更新。
 
+> **关于运行后端触发规则**：  
+> VS Code 下「根据用户指令何时触发运行后端」的智能行为（如检测到 change-id + 变更推进类关键词时按 heavy + 运行后端执行），应直接复用根仓库 `AGENTS.md` 中的结论级约定；本 adapter 只需说明 VS Code 如何接线 decision_sink / runtime_trigger / feedback_bridge，不在本层重复定义触发条件。
+
 ## 默认加载顺序规范（V2.4.2 建议）
 
 当 VS Code Agent Chat 或相关插件在本仓库中工作时，推荐遵循与 Cursor 一致的「rules → SKILL/memory」渐进式加载顺序：

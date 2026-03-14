@@ -20,8 +20,17 @@ runtime-logs/
 ├── README.md           # 本说明文档
 ├── model-calls/        # 模型调用明细日志（JSON Lines）
 ├── system-events/      # 系统事件文本日志
+├── langgraph-runs/     # 新管线（LangGraph）执行留痕（JSONL，每行一次 /run 或 /resume）
 └── adapters/           # 各宿主日志采集适配说明（非代码）
 ```
+
+### `langgraph-runs/`：新管线执行留痕（系统日常运行合法目录）
+
+- **用途**：LangGraph 后端每次 `/run`、`/resume` 成功后（或失败时）由后端自动追加一条记录，作为**新管线的唯一留痕**；不依赖 `design/documents/迭代日志.md` 或 `design/documents/` 下任何文件。
+- **写入方**：`agent_team_project/langgraph_backend/server.py`；留痕根目录为 `ai-agent-dev-system/runtime-logs`（由 `AGENT_TEAM_PROJECT_ROOT` 指向本仓时解析）。
+- **文件**：`langgraph-runs/YYYY-MM-DD.jsonl`，按日分片，每行一条 JSON。
+- **字段**：`ts`、`change_id`、`thread_id`、`workspace_root`（解析出的项目根，可选）、`project_key`（命中的业务项目 key，可选）、`status`、`task_count`、`latency_seconds`、`checkpoint_id`（可选）、`error`（失败时）。
+- **约定**：仅记录执行元数据与结果状态，不记录完整 feedback/results 正文，符合隐私与安全约束。
 
 ### `model-calls/*.jsonl` 数据格式（示例）
 

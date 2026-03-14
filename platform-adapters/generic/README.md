@@ -21,6 +21,9 @@
 - `continue-从0开始初始化配置SOP与GUI走查清单.md`：Continue 从 0 开始配置与人工走查手册。
 - `openai-codex-从0开始初始化配置SOP与GUI走查清单.md`：OpenAI-Codex 从 0 开始配置与人工走查手册。
 
+> **关于运行后端触发规则**：  
+> 第三方宿主在设计「根据用户指令何时触发运行后端」时，不应各自发明一套条件，而是优先遵循根仓库 `AGENTS.md` 中关于「基于 change-id 的智能触发运行后端」的全局约定；本 generic adapter 只负责抽象出 decision_sink / runtime_trigger / feedback_bridge / workspace_binding 能力，并在各宿主具体文档中给出示例接线方式。
+
 ## 第三方宿主的模型策略
 
 第三方宿主与白名单宿主的规则不同：

@@ -26,6 +26,9 @@
 - `vscode/`：面向 VS Code 官方 Agent Chat 的适配层，已补充根 `AGENTS.md` 与 `.github/agents/*.agent.md` 入口骨架。  
 - `generic/`：面向第三方 Codex / Agent 插件的适配层，当前明确收敛的目标宿主为 `Continue` 与 `OpenAI-Codex`。
 
+> **运行后端触发行为的全局约定**：  
+> 所有宿主在设计 `runtime_trigger`（如何根据用户指令触发运行后端）行为时，应优先遵循根仓库 `AGENTS.md` 中关于「基于 change-id 的智能触发运行后端」的结论级规则；各宿主 adapter 只需在自身文档中给出引用与少量宿主特有示例，无需重复定义触发条件，以保证多宿主行为一致性。
+
 ### 宿主模型策略摘要
 
 - **白名单宿主**：`cursor`、`vscode`

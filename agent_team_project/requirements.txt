@@ -1,0 +1,14 @@
+# LangGraph 独立后端 + MCP 所需依赖
+# 安装：在 agent_team_project 目录下执行 pip install -r requirements.txt（建议在 .venv 内）
+
+langgraph>=0.2.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0
+slowapi>=0.1.0
+python-multipart>=0.0.5
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+
+# MCP 工具（Cursor 调用 run_langgraph 等时由 MCP 进程使用，若仅跑 HTTP 后端可省略）
+# mcp

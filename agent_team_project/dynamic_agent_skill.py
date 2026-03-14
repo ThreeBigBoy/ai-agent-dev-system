@@ -1,3 +1,9 @@
+"""
+DEPRECATED（自 migrate-langgraph-backend 起）：
+本文件为旧「文件 + 文件监听」触发机制的执行层，已由 LangGraph 独立后端（langgraph_backend）替代。
+逻辑已迁移至 langgraph_backend/workflow.py + executors.py；推荐使用 MCP run_langgraph / resume_langgraph 调用新后端。
+兼容期约 1 个月，详见 agent_team_project/MIGRATION.md。
+"""
 import os
 import json
 import logging

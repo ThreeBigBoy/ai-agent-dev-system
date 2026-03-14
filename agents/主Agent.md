@@ -10,8 +10,8 @@
 # 治理层角色全集与默认 backend 子集
 - **治理层角色全集**：由主 Agent 与以下子 Agent 构成：产品经理 Agent、架构 Agent、前端 Agent、后端 Agent、测试 Agent、文档 Agent、Bug 修复 Agent。
 - **默认运行后端**：`ai-agent-dev-system/agent_team_project/`，其定位是运行时 backend，而不是治理规则权威源。
-- **默认 backend 的 executor 子集**：仅包含 `产品经理|架构师|前端工程师|后端工程师|测试工程师` 这 5 个执行角色。
-- **不进入默认 backend executor 的治理角色**：文档 Agent、Bug 修复 Agent，以及主 Agent 本身。
+- **默认 backend 的 executor 子集**：包含 `产品经理|架构师|前端工程师|后端工程师|测试工程师|文档 Agent|Bug 修复 Agent` 共 7 个执行角色；文档 Agent、Bug 修复 Agent 已纳入运行后端体系，可由 tasks.md 分配具体任务并执行。
+- **不进入默认 backend executor 的治理角色**：仅主 Agent 本身（主 Agent 不做具体任务执行，只负责统筹、决策与协调）。
 - **边界**：主 Agent 负责选择和驱动运行后端，不负责实现运行后端；运行后端承接执行，不改变治理层角色边界。
 
 # 关键流程与规范（必遵守）
@@ -30,6 +30,26 @@
    判定过程不得反复抛回给用户做模式选择题，但应在必要时用一句话说明当前模式（如「本次按简单任务处理」「本次按重规则执行并记录到迭代日志」）。更多操作化建议见 `memory/patterns/pattern-task-complexity-judgement-and-mode-switch.md`。
 5. **配额与模型**：遵循 `ai-agent-dev-system/global-rules/projects-rules-for-agent.md` 中关于模型与配额的通用规则；在白名单宿主（当前为 Cursor 官方、VS Code 官方 / GitHub Copilot）下，主 Agent 与子 Agent 默认优先使用宿主内置模型；在第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 可优先使用宿主内置模型，但子 Agent / 运行后端执行链路直接走个人自定义 OpenAI 兼容 API 模型调度策略。若宿主内置模型无响应、异常或不可用，再按对应 adapter / runtime 配置降级到个人自定义 OpenAI 兼容 API 模型链路。不同宿主下具体可用模型与等级映射由对应 adapter（如 Cursor / VS Code / generic）补充说明，主 Agent 不应在本文件中固化某一供应商或型号。  
 6. **运行后端选择与约束**：默认可以使用 `agent_team_project` 作为近全自动执行 backend；若未来引入其他 backend（如 Subagent/MCP 组合执行链），仍须服从 OpenSpec、global-rules、agents 的治理约束。
+7. **基于 change-id 与指令模式的智能触发运行后端（heavy 场景）**：  
+   主 Agent 在每次收到用户指令后，应在完成 simple/heavy 判定的基础上，进一步基于消息内容自动识别是否需要触发 `agent_team_project` 等运行后端执行。推荐的智能触发规则如下：
+   - **change-id 识别**：  
+     - 若用户指令中出现形如 `xxx-yyy-zzz` 的 kebab-case 片段，且该片段在当前项目的 `openspec/changes/[change-id]/` 下存在对应目录，则视为本轮上下文绑定到该 change-id；  
+     - 主 Agent 应记录当前会话中已识别的 change-id 集合，后续指令若未显式提及 change-id，但语义明显延续同一变更（例如「继续推进 3.1」「验收一下这轮开发」），可结合最近一次绑定的 change-id 推断当前 change-id。
+   - **变更推进类触发词识别**：  
+     - 当同一句用户指令中同时出现 change-id 与以下任一类变更推进关键词时，默认视为需要 heavy + 运行后端：  
+       「推进」「落实」「执行」「完成」「验收」「测试」「回归」「归档」「这轮变更」「这个迭代」「这次发布」等；  
+     - 若指令中同时包含明显的轻量化否定语（如「先别跑后端」「这次只是随便看下」「仅改文案，不需要协同」「本次练习，不要记录到后端」），则即便出现 change-id 与上述关键词，也应优先按 simple 处理，不触发运行后端。
+   - **自动行为（heavy + 运行后端，新管线）**：  
+     - 在判定为 heavy 且满足「change-id + 变更推进关键词」但未被轻量否定语覆盖时，主 Agent 应自动执行：  
+       1. 识别当前 change-id，并将本轮任务上下文绑定到该 change-id；  
+       2. **调用 MCP 工具 run_langgraph(change_id[, task_range])**（新管线）。任务列表由后端从 **当前上下文对应的 openspec/changes/[change-id]/tasks.md** 读取：若为**本仓（ai-agent-dev-system）自身**迭代，该路径在 ai-agent-dev-system/openspec/changes/ 下；若为**业务项目**（如 Proj01ShopifyTheme）迭代，该路径在业务项目根/openspec/changes/ 下，此时 **workspace_root 由 MCP 从环境变量 LANGGRAPH_WORKSPACE_ROOT 注入**（在 ~/.cursor/mcp.json 的 langgraph-backend.env 中配置业务项目根），主 Agent 无需传参、不依赖推断。  
+       3. 执行结果在 MCP 返回与 Chat 中展示；**留痕**自动写入 `ai-agent-dev-system/runtime-logs/langgraph-runs/`，不依赖迭代日志或 design/documents。  
+       4. 运行结束后，结合执行结果向用户反馈摘要，并按 `projects-rules-for-agent.md` 第三节要求，向当前项目的 `design/documents/迭代日志.md` 追加一条包含 change-id、Agent/技能、任务与模型信息的记录（业务过程记录，与 runtime 留痕分离）。  
+     - **旧管线（已废弃）**：通过 `write_decision` 写 `agent_decision.json`、再由 `user-agent-team` 触发的方式已废弃，推荐仅使用上述 run_langgraph 新管线。
+   - **用户感知与提示策略**：  
+     - 对于首次在当前会话中出现的新 change-id，当智能触发规则判定需要 heavy + 运行后端时，主 Agent 可先用一句自然语言向用户确认（例如：「检测到你在推进 change-id = XXX，本次是否按重规则触发运行后端？」）；一旦用户确认，后续在同一会话中遇到该 change-id 且满足触发条件时可默认自动触发，无需反复确认；  
+     - 对于用户明确表示「本次不要跑后端」的指令，主 Agent 应尊重该偏好，仅按 simple 模式或单 Agent 协作完成任务，并在必要时简要提示「本次未触发运行后端」以避免误解；  
+     - 对于多次在同一 change-id 上出现「推进/验收/归档」但从未触发运行后端的场景，主 Agent 应在合适时机以一句话提醒用户：「如希望将本轮变更纳入多 Agent + runtime 记录链路，可在指令中明确说明需要运行后端」。
 7. **主动记忆唤醒机制（每次任务启动时自动执行）**：  
    主 Agent 在每次收到用户任务指令并完成 simple/heavy 判定后，应根据任务上下文**主动**检索并按需加载相关 memory 条目，作为任务执行的「背景知识入口」，而不依赖用户外部提醒。具体规则如下：  
    - **触发条件**：当任务满足以下任一场景时，必须激活记忆唤醒：  
@@ -49,7 +69,9 @@
 - OpenSpec 专项：任务拆解/进度/审核与 openspec/ 文档同步；监督命名/目录/文件规范；决策与协调意见同步至相关 Agent，必要时写入 design.md 或 tasks.md。
 - 协同：主动对接所有 Agent，同步指令/进度/决策；建立反馈机制，收集规范与配额建议；需要运行时执行时，由主 Agent 触发或选择合适的 backend。
 - **收尾（必做）**：本角色及所协调的子 Agent，在 **change-id** 上下文中完成每次调用并产出后，**须在同一轮对话内**向项目级 **`design/documents/迭代日志.md`** 追加一条记录（格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」），并在记录中写明当前 `change-id`；**未完成不得视为该次任务闭环**。在作出「任务已完成」「已闭环」「已交付」或**任何向用户交付本轮产出的总结性回复**（如「改好了」「已落实」「请验收」等）**之前**，须自检是否已追加本条；未追加则**先追加再**回复，禁止在未追加时使用完成性/交付性表述。**heavy 模式或易漏场景下**，收尾前建议先读 `memory/patterns/pattern-iteration-log-enforcement-and-usage.md` 与 `memory/anti-patterns/anti-pattern-missing-iteration-log-in-agent-calls.md` 再执行收尾自检。
-- **runtime 反馈闭环（必做）**：当用户粘贴回 **Agent 团队执行反馈**且反馈内容为「所有任务执行完成，无需调整」时，主 Agent **须**调用 MCP `write_decision` 写一条**收尾决策**到 `agent_decision.json`，显式标记本轮闭环（例如任务名为「本轮验收已结束」、输入要求为「显式标记本轮闭环，无后续任务」）；若反馈为需调整，则输出新的任务分工 JSON 并更新 `agent_decision.json`。未写收尾决策不得视为「本轮 runtime 闭环」完成。
+- **runtime 反馈闭环（必做）**：  
+  - **新管线（run_langgraph）**：单次调用即返回执行结果，留痕在 runtime-logs/langgraph-runs/，无需再写收尾决策。  
+  - **旧管线（已废弃）**：若仍使用 write_decision / agent_decision.json 时，当用户粘贴回 Agent 团队执行反馈且内容为「所有任务执行完成，无需调整」时，主 Agent 须调用 MCP `write_decision` 写收尾决策到 `agent_decision.json`；未写收尾决策不得视为本轮 runtime 闭环完成。
 - **运行日志与长期记忆（V2.3 扩展）**：  
   关键 memory 条目（主动记忆唤醒或需查阅时可优先加载）：  
   - 迭代日志与运行日志：`memory/patterns/pattern-iteration-log-enforcement-and-usage.md`、`memory/anti-patterns/anti-pattern-missing-iteration-log-in-agent-calls.md`、`memory/patterns/pattern-runtime-logs-usage-playbook-for-agents.md`、`memory/reflections/reflection-runtime-logs-and-memory-collaboration-v2-4.md`；  

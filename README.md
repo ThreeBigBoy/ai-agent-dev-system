@@ -64,8 +64,12 @@
   - 主 Agent + 产品经理 Agent + 架构 Agent + 前端 Agent + 后端 Agent + 测试 Agent + 文档 Agent + Bug 修复 Agent。  
   - 角色说明见 `agents/README.md` 及各子文件。
 
-- **运行后端**：  
-  - `agent_team_project/` 是当前默认运行后端，只是实现层；  
+- **运行后端（V2.6 升级）**：  
+  - `agent_team_project/` 是默认运行后端，实现层从文件驱动升级为 **LangGraph 独立后端（FastAPI）**：
+    - 状态图驱动：LangGraph `StateGraph` 强制流转（`parse_tasks → dispatch → collect_feedback`），无断点
+    - 检查点持久化：支持断点续跑（`/resume`），状态不丢失
+    - 多业务项目：通过 `LANGGRAPH_WORKSPACE_PROJECTS` 配置多项目，按 change_id 自动解析，本仓优先
+    - 独立留痕：执行记录写入 `runtime-logs/langgraph-runs/`，不依赖旧三件（`agent_decision.json` / `agent_feedback.txt` / `agent_skill.log`）
   - 仅覆盖 5 个执行角色（产品经理、架构师、前端工程师、后端工程师、测试工程师），不改变治理层角色全集。
 
 - **运行日志与长期记忆（V2.3 扩展 + V2.4/V2.4.2 渐进加载 + V2.5 主动唤醒与克制）**：  
@@ -82,6 +86,69 @@
   - 第三方宿主（当前明确支持 Continue、OpenAI-Codex）下，主 Agent 优先使用宿主内置模型，但子 Agent / 运行后端直接走个人自定义 OpenAI 兼容 API 模型调度策略；  
   - 若宿主内置模型无响应、异常或不可用，再按对应 adapter / runtime 配置降级到个人自定义 OpenAI 兼容 API 模型链路；  
   - 具体到 Cursor 宿主下的当前映射与模型名单，见 `platform-adapters/cursor/*` 与 `agent_team_project/runtime_config.json`。
+
+---
+
+## 新管线运行架构（V2.6 LangGraph 独立后端）
+
+从 V2.6 起，系统采用 **LangGraph 独立后端** 作为默认执行管线，实现从「宿主级约定」到「框架级强制保障」的架构升级：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Cursor / VS Code                       │
+│  ┌─────────────────┐      ┌─────────────────────────────┐  │
+│  │   用户消息       │─────▶│   扩展检测 change-id + 关键词  │  │
+│  └─────────────────┘      └─────────────────────────────┘  │
+│                              │                              │
+│                              ▼                              │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  MCP 工具 / HTTP 调用                                     ││
+│  │  POST /run {change_id, task_range?}                    ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ HTTP / JSON
+┌─────────────────────────────────────────────────────────────┐
+│                  LangGraph 独立后端 (FastAPI)                │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  StateGraph: parse_tasks → dispatch → collect_feedback ││
+│  │                                                         ││
+│  │  ┌──────────────┐    ┌──────────┐    ┌──────────────┐  ││
+│  │  │ parse_tasks  │───▶│ dispatch │───▶│ collect_fb   │  ││
+│  │  │ (节点函数)    │    │ (节点函数)│    │ (节点函数)    │  ││
+│  │  └──────────────┘    └──────────┘    └──────────────┘  ││
+│  │       │                    │                  │         ││
+│  │       ▼                    ▼                  ▼         ││
+│  │  ┌─────────────────────────────────────────────────────┐││
+│  │  │ 检查点 (MemorySaver / Redis)                       │││
+│  │  │ state: {change_id, decision, results, feedback}    │││
+│  │  └─────────────────────────────────────────────────────┐││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ 调用 7 个 executor
+┌─────────────────────────────────────────────────────────────┐
+│                    API 模型 (SiliconFlow等)                   │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐           │
+│  │ 产品经理 │ │ 架构师   │ │ 前端工程师│ │ 后端工程师│ ...       │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**核心特点**：
+- **状态图驱动**：LangGraph `compile()` 后代码强制流转（`parse_tasks → dispatch → collect_feedback`），100% 无跳过
+- **检查点持久化**：内置 `MemorySaver`（MVP）/ Redis（生产），支持断点续跑（`/resume` 接口），状态不丢失
+- **多业务项目支持**：通过 `LANGGRAPH_WORKSPACE_PROJECTS` 配置多项目（JSON 数组或扁平串 `key|path:key2|path2`），按 change_id 自动解析
+- **本仓优先**：后端始终先查本仓 `openspec/changes/`，再按列表顺序尝试业务项目
+- **独立留痕**：执行记录写入 `runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`，不依赖迭代日志或 design/documents
+
+**与旧机制对比**：
+| 维度 | 旧机制（已废弃） | 新管线（V2.6） |
+|------|------------------|----------------|
+| 执行保障 | 文件驱动，易跳过 | 状态图强制流转 |
+| 状态恢复 | 会话级，易丢失 | 检查点持久化，可断点续跑 |
+| 多项目 | 单路径配置 | 项目列表，自动解析 |
+| 留痕位置 | `agent_decision.json` / `agent_feedback.txt` / `agent_skill.log` | `runtime-logs/langgraph-runs/` |
 
 ---
 
@@ -208,6 +275,21 @@
   - 宿主入口与全局规则入口瘦身：`agent.mdc`、`global-rules.mdc` 仅保留身份/指向与强制钩子，具体 simple/heavy 与执行方判定规则不重复，见 `projects-rules-for-agent.md` 与 `agents/主Agent.md`。  
   - `AGENTS.md` 补充「记忆（memory）使用约定」与规则优先级中对 memory 的定位。  
   - **场景→必读 memory/清单的通用执行保障**：新增 `memory/patterns/pattern-scenario-memory-trigger-governance.md`，定义「治理关键场景 → 必读 memory / 必做 checklist」绑定表（改规则、收尾、写 runtime-logs、新建变更、判定 simple/heavy、新增 memory、提交前 review 等），并在 `agents/主Agent.md`、`projects-rules-for-agent.md`、`.cursor/rules/agent.mdc` 中补全各场景的触发与必读要求，使正确行为由结构化绑定保障而非临时记忆。
+
+- **V2.6（LangGraph 独立后端 - 架构级升级）**  
+  - **核心升级**：从「宿主级约定」到「框架级强制保障」，解决规则命中但不执行、竞态与重复执行、跨会话状态丢失三大痛点。
+  - **新执行管线（LangGraph + FastAPI）**：
+    - LangGraph StateGraph：`parse_tasks → dispatch → collect_feedback` 强制流转，无断点
+    - FastAPI 服务：`POST /run`、`GET /status/{change_id}`、`GET /health`、`POST /resume`（断点续跑）
+    - 检查点持久化：`MemorySaver`（MVP）/ Redis（生产），支持从任意节点恢复执行
+  - **多业务项目支持**：
+    - 配置范式：`LANGGRAPH_WORKSPACE_PROJECTS` 支持 JSON 数组或扁平串（`key|path:key2|path2`）
+    - 本仓优先：后端始终先查本仓 `openspec/changes/`，再按列表顺序、按 change_id 自动解析命中项目
+    - 无需「当前项目」配置：多项目时自动选择包含该 change 的第一个项目，也可选 `LANGGRAPH_CURRENT_PROJECT_KEY` 固定当前项目
+  - **独立留痕体系**：新管线执行记录写入 `runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`，含 `ts/change_id/thread_id/workspace_root/project_key/status/task_count/latency_seconds/checkpoint_id/error`，不依赖迭代日志或 design/documents 做执行审计。
+  - **旧管线废弃**：`agent_decision.json` / `agent_feedback.txt` / `agent_skill.log` 不再使用（走新管线时为空是预期行为）。
+  - **MCP 集成**：`run_langgraph(change_id, task_range?, workspace_root?)` 工具封装 HTTP /run 调用，返回格式化 feedback 注入对话。
+  - **记忆沉淀**：新增 `pattern-langgraph-mcp-multi-workspace-config.md`（多项目配置范式）、`pattern-new-pipeline-trace-vs-design-documents.md`（新管线留痕与 design 职责分离）。
 
 ---
 
