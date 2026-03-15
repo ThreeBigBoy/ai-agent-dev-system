@@ -84,6 +84,7 @@
 - **留痕**：每次执行自动写入 `ai-agent-dev-system/runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`，不依赖迭代日志或 design/documents。
 - **前提**：先单独启动后端服务（如 `cd agent_team_project && source .venv/bin/activate && uvicorn langgraph_backend.server:app --port 8000`），再在 Cursor 中调用上述 MCP 工具。
 - 在 `mcp.template.json` 中已包含 `langgraph-backend` 条目；将模板中的 `/ABS/PATH/TO/ai-agent-dev-system` 替换为本机路径后合并到 `~/.cursor/mcp.json` 即可。
+- **`AGENT_HOST_TYPE`**：建议在 `langgraph-backend.env` 中显式设置为 `cursor`，便于多宿主场景下运行后端识别当前宿主并选用对应模型策略；其他宿主见各 adapter 文档（如 Continue / OpenAI-Codex）。
 - 运行 `langgraph_mcp_server.py` 需已安装 `mcp`（与 `agent-team` 相同）：`pip install mcp`。
 - **超时**：调用 `/run`、`/resume` 的 HTTP 超时默认 300 秒；可通过环境变量 `LANGGRAPH_HTTP_TIMEOUT`（秒）覆盖。任务数较多时可适当调大或分段执行。
 
@@ -97,6 +98,7 @@
         "/ABS/PATH/TO/ai-agent-dev-system/agent_team_project/langgraph_mcp_server.py"
       ],
       "env": {
+        "AGENT_HOST_TYPE": "cursor",
         "LANGGRAPH_WORKSPACE_PROJECTS": "[{\"LANGGRAPH_PROJECT_KEY\":\"Proj01ShopifyTheme\",\"LANGGRAPH_WORKSPACE_ROOT\":\"/ABS/PATH/TO/Proj01ShopifyTheme\"},{\"LANGGRAPH_PROJECT_KEY\":\"test_bizproject\",\"LANGGRAPH_WORKSPACE_ROOT\":\"/ABS/PATH/TO/test_bizproject\"}]"
       }
     }

@@ -25,7 +25,7 @@ related:
 
 ### 1. 归档前自检
 
-- 该 change-id 下 **tasks.md 已全部勾选**；验收记录、code review 记录齐全（位于 `design/documents/[change-id]/records/`）。
+- 该 change-id 下 **tasks.md 已全部勾选**；验收记录、code review 记录齐全（位于 `design/documents/changes/[change-id]/records/`）。
 - 若使用 **Fission-AI OpenSpec CLI**：`npx @fission-ai/openspec@latest archive <change-id> --yes`（或先 `openspec validate <change-id>` 可选）。
 
 ### 2. 两种归档情形与处理
@@ -44,7 +44,7 @@ related:
 
 ### 4. 归档后收尾（按需）
 
-- **Minor 改进**：code review 中的 Minor 项可单列小任务或后续迭代落实；落实后做一次回归测试（含 parser/workflow 与 HTTP 接口），结果写入 `design/documents/[change-id]/records/` 下的回归记录。
+- **Minor 改进**：code review 中的 Minor 项可单列小任务或后续迭代落实；落实后做一次回归测试（含 parser/workflow 与 HTTP 接口），结果写入 `design/documents/changes/[change-id]/records/` 下的回归记录。
 - **文档与 memory**：若变更影响新用户路径（如新后端、新依赖、.env 配置），同步更新 `新用户快速开始.md`、playbook 或场景绑定表，并转化为 memory（playbook/pattern），便于后续「新用户/新环境」类问题时触发加载。
 
 ## 反例与常见误区

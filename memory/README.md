@@ -4,7 +4,7 @@
 
 ### 定位
 
-- 与 `design/documents/[change-id]/records/` 下的一次性复盘/验收记录区分：
+- 与 `design/documents/changes/[change-id]/records/` 下的一次性复盘/验收记录区分：
   - **records/**：针对单个 change-id 的具体记录；
   - **memory/**：跨 change-id / 跨项目具有长期复用价值的模式和经验。
 - 记忆条目用于：

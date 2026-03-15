@@ -26,8 +26,8 @@ related:
 1. **确定 change-id**
    - 按 OpenSpec 命名规范（动词开头、kebab-case）确定本次变更的唯一标识；
    - 若尚处于项目前期，则归属保留 change-id `project-early-phase`。
-2. **先建 design/documents/[change-id]/**
-   - 在 `design/documents/[change-id]/` 下至少创建一份需求或验收相关文档（如迭代需求说明、功能需求说明书、验收 Checklist 等）；
+2. **先建 design/documents/changes/[change-id]/**
+   - 在 `design/documents/changes/[change-id]/` 下至少创建一份需求或验收相关文档（如迭代需求说明、功能需求说明书、验收 Checklist 等）；
    - 如为架构或基础设施变更，可在此聚合背景与技术方案概览。
 3. **再建 openspec/changes/[change-id]/**
    - 创建 `proposal.md`、`tasks.md`、可选 `design.md` 与 `specs/[capability]/spec.md`；

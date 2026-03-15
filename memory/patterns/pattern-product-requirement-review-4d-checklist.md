@@ -35,13 +35,13 @@ related:
 
 评审结论不单独存放在脑海或对话中，而是**显式回写**到：
 
-- PRD 本身（增加设计原则、验收 Checklist、边界场景等章节）；  
-- `design/documents/[change-id]/records/` 下的「需求评审结论」文档。
+- PRD 本身（增加设计原则、验收 Checklist、边界场景等章节）；
+- `design/documents/changes/[change-id]/records/` 下的「需求评审结论」文档。
 
 ## 推荐执行步骤
 
 1. **读取上下文**
-   - 读取当前变更的 PRD（如 `design/documents/[change-id]/迭代需求说明.md`）；
+   - 读取当前变更的 PRD（如 `design/documents/changes/[change-id]/迭代需求说明.md`）；
    - 读取项目初心/背景文档与已归档变更的总结（如 MVP 方案、上一版本迭代进度检查）。
 
 2. **按四个问题逐项评审**
@@ -56,9 +56,9 @@ related:
    - 修改应保持章节编号清晰，避免打乱原有结构。
 
 4. **沉淀评审结论**
-   - 在 `design/documents/[change-id]/records/` 下创建一份「需求评审结论」文档，结构包括：
-     - 对四个维度的简要结论；  
-     - 已在 PRD 中完成的修改摘要；  
+   - 在 `design/documents/changes/[change-id]/records/` 下创建一份「需求评审结论」文档，结构包括：
+     - 对四个维度的简要结论；
+     - 已在 PRD 中完成的修改摘要；
      - 对下一步行动（OpenSpec/specs、编码、测试）的建议。
 
 5. **再进入 OpenSpec/specs 与实现**

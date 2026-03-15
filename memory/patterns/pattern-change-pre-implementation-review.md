@@ -49,7 +49,7 @@ related:
    - **任务统计与明细一致**：tasks 中「任务统计」节的数字与各节可勾选子项数量一致（避免写「测试 Agent 4 个」实为 7 项等）。
 
 3. **产出评审记录**
-   - 在 `design/documents/[change-id]/records/` 下创建「方案评审记录」类文档（如 `[change-id]-方案评审记录.md`）；
+   - 在 `design/documents/changes/[change-id]/records/` 下创建「方案评审记录」类文档（如 `[change-id]-方案评审记录.md`）；
    - 结构建议：评审元信息、OpenSpec 6.2 符合性、规则/记忆审视、四维结论、一致性检查、方案细节更新建议、风险再确认、方法论沉淀引用、评审结论与下一步。
 
 4. **同步更新方案细节**
@@ -61,7 +61,7 @@ related:
 
 ## 反例与常见误区
 
-- **只做口头/对话内评审**：结论未落位于 `design/documents/[change-id]/records/`，后续无法追溯、易重复踩坑。
+- **只做口头/对话内评审**：结论未落位于 `design/documents/changes/[change-id]/records/`，后续无法追溯、易重复踩坑。
 - **忽略文档间一致性**：迭代需求说明写「5 个必装包」、design 已改为「6 个必装 + 虚拟环境必须」，未同步则实施时环境纠纷。
 - **任务统计与明细不符**：tasks 写「总任务数 19」「测试 Agent 4 个」，实际 4.1–4.7 为 7 项，导致进度统计与勾选混乱。
 - **未按 heavy 加载规则**：未读 pattern-rules-and-memory-evolution 与场景绑定表，遗漏「交付后需更新 README/快速开始」等审视项。

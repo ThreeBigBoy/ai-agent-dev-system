@@ -16,7 +16,8 @@
         "/ABS/PATH/TO/ai-agent-dev-system/agent_team_project/langgraph_mcp_server.py"
       ],
       "env": {
-        "LANGGRAPH_WORKSPACE_PROJECTS": ""
+        "AGENT_HOST_TYPE": "cursor",
+        "LANGGRAPH_WORKSPACE_PROJECTS": "[{\"LANGGRAPH_PROJECT_KEY\":\"Proj01ShopifyTheme\",\"LANGGRAPH_WORKSPACE_ROOT\":\"/ABS/PATH/TO/Proj01ShopifyTheme\"},{\"LANGGRAPH_PROJECT_KEY\":\"test_bizproject\",\"LANGGRAPH_WORKSPACE_ROOT\":\"/ABS/PATH/TO/test_bizproject\"}]"
       }
     }
   }

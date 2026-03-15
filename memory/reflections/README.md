@@ -6,5 +6,5 @@
 - 对某类设计决策（如日志与记忆体系）的长期效果评估；
 - 对常见失败案例的结构化分析与后续改进方向。
 
-与 `design/documents/[change-id]/records/` 中的单次复盘不同，这里的内容应更侧重模式与趋势，而非某一次具体事件。
+与 `design/documents/changes/[change-id]/records/` 中的单次复盘不同，这里的内容应更侧重模式与趋势，而非某一次具体事件。
 

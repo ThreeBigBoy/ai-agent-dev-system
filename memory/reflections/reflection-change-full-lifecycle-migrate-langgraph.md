@@ -48,7 +48,7 @@ related:
 1. **顺序固定、产出可预期**：变更启动 → 实施前评审（heavy 时）→ 架构 → 后端 → 前端 → 测试 → 废弃/迁移（若有）→ code review；每步以 tasks 勾选与迭代日志为凭，便于主 Agent 推进与复盘。
 2. **验收未闭环项的处理**：若验收报告存在「需人工判定」或「未通过（已知限制）」：优先考虑当轮是否可实现或部分实现（如 4.3）；无论是否实现，为这些项编写「最小验收脚本」MD，便于用户或后续回归执行并记录结果。
 3. **迁移类变更的交付物**：除新能力外，旧机制需：代码/入口处 DEPRECATED 注释、README 与宿主文档标明推荐路径、独立 MIGRATION.md（步骤与兼容期）、兼容期内双系统可并存且文档明确。
-4. **Code review 与 func-test 同目录**：评审记录与验收记录均放在 `design/documents/[change-id]/records/`，与方案评审、验收脚本等同属该变更，便于归档与综合决策；review 结论「通过」且无 Blocking/Major 时，Minor 可后续迭代纳入。
+4. **Code review 与 func-test 同目录**：评审记录与验收记录均放在 `design/documents/changes/[change-id]/records/`，与方案评审、验收脚本等同属该变更，便于归档与综合决策；review 结论「通过」且无 Blocking/Major 时，Minor 可后续迭代纳入。
 
 5. **OpenSpec CLI 归档与主 specs 同步**：新建 capability 且变更 spec 含 MODIFIED/REMOVED 时，CLI 不允许直接合并；应使用 `archive --skip-specs --yes` 完成目录移动，再手动将 ADDED 部分写入 `openspec/specs/[capability]/spec.md`，使主 specs 与已部署能力一致；无 specs 的变更（如工具/文档类）可直接归档，CLI 警告「至少一个 delta」仍会完成。详见 `pattern-openspec-archive-and-specs-sync`。
 

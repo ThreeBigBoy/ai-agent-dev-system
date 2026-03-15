@@ -60,7 +60,7 @@ related:
 1. **挂载 change-id**  
    - 所有涉及规则层变更（特别是 `projects-rules-for-agent.md`）的改动，须挂在某个 change-id 下（如 `sys-rules-memory-refactor-v2-4`）。  
 
-2. **在 design/documents/[change-id]/records/ 中记录一次「规则 × 记忆协同演进」说明**  
+2. **在 design/documents/changes/[change-id]/records/ 中记录一次「规则 × 记忆协同演进」说明**  
    - 简要回答：  
      - 本次是否先检查/补齐了对应的 SKILL 与 memory；  
      - rules 中新增/修改部分是否仅为结论级 HOW；  

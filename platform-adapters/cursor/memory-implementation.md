@@ -4,7 +4,7 @@
 
 ### 1. 触发主体与判定规则
 
-- **触发主体**：主 Agent，根据 `OpenSpec + global-rules + agents/主Agent.md` 中的规则，在复盘 `design/documents/[change-id]/records/` 时判断是否需要沉淀长期记忆。
+- **触发主体**：主 Agent，根据 `OpenSpec + global-rules + agents/主Agent.md` 中的规则，在复盘 `design/documents/changes/[change-id]/records/` 时判断是否需要沉淀长期记忆。
 - **判定原则（简要）**：
   - 某类经验或坑点在 ≥2 个不同 `change-id` 的 records/ 中反复出现；
   - 本次复盘明确给出了可复用的模式 / SOP / 反模式 / 偏好等抽象经验；
@@ -77,7 +77,7 @@ python3 scripts/memory/create_memory_entry.py \
     - 在 Chat 中先根据本次 `change-id` 与 records 摘要，生成一段符合记忆类型的 Markdown 正文草稿（仅包含 `# 标题` 与各小节，不含 frontmatter）；
     - 给出使用 stdin 或 `--body-file` 的命令示例（如上「方式二/方式三」），并将正文一并展示，方便用户复制到 Terminal 或临时文件中执行；
     - 由用户在 Cursor Terminal 中执行该命令；
-    - 主 Agent 随后在对应的 `design/documents/[change-id]/records/` 文档末尾追加一句引用新建 memory 条目的记录。
+    - 主 Agent 随后在对应的 `design/documents/changes/[change-id]/records/` 文档末尾追加一句引用新建 memory 条目的记录。
 
 - **未来增强（可选，自动执行）**：
   - 在用户默认信任前提下，由主 Agent 直接通过 Shell 工具调用脚本，将生成的正文通过 HEREDOC 形式传入 stdin，实现全自动落盘；

@@ -72,6 +72,12 @@ description: 分析与管理工程结构与技术实现方案；在采用 OpenSp
    - 在对应的 `openspec/changes/[change-id]/` 下：
      - 补充或校正 `proposal.md` 中的「Why / Impact / 不在本次范围 / 风险与依赖」等与工程结构有关的内容。
      - 在 `design.md` 中记录本次需求对架构层、模块边界、数据流、安全/合规、性能等方面的具体设计决策；**结构与自检**须符合 REFERENCE《技术方案与架构产出物-最小结构与自检》中 design.md 最小结构与自检清单。
+     - **执行模型评估**：针对 PRD 中识别出的长时间运行或复杂流程需求，在 `design.md` 中评估并明确执行模型（见 REFERENCE/执行模型评估指南.md）：
+       - 是一次性「大事务」执行，还是「阶段化」执行？
+       - 是否需要 checkpoint + resume 机制？
+       - 可观测性如何设计？进度如何反馈？
+       - 参考 `memory/patterns/pattern-observable-small-steps` 阶段化执行模式
+       - 参考 `memory/patterns/pattern-problem-analysis-3-layer` 三层穿透分析法
      - 如有必要，在相关 `specs/[capability]/spec.md` 中，以 `ADDED` / `MODIFIED` / `REMOVED` Requirements + Scenario 的形式，对工程结构约束进行结构化描述。
    - 若产出**技术架构图、执行逻辑图、数据流图**等，存放于 `design/documents/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 或 project-rules 对应章节中引用；约定见 REFERENCE 同文档。
 

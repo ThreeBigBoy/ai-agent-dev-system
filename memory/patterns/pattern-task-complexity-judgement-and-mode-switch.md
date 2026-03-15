@@ -51,10 +51,10 @@ related:
 
 在下列条件同时满足时，一般可视为 simple：
 
-- 只涉及单个或极少数文件的小改动；  
-- 不改变对外接口签名、数据库结构或安全边界；  
-- 更像一次性本地/工具类操作（如重命名、文案微调、注释补充）；  
-- 与 `openspec/`、`design/documents/[change-id]/` 等核心文档几乎无交集。
+- 只涉及单个或极少数文件的小改动；
+- 不改变对外接口签名、数据库结构或安全边界；
+- 更像一次性本地/工具类操作（如重命名、文案微调、注释补充）；
+- 与 `openspec/`、`design/documents/changes/[change-id]/` 等核心文档几乎无交集。
 
 simple 模式下：
 
@@ -78,7 +78,7 @@ simple 模式下：
 2. 在迭代日志或 runtime-logs 中记录「从 simple → heavy」的模式切换与简短理由；  
 3. 自该点起补齐 heavy 模式要求：  
    - 按 `skills-rules-for-agent.md` 读 SKILL 并执行；  
-   - 补建/补读 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/`；  
+   - 补建/补读 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/`；  
    - 确保迭代日志记录到位。
 
 ### 5. 面向用户的可见反馈

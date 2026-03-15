@@ -28,12 +28,12 @@ related:
 按以下顺序执行，每步完成后在 `tasks.md` 中勾选对应项，并在 `design/documents/迭代日志.md` 追加一条记录：
 
 1. **变更启动**（主 Agent）
-   - 先建 `design/documents/[change-id]/`，再建 `openspec/changes/[change-id]/`；proposal 引用 design/documents；tasks、design、spec 齐全。
+   - 先建 `design/documents/changes/[change-id]/`，再建 `openspec/changes/[change-id]/`；proposal 引用 design/documents；tasks、design、spec 齐全。
    - 产出：迭代需求说明、proposal、tasks、design、spec。
 
 2. **实施前方案评审**（主 Agent，heavy 时必做）
    - 按 `pattern-change-pre-implementation-review` 执行：OpenSpec 6.2、规则/记忆审视、四维方案、文档一致、任务统计一致。
-   - 产出：`design/documents/[change-id]/records/[change-id]-方案评审记录.md`；同步更新需求/环境/任务统计等。
+   - 产出：`design/documents/changes/[change-id]/records/[change-id]-方案评审记录.md`；同步更新需求/环境/任务统计等。
 
 3. **架构设计**（架构 Agent）
    - 产出：design.md 关键章节（如状态图、接口、检查点）、可选 architecture/*.mmd；tasks 中架构项勾选。
@@ -45,7 +45,7 @@ related:
    - 产出：MCP/扩展侧代码、配置模板与宿主文档更新；tasks 中前端项勾选。
 
 6. **测试与验收**（测试 Agent）
-   - 按 func-test 技能产出：`design/documents/[change-id]/records/[change-id]-func-test.md`。
+   - 按 func-test 技能产出：`design/documents/changes/[change-id]/records/[change-id]-func-test.md`。
    - **对「需人工判定」或「未通过」项**：编写「最小验收脚本」MD（同 records 目录），用可复制命令与步骤指导用户自验或代执行；执行结果回填验收记录表。若当轮可实现缺失能力（如断点续跑），实现后再更新验收结论。
 
 7. **废弃与迁移**（若有）（主/架构 Agent）
@@ -53,7 +53,7 @@ related:
    - 产出：注释与文档更新、MIGRATION.md；tasks 中废弃/迁移项勾选。
 
 8. **Code Review**（架构 Agent）
-   - 按 code-review 技能产出：`design/documents/[change-id]/records/[change-id]-code-review.md`。
+   - 按 code-review 技能产出：`design/documents/changes/[change-id]/records/[change-id]-code-review.md`。
    - 结论与问题清单（Blocking/Major/Minor）；Blocking/Major 须进 tasks；Minor 可后续迭代纳入。
 
 9. **闭环确认与归档**

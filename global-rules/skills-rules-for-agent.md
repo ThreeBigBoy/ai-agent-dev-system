@@ -151,4 +151,78 @@ alwaysApply: true
   - 与 `project-analysis`：用户提供架构图、数据流图时，可先经本技能解析，再由 project-analysis 将结果结构化写入 project.md、design/project-rules/。
   - 与 `coding-implement`：前端实现时可引用已写入需求与 spec 的图片解析结论，作为实现与验收依据。
 
+### 9.7 prd-review（PRD 评审）
+
+当需要对已产出的 **PRD（产品需求文档）** 进行系统化质量检查、完整性校验、逻辑审查，并在进入 proposal/tasks/specs 阶段前确保 PRD 达到「可商业化、可技术落地、可验收、可衡量」标准时，可加载 **prd-review** 技能。
+
+- **技能路径**（示例）：`ai-agent-dev-system/skills/prd-review/`。
+- **触发场景**：
+  - 用户输入「评审 PRD」「检查 PRD 质量」「PRD 自检」「审查需求文档」等；
+  - 用户需要在进入 proposal/tasks/specs 阶段前，确保 PRD 质量达标；
+  - 用户需要回溯补录 PRD 评审纪要（基于历史对话和已产出文档）。
+- **核心职责**：
+  1. **加载规范**：首先读取 `skills/request-analysis/REFERENCE/迭代需求说明-PRD最小结构与自检.md`，确保评审标准统一。
+  2. **系统化评审**：按照 REFERENCE 中的「三、自检清单」（9 项自检项）逐项评审 PRD，覆盖价值分析、竞品调研、迭代目标、产品方案、异常边界、文档命名规范等维度。
+  3. **详细留痕**：在 `design/documents/[change-id]/records/` 下产出结构化的**评审纪要文档**，命名推荐 `PRD-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
+  4. **形成判定**：对每项自检项给出判定（✓ 通过 / △ 有条件通过 / ✗ 不通过），并给出综合判定和后续行动建议。
+- **协同关系**：
+  - 与 `request-analysis`：request-analysis 产出 PRD，prd-review 对 PRD 进行质量把关，形成「产出 → 评审 → 完善」闭环。
+  - 与 `project-analysis`：PRD 评审通过后，方可进入工程结构分析阶段；如 PRD 评审发现问题涉及架构可行性，可提前介入讨论。
+  - 与 `architecture-review`：PRD 评审关注「需求真实性、产品方案完整性」，技术方案评审关注「架构合理性、实现可行性」，两者形成「需求 → 技术」的质量双保险。
+- **产出物质量约定**：评审纪要须符合 `skills/prd-review/REFERENCE/PRD评审纪要规范.md` 中的内容结构、判定标准、输出格式；评审维度须围绕「价值层、执行层」两个底层逻辑展开。
+
+### 9.8 architecture-review（技术方案评审）
+
+当需要对已产出的 **技术方案（design.md）** 进行系统化架构合理性审查、可实现性评估，并在进入 coding-implement 阶段前确保技术方案达到「可被前端/后端按图实现、可被 code-review/func-test 对照验证」标准时，可加载 **architecture-review** 技能。
+
+- **技能路径**（示例）：`ai-agent-dev-system/skills/architecture-review/`。
+- **触发场景**：
+  - 用户输入「评审技术方案」「检查架构设计」「技术方案自检」「审查 design.md」等；
+  - 用户需要在进入 coding-implement 阶段前，确保技术方案质量达标；
+  - 用户需要回溯补录技术方案评审纪要（基于历史对话和已产出文档）。
+- **核心职责**：
+  1. **加载规范**：首先读取 `skills/project-analysis/REFERENCE/技术方案与架构产出物-最小结构与自检.md`，确保评审标准统一。
+  2. **系统化评审**：按照 REFERENCE 中的「三、自检清单」（9 项自检项）逐项评审技术方案，覆盖变更目标、架构一致性、需求可追溯性、接口与数据、关键流程、异常边界、文档命名规范等维度。
+  3. **对照 PRD**：评审技术方案时必须对照 PRD，确保 100% 满足需求、无遗漏无冲突。
+  4. **详细留痕**：在 `design/documents/[change-id]/records/` 或 `openspec/changes/[change-id]/` 下产出结构化的**评审纪要文档**，命名推荐 `技术方案-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
+  5. **形成判定**：对每项自检项给出判定（✓ 通过 / △ 有条件通过 / ✗ 不通过），并给出综合判定和后续行动建议。
+- **协同关系**：
+  - 与 `project-analysis`：project-analysis 产出技术方案，architecture-review 对技术方案进行质量把关，形成「产出 → 评审 → 完善」闭环。
+  - 与 `prd-review`：PRD 评审关注「需求真实性、产品方案完整性」，技术方案评审关注「架构合理性、实现可行性」，两者形成「需求 → 技术」的质量双保险。
+  - 与 `coding-implement`：技术方案评审通过后，方可进入编码实现阶段；评审纪要可作为 coding-implement 的输入约束。
+- **产出物质量约定**：评审纪要须符合 `skills/architecture-review/REFERENCE/技术方案评审纪要规范.md` 中的内容结构、判定标准、输出格式；评审维度须围绕「架构层、实现层、落地层」三个底层逻辑展开。
+
+### 9.9 retrospective-analysis（复盘分析）
+
+当需要对已完成的工作进行**系统化复盘**，将经验转化为可复用的知识资产时，可加载 **retrospective-analysis** 技能。
+
+- **技能路径**（示例）：`ai-agent-dev-system/skills/retrospective-analysis/`。
+- **触发场景**：
+  - 用户输入「复盘」「总结」「回顾」「反思」等关键词；
+  - 完成一个重要阶段/里程碑/项目后；
+  - 问题反复出现时（提示进行复盘）；
+  - 定期复盘（如每周/每月/每季度）。
+- **执行方**：
+  - 技术问题复盘：架构 Agent / 主 Agent
+  - 产品需求复盘：产品经理 Agent / 主 Agent
+  - 项目整体复盘：主 Agent
+- **核心职责**：
+  1. **执行 5 阶段复盘法**：
+     - Stage 1: Review Goals（回顾目标）- 回顾初始目标和预期结果
+     - Stage 2: Evaluate Results（评估结果）- 对比实际 vs 预期，识别亮点和问题
+     - Stage 3: Analyze Causes（分析原因）- 5 个 Why 找到根本原因，思维模式分析
+     - Stage 4: Extract Learnings（提炼经验）- 提炼可复用模式、识别反模式、提出改进建议
+     - Stage 5: Action Plan（行动计划）- 制定短期/中期/长期行动计划
+  2. **产出复盘报告**：按模板产出结构化的复盘报告，包含 8 章节（复盘背景、回顾目标、评估结果、分析原因、提炼经验、行动计划、关键洞察、附录）。
+  3. **沉淀 Memory**：评估复盘成果是否值得沉淀为 memory（pattern、anti-pattern、preference、playbook、reflection），并创建相关 memory 文档。
+  4. **更新迭代日志**：向迭代日志追加复盘记录。
+- **协同关系**：
+  - 与所有前置技能：复盘需要回顾 request-analysis → prd-review → project-analysis → architecture-review → coding-implement → code-review → func-test 全过程。
+  - 与 `pattern-five-stage-retrospective`：本技能是 5 阶段复盘法的具体执行实现。
+  - 与 `pattern-breakthrough-thinking-redefine-problem-space`：复盘时分析思维模式差异（如 AI vs 用户）。
+- **产出物质量约定**：
+  - 复盘报告须符合 `skills/retrospective-analysis/REFERENCE/复盘报告模板.md` 中的 8 章节结构；
+  - 质量门禁：通过「复盘质量自检（9 项）」检查（目标回顾、结果对比、问题识别、根因分析、思维模式分析、经验提炼、行动计划、memory 沉淀、文档规范）；
+  - 评审判定：7 项及以上通过为通过，5-6 项通过为有条件通过，少于 5 项通过或有未通过项为不通过。
+
 ---

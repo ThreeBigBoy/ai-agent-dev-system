@@ -79,6 +79,49 @@ def _format_run_response(res: dict) -> str:
     return "\n".join(lines)
 
 
+def _append_hints_if_error(text: str) -> str:
+    """
+    检测响应文本中的特定错误模式，追加标准提示。
+    保持「显式脚本、显式 SOP」原则：只追加提示文案，不自动执行副作用操作。
+    """
+    import re
+    # 检测依赖缺失错误（langchain-openai / langchain_openai）
+    dep_patterns = [
+        r"未安装\s*langchain[\-_]openai",
+        r"langchain[\-_]openai",
+        r"ImportError.*langchain",
+        r"ModuleNotFoundError.*langchain",
+    ]
+    has_dep_error = any(re.search(p, text, re.IGNORECASE) for p in dep_patterns)
+
+    # 检测路径/配置错误（AGENT_TEAM_PROJECT_ROOT / openspec/changes）
+    path_patterns = [
+        r"未找到\s*openspec/changes",
+        r"AGENT_TEAM_PROJECT_ROOT",
+        r"未设置\s*AGENT_TEAM",
+        r"找不到.*openspec",
+    ]
+    has_path_error = any(re.search(p, text, re.IGNORECASE) for p in path_patterns)
+
+    hints = []
+    if has_dep_error:
+        hints.append(
+            "\n\n**【环境修复提示】** 检测到后端缺少必要依赖（如 langchain-openai）。"
+            "请在 agent_team_project 目录下执行 `bash setup-langgraph-env.sh` 安装依赖，"
+            "再用 `./start-langgraph-backend.sh` 重启后端。"
+        )
+    if has_path_error:
+        hints.append(
+            "\n\n**【配置修复提示】** 检测到后端无法找到项目路径或 AGENT_TEAM_PROJECT_ROOT 未正确设置。"
+            "请检查：1) AGENT_TEAM_PROJECT_ROOT 环境变量是否指向 ai-agent-dev-system 仓库根；"
+            "2) 或检查 ~/.cursor/mcp.json 中的 LANGGRAPH_WORKSPACE_PROJECTS 配置是否正确。"
+        )
+
+    if hints:
+        return text + "".join(hints)
+    return text
+
+
 mcp = FastMCP(
     "langgraph-backend",
     description="调用 LangGraph 独立后端执行变更任务（/run、/status、/health）",
@@ -191,7 +234,8 @@ def run_langgraph(
         elif workspace_root_legacy:
             body["workspace_root"] = workspace_root_legacy
         res = _http_post(url, body)
-        return _format_run_response(res)
+        formatted = _format_run_response(res)
+        return _append_hints_if_error(formatted)
     except urllib.error.HTTPError as e:
         err_body = ""
         try:
@@ -221,7 +265,8 @@ def resume_langgraph(change_id: str, thread_id: str, checkpoint_id: str, base_ur
     url = f"{base_url.rstrip('/')}/resume"
     try:
         res = _http_post(url, {"change_id": change_id, "thread_id": thread_id, "checkpoint_id": checkpoint_id})
-        return _format_run_response(res)
+        formatted = _format_run_response(res)
+        return _append_hints_if_error(formatted)
     except urllib.error.URLError as e:
         return f"**调用失败**：无法连接后端 {url}\n错误: {e}"
     except Exception as e:
