@@ -3,11 +3,54 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 
 # 本包所在目录（agent_team_project/langgraph_backend）
 PACKAGE_DIR = Path(__file__).resolve().parent
 # agent_team_project 根
 AGENT_TEAM_ROOT = PACKAGE_DIR.parent
+
+
+# Phase 配置定义（阶段化执行架构）
+# 格式: phase_id -> {description, task_patterns, max_latency_seconds, dependencies}
+# task_patterns 可以是: ["1.1", "1.2"] 或 "1.*" 或 "all"
+# 
+# ⚠️ 注意：task_patterns 当前为硬编码，与 tasks.md 的任务编号对应。
+# 若 tasks.md 结构变化，需同步更新此配置。
+# TODO: 后续考虑从 tasks.md 的 phase 元信息（如注释 # phase: env-check）动态解析
+DEFAULT_PHASES: dict[str, dict[str, Any]] = {
+    "env-check": {
+        "description": "环境自检",
+        "task_patterns": ["1.1", "1.2", "1.3"],  # 环境检查相关任务（对应 tasks.md 1.1-1.3）
+        "max_latency_seconds": 60,
+        "dependencies": [],  # 无依赖
+    },
+    "mcp-check": {
+        "description": "MCP 配置检查",
+        "task_patterns": ["1.4", "1.5", "1.6"],  # MCP 配置相关任务（对应 tasks.md 1.4-1.6）
+        "max_latency_seconds": 60,
+        "dependencies": [],  # 可并行执行
+    },
+    "biz-trace": {
+        "description": "业务留痕检查",
+        "task_patterns": ["1.7"],  # 业务验证相关任务（对应 tasks.md 1.7）
+        "max_latency_seconds": 300,
+        "dependencies": [],  # 可独立执行
+    },
+    "full": {
+        "description": "全量执行",
+        "task_patterns": "all",  # 所有任务
+        "max_latency_seconds": 600,
+        "dependencies": [],
+    },
+}
+
+
+def get_phase_config(phase: str | None) -> dict[str, Any] | None:
+    """获取指定 phase 的配置。"""
+    if phase is None:
+        return DEFAULT_PHASES.get("full")
+    return DEFAULT_PHASES.get(phase)
 
 
 def get_workspace_root() -> Path | None:

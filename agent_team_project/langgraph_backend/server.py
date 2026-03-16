@@ -21,7 +21,11 @@ app = FastAPI(title="LangGraph Backend", version="1.0.0")
 
 class RunRequest(BaseModel):
     change_id: str = Field(..., description="变更 ID")
-    task_range: str | None = Field(None, description="可选任务范围，如 2.1-2.4")
+    task_range: str | None = Field(None, description="可选任务范围，如 2.1-2.4（与 phase 互斥）")
+    phase: str | None = Field(
+        None,
+        description="阶段标识，如 env-check/mcp-check/biz-trace/full（与 task_range 互斥，默认 full）",
+    )
     workspace_projects: str | None = Field(
         None,
         description='业务项目列表，格式 "key1|path1:key2|path2"；按 change_id 自动解析，无需「当前项目」',
@@ -35,15 +39,23 @@ class RunRequest(BaseModel):
         description="兼容：多路径时仅尝试路径中包含该 key 的根",
     )
 
+    def model_post_init(self, __context: Any) -> None:
+        """校验：phase 与 task_range 不能同时指定。"""
+        if self.phase is not None and self.task_range is not None:
+            raise ValueError("Cannot specify both 'phase' and 'task_range'. Use only one.")
+
 
 class RunResponse(BaseModel):
     status: str
     change_id: str
     thread_id: str | None = None  # 供 /resume 使用
+    phase: str | None = None  # 本次执行的 phase（新增）
     results: list[dict] = []
     feedback: str = ""
     checkpoint_id: str | None = None
     latency_seconds: float = 0.0
+    completed_phases: list[str] = []  # 已完成的所有 phases（新增）
+    pending_phases: list[str] = []  # 待执行的 phases（新增）
 
 
 class ResumeRequest(BaseModel):
@@ -80,8 +92,12 @@ def _append_langgraph_run_log(
     project_key: str | None = None,
     checkpoint_id: str | None = None,
     error: str | None = None,
+    phase: str | None = None,  # 新增：阶段标识
+    total_tasks: int | None = None,  # 新增：全量任务数
+    completed_phases: list[str] | None = None,  # 新增：已完成 phases
+    pending_phases: list[str] | None = None,  # 新增：待执行 phases
 ) -> None:
-    """新管线留痕：追加一条到 runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl，不依赖迭代日志或 design/documents。"""
+    """新管线留痕：追加一条到 runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl，支持阶段化执行（多阶段留痕）。"""
     root = get_runtime_logs_root()
     if not root:
         return
@@ -95,15 +111,22 @@ def _append_langgraph_run_log(
         "ts": datetime.now(timezone.utc).isoformat(),
         "change_id": change_id,
         "thread_id": thread_id,
+        "phase": phase or "full",  # 默认 "full" 保持向后兼容
         "workspace_root": workspace_root,
         "status": status,
         "task_count": task_count,
+        "total_tasks": total_tasks,  # 新增
         "latency_seconds": round(latency_seconds, 2),
         "checkpoint_id": checkpoint_id,
         "error": error,
     }
     if project_key is not None:
         payload["project_key"] = project_key
+    # 阶段化执行相关字段
+    if completed_phases is not None:
+        payload["completed_phases"] = completed_phases
+    if pending_phases is not None:
+        payload["pending_phases"] = pending_phases
     line = json.dumps(payload, ensure_ascii=False) + "\n"
     try:
         (runs_dir / f"{today}.jsonl").open("a", encoding="utf-8").write(line)
@@ -113,13 +136,18 @@ def _append_langgraph_run_log(
 
 @app.post("/run", response_model=RunResponse)
 def run(req: RunRequest) -> RunResponse:
-    """执行完整工作流。"""
+    """执行工作流，支持阶段化执行（phase 参数）。"""
     start = time.time()
     thread_id = f"{req.change_id}-{uuid.uuid4().hex[:8]}"
     _thread_by_change[req.change_id] = thread_id
+    
+    # 确定 phase（默认为 "full"）
+    phase = req.phase or "full"
+    
     initial: AgentState = {
         "change_id": req.change_id,
         "task_range": req.task_range,
+        "phase": phase,  # 新增：阶段标识
         "decision": {},
         "results": [],
         "feedback": "",
@@ -147,6 +175,11 @@ def run(req: RunRequest) -> RunResponse:
         except Exception:
             ckpt_id = None
         latency = time.time() - start
+        
+        # 计算 completed_phases 和 pending_phases（简化版，实际应从日志聚合）
+        completed_phases = [phase] if res.get("status") == "done" else []
+        pending_phases = []  # 当前 phase 执行完成后，无待执行 phases
+        
         _append_langgraph_run_log(
             change_id=req.change_id,
             thread_id=thread_id,
@@ -156,28 +189,35 @@ def run(req: RunRequest) -> RunResponse:
             workspace_root=res.get("resolved_workspace_root") or req.workspace_root,
             project_key=res.get("resolved_project_key") or getattr(req, "project_key", None),
             checkpoint_id=ckpt_id,
+            phase=phase,  # 新增
+            total_tasks=len(res.get("results", [])),  # 新增
+            completed_phases=completed_phases,  # 新增
+            pending_phases=pending_phases,  # 新增
         )
         return RunResponse(
             status=res.get("status", "done"),
             change_id=res.get("change_id", req.change_id),
             thread_id=thread_id,
+            phase=phase,  # 新增
             results=res.get("results", []),
             feedback=res.get("feedback", ""),
             checkpoint_id=ckpt_id,
             latency_seconds=round(latency, 2),
+            completed_phases=completed_phases,  # 新增
+            pending_phases=pending_phases,  # 新增
         )
     except FileNotFoundError as e:
         _append_langgraph_run_log(
             change_id=req.change_id, thread_id=thread_id, status="error", task_count=0,
             latency_seconds=time.time() - start, workspace_root=req.workspace_root,
-            project_key=getattr(req, "project_key", None), error=str(e),
+            project_key=getattr(req, "project_key", None), error=str(e), phase=phase,
         )
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         _append_langgraph_run_log(
             change_id=req.change_id, thread_id=thread_id, status="error", task_count=0,
             latency_seconds=time.time() - start, workspace_root=req.workspace_root,
-            project_key=getattr(req, "project_key", None), error=str(e),
+            project_key=getattr(req, "project_key", None), error=str(e), phase=phase,
         )
         raise HTTPException(status_code=500, detail=str(e))
 

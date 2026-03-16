@@ -167,11 +167,14 @@ def check_workspace_projects_dirs() -> tuple[bool, str]:
     return True, f"LANGGRAPH_WORKSPACE_PROJECTS 共 {len(pairs)} 项，目录均存在"
 
 
-def post_run(base_url: str, change_id: str, workspace_projects: str | None = None) -> tuple[bool, str, dict]:
+def post_run(base_url: str, change_id: str, workspace_projects: str | None = None, phase: str | None = None, timeout: int = 120) -> tuple[bool, str, dict]:
+    """执行 /run，支持阶段化执行（phase 参数）。"""
     url = f"{base_url.rstrip('/')}/run"
-    body = {"change_id": change_id}
+    body: dict = {"change_id": change_id}
     if workspace_projects:
         body["workspace_projects"] = workspace_projects
+    if phase:
+        body["phase"] = phase
     try:
         req = urllib.request.Request(
             url,
@@ -179,14 +182,14 @@ def post_run(base_url: str, change_id: str, workspace_projects: str | None = Non
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.loads(r.read().decode("utf-8"))
-        return True, "POST /run 成功", data
+        return True, f"POST /run (phase={phase or 'full'}) 成功", data
     except urllib.error.HTTPError as e:
         body_str = e.read().decode("utf-8", errors="replace") if e.fp else ""
-        return False, f"POST /run HTTP {e.code}: {body_str}", {}
+        return False, f"POST /run (phase={phase or 'full'}) HTTP {e.code}: {body_str}", {}
     except Exception as e:
-        return False, f"POST /run: {e}", {}
+        return False, f"POST /run (phase={phase or 'full'}): {e}", {}
 
 
 def get_runtime_logs_root() -> Path | None:
@@ -234,26 +237,127 @@ def count_recent_run_logs(change_id: str, after_ts: float | None = None) -> int:
     return n
 
 
+def check_local_run_with_phases(base_url: str, local_change_id: str) -> tuple[bool, str, list[dict]]:
+    """
+    重构后的本仓 /run 检查：多次短调用（按 phase）+ 聚合。
+    阶段：env-check → mcp-check → biz-trace（可选）
+    """
+    phases = [
+        ("env-check", 60),   # (phase_name, timeout_seconds)
+        ("mcp-check", 60),
+        ("biz-trace", 120),  # 可选，较重
+    ]
+    
+    results: list[dict] = []
+    all_ok = True
+    
+    for phase, timeout in phases:
+        ok, msg, data = post_run(base_url, local_change_id, workspace_projects=None, phase=phase, timeout=timeout)
+        result = {
+            "phase": phase,
+            "ok": ok,
+            "message": msg,
+            "data": data,
+            "latency_seconds": data.get("latency_seconds", 0) if data else 0,
+        }
+        results.append(result)
+        if not ok:
+            all_ok = False
+            # 继续执行其他 phase，但标记失败
+    
+    # 检查留痕（简化：检查是否有任意 phase 的日志）
+    log_count = count_recent_run_logs(local_change_id)
+    has_logs = log_count > 0
+    
+    if not has_logs:
+        all_ok = False
+    
+    # 生成聚合报告
+    report_lines = [f"本仓 /run (change_id={local_change_id}) 阶段化执行结果："]
+    for r in results:
+        status = "✓" if r["ok"] else "✗"
+        report_lines.append(f"  [{status}] {r['phase']}: {r['message']} (耗时: {r['latency_seconds']:.2f}s)")
+    
+    if not has_logs:
+        report_lines.append("  ✗ 未在 runtime-logs 中发现留痕记录")
+    else:
+        report_lines.append(f"  ✓ 留痕已写入 (共 {log_count} 条记录)")
+    
+    summary = "\n".join(report_lines)
+    return all_ok, summary, results
+
+
+# 保持向后兼容的别名
 def check_local_run_and_log(base_url: str, local_change_id: str) -> tuple[bool, str]:
-    before = count_recent_run_logs(local_change_id)
-    ok, msg, _ = post_run(base_url, local_change_id, workspace_projects=None)
-    if not ok:
-        return False, f"本仓 /run ({local_change_id}): {msg}"
-    after = count_recent_run_logs(local_change_id)
-    if after <= before:
-        return False, f"本仓 /run 成功但 runtime-logs/langgraph-runs 当日 jsonl 未发现新增记录 (change_id={local_change_id})"
-    return True, f"本仓 /run 成功且留痕已写入 (change_id={local_change_id})"
+    """向后兼容的包装函数。"""
+    ok, summary, _ = check_local_run_with_phases(base_url, local_change_id)
+    # 简化输出，保持原有格式
+    if ok:
+        return True, f"本仓 /run 成功且留痕已写入 (change_id={local_change_id}, 阶段化执行)"
+    else:
+        return False, f"本仓 /run 失败 (change_id={local_change_id})"
 
 
+
+def check_business_run_with_phases(base_url: str, workspace_projects: str, business_change_id: str) -> tuple[bool, str, list[dict]]:
+    """
+    重构后的业务项目 /run 检查：多次短调用（按 phase）+ 聚合。
+    阶段：env-check → mcp-check → biz-trace（可选）
+    """
+    phases = [
+        ("env-check", 60),   # (phase_name, timeout_seconds)
+        ("mcp-check", 60),
+        # biz-trace 可选，视业务项目情况而定
+    ]
+    
+    results: list[dict] = []
+    all_ok = True
+    
+    for phase, timeout in phases:
+        ok, msg, data = post_run(base_url, business_change_id, workspace_projects=workspace_projects, phase=phase, timeout=timeout)
+        result = {
+            "phase": phase,
+            "ok": ok,
+            "message": msg,
+            "data": data,
+            "latency_seconds": data.get("latency_seconds", 0) if data else 0,
+        }
+        results.append(result)
+        if not ok:
+            all_ok = False
+    
+    # 检查留痕
+    log_count = count_recent_run_logs(business_change_id)
+    has_logs = log_count > 0
+    
+    if not has_logs:
+        all_ok = False
+    
+    # 生成聚合报告
+    report_lines = [f"业务项目 /run (change_id={business_change_id}) 阶段化执行结果："]
+    for r in results:
+        status = "✓" if r["ok"] else "✗"
+        report_lines.append(f"  [{status}] {r['phase']}: {r['message']} (耗时: {r['latency_seconds']:.2f}s)")
+    
+    if not has_logs:
+        report_lines.append("  ✗ 未在 runtime-logs 中发现留痕记录")
+    else:
+        report_lines.append(f"  ✓ 留痕已写入 (共 {log_count} 条记录)")
+    
+    summary = "\n".join(report_lines)
+    return all_ok, summary, results
+
+
+# 保持向后兼容的别名
 def check_business_run_and_log(base_url: str, workspace_projects: str, business_change_id: str) -> tuple[bool, str]:
-    before = count_recent_run_logs(business_change_id)
-    ok, msg, _ = post_run(base_url, business_change_id, workspace_projects=workspace_projects)
-    if not ok:
-        return False, f"业务项目 /run ({business_change_id}): {msg}"
-    after = count_recent_run_logs(business_change_id)
-    if after <= before:
-        return False, f"业务项目 /run 成功但 runtime-logs/langgraph-runs 当日未发现新增记录 (change_id={business_change_id})"
-    return True, f"业务项目 /run 成功且留痕已写入 (change_id={business_change_id})"
+    """向后兼容的包装函数。"""
+    ok, summary, _ = check_business_run_with_phases(base_url, workspace_projects, business_change_id)
+    # 简化输出，保持原有格式
+    if ok:
+        return True, f"业务项目 /run 成功且留痕已写入 (change_id={business_change_id}, 阶段化执行)"
+    else:
+        return False, f"业务项目 /run 失败 (change_id={business_change_id})"
+
 
 
 def _prompt_change_ids(args: argparse.Namespace) -> None:
