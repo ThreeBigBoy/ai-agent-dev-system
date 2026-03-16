@@ -291,6 +291,63 @@
   - **MCP 集成**：`run_langgraph(change_id, task_range?, workspace_root?)` 工具封装 HTTP /run 调用，返回格式化 feedback 注入对话。
   - **记忆沉淀**：新增 `pattern-langgraph-mcp-multi-workspace-config.md`（多项目配置范式）、`pattern-new-pipeline-trace-vs-design-documents.md`（新管线留痕与 design 职责分离）。
 
+- **V2.7（目录结构与质量闭环规范化）**
+  - **目录结构规范**：建立 `design/documents/changes/[change-id]/` 目录结构，统一存放 PRD、技术方案、架构图、评审记录等产出物
+  - **8+1 质量闭环 v1.0 建立**：从需求分析到复盘的 8 步完整质量闭环，每步定义准入准出标准、产出物要求
+  - **PRD 命名规范**：`PRD-[change-id]-[关键词].md` 统一命名格式
+  - **新建核心 Skill**：
+    - `prd-review/SKILL.md`：PRD 评审技能，定义评审流程和判定标准
+    - `architecture-review/SKILL.md`：技术方案评审技能，架构评审规范
+    - `retrospective-analysis/SKILL.md`：复盘技能，5阶段复盘法
+  - **质量门禁机制**：每个阶段出口设置强制检查，确保产出物完整性
+
+- **V2.8（check-langgraph-backend 二期：阶段化执行架构升级）**
+  - **阶段化执行架构**：解决 LangGraph 后端超时问题，重构自检脚本支持分阶段执行
+  - **Phase 配置体系**：`DEFAULT_PHASES` 定义 env-check/mcp-check/biz-trace/full 四个 phase
+  - **自检脚本重构**：`check_langgraph_backend.py` 支持按 phase 多次短调用 + 结果聚合
+  - **Server 端改造**：`server.py` 支持 phase 参数传递和阶段化留痕
+  - **Workflow 改造**：`workflow.py` AgentState 支持 phase 过滤任务
+  - **模式沉淀**：创建 `pattern-phase-execution.md`（阶段化执行架构模式）
+  - **完整质量闭环实战**：按 8+1 流程完成 PRD 评审 → 技术方案 → 编码 → 代码评审 → 验收 → 归档 → 复盘
+  - **评审修复循环发现**：发现「有条件通过」处理机制缺失，启动框架级改进
+
+- **V2.9（10 步质量闭环 v1.3 + 执行质量保障机制）**  
+  - **核心升级**：10 步质量闭环 v1.3（原8+1升级为10步），建立完整的执行质量保障机制，防止术语定义漂移、惯性思维陷阱、规范执行衰减、孤立改进。
+  - **Step 10 全局检查与联动更新（v1.3 新增）**：
+    - 新增 Step 10「全局检查与联动更新」，确保变更后所有关联文档同步更新
+    - 6类文档检查清单：根级/宿主SOP/Agent/规则/Skill/Memory
+    - 不得声称「全局检查完成」直到全部15项检查通过
+    - 创建 `preference-coordinated-update-checklist.md`、`anti-pattern-isolated-improvement.md`
+  - **评审修复循环机制**：
+    - 明确「有条件通过」≠「可以进入下一阶段」，必须修复后重新评审
+    - 升级 `code-review/SKILL.md` v1.1、`func-test/SKILL.md` v1.1，明确修复循环流程
+    - 创建 `pattern-review-fix-loop.md`、`anti-pattern-conditional-pass-as-go.md`
+  - **Step 8 归档操作规范化**：
+    - 明确归档 = 合并 specs/ + 移动 changes/ 到 archive/，而非简单"标记完成"
+    - 升级 `pattern-complete-quality-closed-loop.md` Step 8 v1.1，增加 4 阶段归档操作
+    - 创建 `preference-archive-operation-checklist.md`，11 项检查清单
+  - **执行前查阅规范机制**：
+    - 在 `skills-rules-for-agent.md` 新增第十章，强制要求执行前完成 4 项查阅
+    - Skill 版本确认、术语定义查阅、关联 Memory 唤醒、质量门禁检查清单查阅
+  - **规范衰减防护机制**：
+    - 在 `pattern-complete-quality-closed-loop.md` v1.2 新增防护机制章节
+    - 执行前强制检查、阶段出口强制检查、定期回顾检查、自动化防护
+  - **质量门禁自动化工具**：
+    - 开发 `openspec_validate.py` v1.0（基础验证）和 v2.0（质量门禁自动化）
+    - 支持术语使用检查、Skill 版本检查、迭代日志格式验证、阶段统计
+  - **Memory 自动唤醒优化**：
+    - 创建 `preference-memory-auto-awakening.md`，定义三层唤醒策略
+    - Skill-Memory 映射表、关键词触发机制、优先级排序算法
+  - **复盘机制常态化**：
+    - 创建 `playbook-retrospective-routine.md`，定义三种复盘触发机制
+    - 定期复盘（每周/每迭代）、事件触发复盘、问题驱动复盘
+  - **术语表与自动链接**：
+    - 创建 `preference-terminology-glossary.md`，汇总 50+ 核心术语的规范定义
+    - 术语定义、来源、常见偏差、正确理解、自动链接映射
+  - **全局检查与联动更新**：
+    - 建立变更影响分析机制，确保升级时同步更新相关文档
+    - 同步更新「新用户快速开始.md」和4个宿主SOP，增加质量保障机制简介章节
+
 ---
 
 ## 使用方式

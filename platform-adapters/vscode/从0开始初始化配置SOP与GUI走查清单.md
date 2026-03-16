@@ -157,3 +157,56 @@ AGENT_TEAM_PROJECT_ROOT=/ABS/PATH/TO/ai-agent-dev-system/agent_team_project
 
 > 进阶能力：若你希望在 VS Code 场景下同样记录模型调用成本/状态（runtime-logs），或沉淀可复用经验（memory/），可参考上述文档以及 `agents/主Agent.md` 中的运行日志与长期记忆规则，为 VS Code 扩展挂接统一脚本接口，做到一键追加日志或创建长期记忆条目。
 
+
+## 8. 质量保障机制简介（V2.7 新增）
+
+ai-agent-dev-system 采用 **8+1 质量闭环** 确保交付质量。了解这些机制有助于你更好地与 AI 协作：
+
+### 8.1 8+1 质量闭环 v1.3
+
+```
+Step 1: 需求分析 → Step 2: PRD 评审 → Step 3: 工程结构分析 → Step 4: 技术方案评审
+       → Step 5: 编码实现 → Step 6: 代码评审 → Step 7: 功能验收 → Step 8: 归档 → Step 9: 复盘
+```
+
+每个阶段都有**质量门禁检查**，只有 100% 通过才能进入下一阶段。
+
+### 8.2 核心质量保障机制
+
+#### 评审修复循环（Review-Fix Loop）
+
+**关键规则**: **"有条件通过" ≠ "可以进入下一阶段"**
+
+| 评审结论 | 是否可以进入下一阶段 | 后续动作 |
+|---------|-------------------|---------|
+| **✓ 通过** | ✅ 可以 | 直接进入下一阶段 |
+| **△ 有条件通过** | ❌ 不可以 | 必须修复 → 重新评审 → 转为「通过」 |
+| **✗ 不通过** | ❌ 不可以 | 必须修复 → 重新评审 → 转为「通过」 |
+
+#### 执行前查阅规范机制
+
+执行任何技能前，主 Agent 会自动完成 4 项查阅：
+1. **Skill 版本确认** - 确保使用最新版本 skill
+2. **术语定义查阅** - 查阅本阶段关键术语定义
+3. **关联 Memory 唤醒** - 唤醒相关的 pattern/anti-pattern
+4. **质量门禁检查清单查阅** - 明确准出标准
+
+#### 质量门禁自动化工具
+
+系统提供自动化验证工具：
+```bash
+# 质量门禁自动化验证
+python scripts/openspec-validate/openspec_validate_v2.py --quality-gate
+```
+
+### 8.3 关键 Memory 推荐
+
+| Memory | 说明 | 何时阅读 |
+|--------|------|---------|
+| `pattern-complete-quality-closed-loop` | 8+1 质量闭环完整流程 | 首次了解质量保障机制 |
+| `pattern-review-fix-loop` | 评审修复循环模式 | 遇到评审结论为「有条件通过」时 |
+| `anti-pattern-terminology-drift` | 术语定义漂移反模式 | 发现沟通理解偏差时 |
+| `preference-quality-gate-checklist` | 质量门禁检查清单 | 执行具体阶段任务前 |
+
+> 💡 **提示**: 如果你是新用户，不必一开始就深入阅读所有 Memory。遇到具体场景时，Agent 会自动唤醒相关 Memory。
+

@@ -1,6 +1,6 @@
 ---
 name: func-test
-description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结构设计与编码实现，对指定 change-id 范围内的功能进行系统化功能测试与验收；当用户输入「功能验收」「功能测试」等指令时，结合 request-analysis、project-analysis 与 coding-implement 的输出，按通用测试验收规范执行测试、发现并推动 bug 修复，并在 design/documents/[change-id]/records/ 下输出本次验收记录。
+description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结构设计与编码实现，对指定 change-id 范围内的功能进行系统化功能测试与验收；当用户输入「功能验收」「功能测试」等指令时，结合 request-analysis、project-analysis 与 coding-implement 的输出，按通用测试验收规范执行测试、发现并推动 bug 修复，并在 design/documents/[change-id]/records/ 下输出本次验收记录。v1.1 升级：明确「有条件通过」必须修复并重新验收后才能进入下一阶段。
 ---
 
 # 功能测试与验收技能（func-test）
@@ -67,17 +67,39 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
      - 结论：通过 / 未通过 / 需人工判定；
      - 如未通过，记录期望行为与差异描述。
 
-5. **识别 bug 与改进项**
+5. **识别 bug 与改进项，形成验收判定**
    - 将未通过用例与测试中发现的问题，归类为：
-     - 明确 bug（行为与 spec/Checklist 明显不符）；
-     - spec 不清或冲突（需求本身需澄清或修改）；
-     - 体验与可用性建议（不影响核心正确性，但有改进空间）。
+     - **Blocking（阻塞）**：核心功能与 spec 明显不符，必须修复后才能进入下一阶段；
+     - **Major（重要）**：功能可用但存在明显缺陷或边界问题，建议修复；
+     - **Minor（次要）**：体验优化、提示优化等建议，不影响核心功能。
    - 对 bug 建议交由 `coding-implement` + `code-review` 流程进行修复与复查；
    - 对 spec 问题建议回到 `request-analysis` / `project-analysis` 层处理。
+
+   **综合判定**：
+   - **✓ 通过**：所有测试用例通过，无 Blocking 问题，可直接进入下一阶段
+   - **△ 有条件通过**：无 Blocking 问题，但存在 Major/Minor 未通过项，需修复后重新验收
+   - **✗ 不通过**：存在 Blocking 问题，必须修复后重新验收
+
+   **验收结论与后续动作映射（重要）**：
+
+   | 验收结论 | 是否可以进入下一阶段 | 后续动作 |
+   |---------|-------------------|---------|
+   | **✓ 通过** | ✅ **可以** | 直接进入下一阶段（Step 8: 归档） |
+   | **△ 有条件通过** | ❌ **不可以** | **必须**修复问题清单中的未通过项，**重新验收**通过后，才能进入下一阶段 |
+   | **✗ 不通过** | ❌ **不可以** | **必须**修复 Blocking 问题，**重新验收**通过后，才能进入下一阶段 |
+
+   > ⚠️ **重要澄清**：「有条件通过」≠ 「可以进入下一阶段」。只有「100% 通过」才是真正的通过。详见 `memory/patterns/pattern-review-fix-loop.md`
+
+   **验收修复循环**：
+   ```
+   首次验收 ──→ 有条件通过/不通过 ──→ 修复问题 ──→ 重新验收 ──→ 通过？──→ 否 → 继续修复
+                                                              └──────→ 是 → 进入下一阶段
+   ```
 
 6. **输出测试验收记录**
    - 在 **`design/documents/[change-id]/records/`** 下创建本次验收记录文件，建议文件名 **`[change-id]-func-test.md`**（或 `func-test.md`）；
    - 记录**最小结构与自检**须符合 REFERENCE《验收记录-最小结构与自检》：含基本信息、范围说明、用例与结果汇总、问题与 bug 列表、结论与建议；两轮 `openspec validate` 结果须记入记录；产出后执行该 REFERENCE 中的自检清单，通过后再给出是否推荐通过验收的结论。
+   - **如首次验收为「有条件通过」或「不通过」**，修复后必须执行**重新验收**，产出**重新验收记录**（文件命名：`[change-id]-func-test-重新验收.md`）
 
 7. **OpenSpec 第二轮验证（严格模式）**
    - 执行 OpenSpec CLI：`openspec validate --strict`（在项目根目录下执行）。
@@ -143,9 +165,51 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
    1. 确认 change-id 为 `add-mvp-health-food-theme`，加载其 `specs/*/spec.md`、`design.md` 与 `需求验收Checklist`；  
    2. **第一轮 OpenSpec 验证**：执行 `openspec validate add-mvp-health-food-theme`，确认变更目录与文档一致；未通过则先修正再继续；  
    3. 对照健康食品 Shopify 主题 MVP 的各项 Scenario，列出需要验证的页面与配置场景（如推荐区展示、倒计时 Section 行为、多模板切换等），并逐项执行测试、记录结果；  
-   4. 对发现的行为不符或边界问题，记录为 bug，并建议通过 `coding-implement` + `code-review` 流程修复；  
-   5. 在 `documents/records/add-mvp-health-food-theme-func-test.md` 中输出本次验收记录，并将关键问题同步到 `tasks.md`；  
-   6. **第二轮 OpenSpec 验证**：执行 `openspec validate --strict`，通过后再给出是否推荐通过本次验收的结论。  
+   4. 对发现的行为不符或边界问题，记录为 bug，并建议通过 `coding-implement` + `code-review` 流程修复；
+   5. **形成验收判定**（通过/有条件通过/不通过），明确是否可以进入下一阶段；
+   6. 在 `documents/records/add-mvp-health-food-theme-func-test.md` 中输出本次验收记录，并将关键问题同步到 `tasks.md`；
+   7. **如判定为「有条件通过」或「不通过」**，修复后执行重新验收，产出重新验收记录，转为「通过」后方可进入下一阶段；
+   8. **第二轮 OpenSpec 验证**：执行 `openspec validate --strict`，通过后再给出是否推荐通过本次验收的结论。  
 
 通过本技能，OpenSpec 项目在「需求 → 结构 → 实现 → 评审」之后增加了**规范化的功能验收环节**，帮助确保交付质量与文档标准的一致性。
+
+---
+
+## 七、执行后必做收尾
+
+### 1. 向迭代日志追加记录
+
+**首次验收记录**（所有验收都必须记录）：
+- 文件：`design/documents/迭代日志.md`
+- 格式：`- [日期] | [change-id] | func-test | 功能验收完成，综合判定：[通过/有条件通过/不通过]，验收记录路径：[路径]`
+
+**重新验收记录**（如首次验收为「有条件通过」或「不通过」，修复后必须重新验收并记录）：
+- 格式：`- [日期] | [change-id] | func-test | 功能重新验收完成，修复项：[N 项]，综合判定：[通过]，验收记录路径：[路径]`
+
+**示例**：
+```markdown
+# 首次验收（有条件通过）
+- 2026-03-16 | check-langgraph-backend | func-test | 功能验收完成，综合判定：有条件通过（需人工验证 4 项），验收记录路径：design/documents/changes/check-langgraph-backend/records/check-langgraph-backend-func-test.md
+
+# 修复后重新验收（通过）
+- 2026-03-16 | check-langgraph-backend | func-test | 功能重新验收完成，修复项：4 项已验证，综合判定：通过，验收记录路径：design/documents/changes/check-langgraph-backend/records/check-langgraph-backend-func-test-重新验收.md
+```
+
+### 2. 向用户反馈验收结果
+
+1. **验收结果摘要**：综合判定（通过/有条件通过/不通过）
+2. **问题统计**：Blocking [N] 项 / Major [N] 项 / Minor [N] 项 / 需人工验证 [N] 项
+3. **关键问题**：阻塞性问题（如有）
+4. **验收记录路径**：告知用户验收记录文档存放位置
+5. **后续行动建议**：
+   - 若通过：可进入 Step 8（归档）
+   - 若有条件通过：**不能进入下一阶段**。必须：① 修复/验证问题 → ② 执行重新验收 → ③ 转为「通过」后，才能进入下一阶段
+   - 若不通过：**不能进入下一阶段**。必须：① 修复 Blocking 问题 → ② 执行重新验收 → ③ 转为「通过」后，才能进入下一阶段
+
+---
+
+**技能版本**: v1.1（2026-03-17 升级：明确「有条件通过」必须修复并重新验收后才能进入下一阶段）  
+**最后更新**: 2026-03-17  
+**依赖 REFERENCE**: `skills/func-test/REFERENCE/验收记录-最小结构与自检.md`  
+**关联 Memory**: `pattern-review-fix-loop`, `anti-pattern-conditional-pass-as-go`, `anti-pattern-terminology-drift`
 

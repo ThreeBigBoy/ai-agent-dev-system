@@ -226,3 +226,99 @@ alwaysApply: true
   - 评审判定：7 项及以上通过为通过，5-6 项通过为有条件通过，少于 5 项通过或有未通过项为不通过。
 
 ---
+
+## 十、执行前查阅规范机制（v1.2 新增）
+
+为防止**术语定义漂移**和**惯性思维陷阱**，确保每次执行技能时都按最新规范执行，特建立「执行前查阅规范」强制机制。
+
+### 10.1 查阅要求
+
+**执行任何技能前，必须完成以下查阅步骤**：
+
+| # | 查阅项 | 查阅内容 | 目的 |
+|---|--------|---------|------|
+| C.1 | Skill 版本确认 | 确认使用的 skill SKILL.md 为最新版本 | 防止使用旧版本规范 |
+| C.2 | 术语定义查阅 | 查阅本技能涉及的关键术语定义 | 防止术语定义漂移 |
+| C.3 | 关联 Memory 唤醒 | 唤醒相关的 pattern/anti-pattern/preference | 获取最佳实践和避坑指南 |
+| C.4 | 质量门禁检查清单 | 查阅本阶段的质量门禁检查清单 | 明确准出标准 |
+
+### 10.2 查阅流程
+
+```
+用户指令触发技能执行
+    ↓
+执行前查阅规范（强制）
+    ├── C.1 确认 skill 版本（对比 ai-agent-dev-system/skills/ 目录）
+    ├── C.2 查阅术语定义（如「评审」「验收」「归档」的规范定义）
+    ├── C.3 唤醒关联 Memory（如 pattern-review-fix-loop、anti-pattern-terminology-drift）
+    └── C.4 查阅质量门禁检查清单（preference-quality-gate-checklist 对应阶段）
+    ↓
+开始执行技能
+    ↓
+执行阶段内容
+    ↓
+执行后必做收尾（迭代日志记录）
+```
+
+### 10.3 术语定义查阅速查表
+
+| 术语 | 规范定义来源 | 常见理解偏差 | 正确理解 |
+|-----|------------|-------------|---------|
+| **归档** | OpenSpec.md 阶段3 | 标记完成 | 合并 specs/ + 移动 changes/ |
+| **评审通过** | prd-review/architecture-review/code-review v1.1 | 有条件通过可进入下一阶段 | 只有「100% 通过」才是真正的通过 |
+| **验收通过** | func-test v1.1 | 有条件通过可进入下一阶段 | 只有「100% 通过」才是真正的通过 |
+| **提案** | OpenSpec.md 4.3 | 简单描述 | 声明变更目标、范围、非目标、依赖与风险 |
+| **变更** | OpenSpec.md | 任意修改 | 待实施的提案，遵循 changes/ 目录结构 |
+
+### 10.4 关联 Memory 唤醒清单
+
+**执行各技能前建议唤醒的 Memory**：
+
+| 技能 | 建议唤醒 Memory |
+|-----|----------------|
+| request-analysis | pattern-complete-quality-closed-loop（了解全流程） |
+| prd-review | pattern-review-fix-loop, anti-pattern-conditional-pass-as-go |
+| project-analysis | pattern-complete-quality-closed-loop |
+| architecture-review | pattern-review-fix-loop, anti-pattern-conditional-pass-as-go |
+| coding-implement | 项目特定的 project-rules/ |
+| code-review | pattern-review-fix-loop, anti-pattern-conditional-pass-as-go, anti-pattern-terminology-drift |
+| func-test | pattern-review-fix-loop, anti-pattern-conditional-pass-as-go, anti-pattern-terminology-drift |
+| retrospective-analysis | pattern-five-stage-retrospective, pattern-breakthrough-thinking-redefine-problem-space |
+
+### 10.5 执行前查阅声明模板
+
+**执行任何技能前，填写以下声明**：
+
+```markdown
+**执行前查阅规范声明**
+
+执行技能: [skill-name]  
+执行阶段: [Step N: 阶段名称]  
+执行日期: YYYY-MM-DD  
+
+查阅确认:
+- [ ] C.1 已确认 skill 版本为最新（[skill-path]/SKILL.md）
+- [ ] C.2 已查阅本阶段关键术语定义（术语：[术语1], [术语2]）
+- [ ] C.3 已唤醒关联 Memory（[memory1], [memory2]）
+- [ ] C.4 已查阅质量门禁检查清单（preference-quality-gate-checklist Step N）
+
+术语理解确认:
+- [术语1]: 我的理解是 [描述]，与规范定义一致 ✓
+- [术语2]: 我的理解是 [描述]，与规范定义一致 ✓
+
+**签名**: [Agent 角色]  
+**日期**: YYYY-MM-DD
+```
+
+### 10.6 违反处理
+
+**未执行查阅规范即执行技能，视为违反本规则**：
+- 执行产出可能不符合规范要求
+- 需重新执行并补充查阅规范步骤
+- 严重情况需启动复盘分析
+
+---
+
+**规则版本**: v1.2（新增执行前查阅规范机制）  
+**最后更新**: 2026-03-17  
+**关联文档**: OpenSpec.md, preference-quality-gate-checklist, anti-pattern-terminology-drift, anti-pattern-inertia-trap

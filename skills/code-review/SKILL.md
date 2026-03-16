@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结构设计，对指定 change-id 范围内的代码进行系统化 Code Review；当用户输入「编码实现」「代码评审」「帮我 Review 这个 change」等指令时，结合 request-analysis 与 project-analysis 的输出，按通用 review 规范检查并提出修改建议，并在 design/documents/[change-id]/records/ 下输出本次 review 记录。
+description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结构设计，对指定 change-id 范围内的代码进行系统化 Code Review；当用户输入「编码实现」「代码评审」「帮我 Review 这个 change」等指令时，结合 request-analysis 与 project-analysis 的输出，按通用 review 规范检查并提出修改建议，并在 design/documents/[change-id]/records/ 下输出本次 review 记录。v1.1 升级：明确「有条件通过」必须修复并重新评审后才能进入下一阶段。
 ---
 
 # Code Review 技能（code-review）
@@ -56,14 +56,41 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
      - 测试情况与可测试性；
      - 与 `info-database/` 与 `info-service-interface/` 的一致性（如涉及数据表或对外接口变更）。
 
-4. **给出修改建议与行动项**
+4. **给出修改建议与行动项，形成评审判定**
    - 对发现的问题给出**具体、可操作**的建议（例如：应将逻辑上移到业务层、应改用仓储接口、应补充某个 Scenario 的测试等）；
    - 避免空泛评价，尽可能指向具体文件/函数/模块；
    - 如发现需要回到需求或结构层重新讨论的议题，应明确标注为「需上升到设计/架构层处理」。
 
+   **问题分级与评审判定**：
+   - **Blocking（阻塞）**：影响功能正确性、安全性、性能或违反架构原则，必须修复后才能进入下一阶段
+   - **Major（重要）**：影响代码质量、可维护性，建议修复
+   - **Minor（次要）**：编码风格、注释优化等建议
+
+   **综合判定**：
+   - **✓ 通过**：无 Blocking 问题，代码符合规范，可直接进入下一阶段
+   - **△ 有条件通过**：无 Blocking 问题，但存在 Major/Minor 建议，需修复后重新评审
+   - **✗ 不通过**：存在 Blocking 问题，必须修复后重新评审
+
+   **评审结论与后续动作映射（重要）**：
+
+   | 评审结论 | 是否可以进入下一阶段 | 后续动作 |
+   |---------|-------------------|---------|
+   | **✓ 通过** | ✅ **可以** | 直接进入下一阶段（Step 7: 功能验收） |
+   | **△ 有条件通过** | ❌ **不可以** | **必须**修复问题清单中的建议，**重新评审**通过后，才能进入下一阶段 |
+   | **✗ 不通过** | ❌ **不可以** | **必须**修复 Blocking 问题，**重新评审**通过后，才能进入下一阶段 |
+
+   > ⚠️ **重要澄清**：「有条件通过」≠ 「可以进入下一阶段」。只有「100% 通过」才是真正的通过。详见 `memory/patterns/pattern-review-fix-loop.md`
+
+   **评审修复循环**：
+   ```
+   首次评审 ──→ 有条件通过/不通过 ──→ 修复问题 ──→ 重新评审 ──→ 通过？──→ 否 → 继续修复
+                                                            └──────→ 是 → 进入下一阶段
+   ```
+
 5. **输出 review 记录**
    - 在 **`design/documents/[change-id]/records/`** 下，为本次 review 创建记录文件，建议文件名 **`[change-id]-code-review.md`**（与 func-test 验收记录同目录，符合 OpenSpec 1.1 表约定）；
    - 记录**最小结构与自检**须符合 REFERENCE《评审报告-最小结构与自检》：含基本信息、整体结论、问题清单（Blocking/Major/Minor）、后续行动；产出后执行该 REFERENCE 中的自检清单，通过后再视为本次评审完成。
+   - **如首次评审为「有条件通过」或「不通过」**，修复后必须执行**重新评审**，产出**重新评审纪要**（文件命名：`[change-id]-code-review-重新评审纪要.md`）
 
 ---
 
@@ -118,8 +145,50 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
    1. 确认本次 change-id 为 `add-mvp-health-food-theme`，加载其 `proposal.md`、`design.md`、`specs/*/spec.md` 与 `tasks.md`；  
    2. 阅读 `openspec/project.md` 与 `design/project-rules/`，了解 Shopify 主题项目的架构、分层与命名约定；  
    3. 检查与本次 change 相关的主题模板、Section、Snippet、Metafields 使用等代码变更；  
-   4. 按 REFERENCE 中的通用 code-review 规范，对需求覆盖、分层、可读性、安全/性能、日志与监控等维度进行 Review，提出具体修改建议；  
-   5. 在 `design/documents/add-mvp-health-food-theme/records/add-mvp-health-food-theme-code-review.md` 中记录本次 Review 的结论、问题与后续行动项，并视需要在 `tasks.md` 中补充或更新任务。  
+   4. 按 REFERENCE 中的通用 code-review 规范，对需求覆盖、分层、可读性、安全/性能、日志与监控等维度进行 Review，提出具体修改建议；
+   5. **形成评审判定**（通过/有条件通过/不通过），明确是否可以进入下一阶段；
+   6. 在 `design/documents/add-mvp-health-food-theme/records/add-mvp-health-food-theme-code-review.md` 中记录本次 Review 的结论、问题与后续行动项；
+   7. **如判定为「有条件通过」或「不通过」**，修复后执行重新评审，产出重新评审纪要，转为「通过」后方可进入下一阶段。
 
 通过本技能，OpenSpec 项目可以在「需求 → 结构 → 实现」之后增加一个**规范化的代码评审环节**，让代码质量与文档/架构约定保持长期一致。
+
+---
+
+## 七、执行后必做收尾
+
+### 1. 向迭代日志追加记录
+
+**首次评审记录**（所有评审都必须记录）：
+- 文件：`design/documents/迭代日志.md`
+- 格式：`- [日期] | [change-id] | code-review | 代码评审完成，综合判定：[通过/有条件通过/不通过]，评审纪要路径：[路径]`
+
+**重新评审记录**（如首次评审为「有条件通过」或「不通过」，修复后必须重新评审并记录）：
+- 格式：`- [日期] | [change-id] | code-review | 代码重新评审完成，修复项：[N 项]，综合判定：[通过]，评审纪要路径：[路径]`
+
+**示例**：
+```markdown
+# 首次评审（有条件通过）
+- 2026-03-16 | check-langgraph-backend | code-review | 代码评审完成，综合判定：有条件通过（2项 Minor），评审纪要路径：design/documents/changes/check-langgraph-backend/records/check-langgraph-backend-code-review.md
+
+# 修复后重新评审（通过）
+- 2026-03-16 | check-langgraph-backend | code-review | 代码重新评审完成，修复项：2 项，综合判定：通过，评审纪要路径：design/documents/changes/check-langgraph-backend/records/check-langgraph-backend-code-review-重新评审纪要.md
+```
+
+### 2. 向用户反馈评审结果
+
+1. **评审结果摘要**：综合判定（通过/有条件通过/不通过）
+2. **问题统计**：Blocking [N] 项 / Major [N] 项 / Minor [N] 项
+3. **关键问题**：阻塞性问题（如有）
+4. **评审纪要路径**：告知用户评审纪要文档存放位置
+5. **后续行动建议**：
+   - 若通过：可进入 Step 7（功能验收）
+   - 若有条件通过：**不能进入下一阶段**。必须：① 修复问题 → ② 执行重新评审 → ③ 转为「通过」后，才能进入下一阶段
+   - 若不通过：**不能进入下一阶段**。必须：① 修复 Blocking 问题 → ② 执行重新评审 → ③ 转为「通过」后，才能进入下一阶段
+
+---
+
+**技能版本**: v1.1（2026-03-17 升级：明确「有条件通过」必须修复并重新评审后才能进入下一阶段）  
+**最后更新**: 2026-03-17  
+**依赖 REFERENCE**: `skills/code-review/REFERENCE/评审报告-最小结构与自检.md`  
+**关联 Memory**: `pattern-review-fix-loop`, `anti-pattern-conditional-pass-as-go`, `anti-pattern-terminology-drift`
 
