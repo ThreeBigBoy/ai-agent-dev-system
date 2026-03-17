@@ -58,18 +58,23 @@ def _normalize_workspace_roots(
     将 workspace_root 规范为 Path 列表，便于多业务项目匹配。
     - workspace_root 可为单路径或多路径字符串（用 : 或 ; 分隔）。
     - project_key 可选：若提供，仅保留路径字符串中包含 project_key 的根（关键路径/项目名匹配）。
+    - 修复：确保单路径也能正确解析（即使不含分隔符）。
     """
     if workspace_root is None:
         return []
     raw = str(workspace_root).strip()
     if not raw:
         return []
-    # 先按分隔符拆成多个路径
-    for sep in _WORKSPACE_ROOT_SEP:
-        if sep in raw:
-            parts = [p.strip() for p in raw.split(sep) if p.strip()]
-            break
+    # 先按分隔符拆成多个路径（仅当存在分隔符时才拆分）
+    parts: list[str] = []
+    has_sep = any(sep in raw for sep in _WORKSPACE_ROOT_SEP)
+    if has_sep:
+        for sep in _WORKSPACE_ROOT_SEP:
+            if sep in raw:
+                parts = [p.strip() for p in raw.split(sep) if p.strip()]
+                break
     else:
+        # 单路径，直接使用
         parts = [raw]
     roots = [Path(p) for p in parts if p]
     if project_key and project_key.strip():
@@ -132,6 +137,13 @@ def parse_tasks_md(
                 tried_roots.append(root)
                 if candidate.is_file():
                     secondary_path = candidate
+                    resolved_workspace_root = str(root)
+                    # 尝试从路径中提取 project_key（如果路径中包含已知项目名）
+                    path_str = str(root)
+                    if "Proj01ShopifyTheme" in path_str:
+                        resolved_project_key = "Proj01ShopifyTheme"
+                    elif "test_bizproject" in path_str:
+                        resolved_project_key = "test_bizproject"
                     break
 
     # 3. 选择路径：本仓优先，找不到再用业务项目

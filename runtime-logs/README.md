@@ -16,13 +16,29 @@
 
 ```text
 runtime-logs/
-├── .gitignore          # 忽略 .jsonl / .log 等运行期产物
-├── README.md           # 本说明文档
-├── model-calls/        # 模型调用明细日志（JSON Lines）
-├── system-events/      # 系统事件文本日志
-├── langgraph-runs/     # 新管线（LangGraph）执行留痕（JSONL，每行一次 /run 或 /resume）
-└── adapters/           # 各宿主日志采集适配说明（非代码）
+├── .gitignore              # 忽略 .jsonl / .log 等运行期产物
+├── README.md               # 本说明文档
+├── model-calls/            # 模型调用明细日志（JSON Lines）
+├── system-events/          # 系统事件文本日志
+├── langgraph-runs/         # 新管线（LangGraph）执行留痕（JSONL，每行一次 /run 或 /resume）
+├── execution-deviations/   # 执行偏差记录：执行过程中发现的问题/偏差即时记录（Markdown）
+└── adapters/               # 各宿主日志采集适配说明（非代码）
 ```
+
+### `execution-deviations/`：执行偏差记录
+
+- **用途**：记录**执行过程中发现的问题、偏差、不符合预期的情况**，属于运行时审计留痕，与 `system-events/` 的区别在于：system-events 记录"发生了什么"，execution-deviations 记录"发现哪里不对"。
+- **与"复盘"的区别**：
+  - **执行偏差记录** = 即时记录，问"发现了什么偏差？"（事实记录，存放于 runtime-logs/）
+  - **复盘** = 事后总结，问"为什么？如何改进？"（方法论提炼，存放于 design/documents/retrospectives/）
+- **文件命名**：`[偏差类型]-[change-id]-[日期].md`，例如：
+  - `fake-completion-discovered-2026-03-16-update-product-template.md`
+  - `execution-deviation-2026-03-16-change-init-process-deviation.md`
+- **内容结构**：自由格式，建议包含：
+  1. 发现的问题/偏差描述
+  2. 影响评估
+  3. 即时补救措施
+  4. 是否需要转化为长期改进（关联到复盘或 memory）
 
 ### `langgraph-runs/`：新管线执行留痕（系统日常运行合法目录）
 

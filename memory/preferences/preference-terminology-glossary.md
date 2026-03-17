@@ -95,6 +95,8 @@ version: 1.0
 |-----|---------|---------|-------------|---------|---------|
 | **Memory** | 跨项目可复用的知识资产（pattern/anti-pattern/preference/playbook/reflection） | memory/schema.md | 任意笔记 | 遵循 schema 规范的结构化知识 | `memory/[type]/[id].md` |
 | **Milestone（里程碑）** | 重要的项目节点，如完成一个 change-id | pattern-complete-quality-closed-loop | 任意节点 | 完成归档的重要节点，触发复盘 | - |
+| **Execution Deviation（执行偏差记录）** | 执行过程中发现问题/偏差时的**即时记录**，属于运行时审计 | runtime-logs 设计 | "执行偏差记录就是复盘" | 执行偏差记录≠复盘；前者是即时事实记录（runtime-logs/execution-deviations/），后者是事后方法论总结（design/documents/retrospectives/） | `runtime-logs/execution-deviations/` |
+| **Retrospective（复盘）** | 变更/阶段结束后的**系统性总结**，必须含目标→过程→根因→改进→沉淀 | 目录结构规范 V3 Step 9 | "复盘可以放在 runtime-logs" | 复盘必须在 `design/documents/retrospectives/`，有严格结构 | `design/documents/retrospectives/[level]/` |
 
 ### P
 

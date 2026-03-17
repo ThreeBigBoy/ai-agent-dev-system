@@ -193,3 +193,94 @@
 - Cursor Chat 的当前生效入口规则以 `.cursor/rules/agent.mdc` 为准。
 - `agents/Reference/主Agent-总指挥入口模板-参考.md` 保存 2.0 方案中的 6.1 模板，作为来源参考；其中 `cursor_decision.json` 等旧命名仅表示历史模板语境，当前运行时以 `agent_decision.json` / `agent_feedback.txt` 为主，并兼容旧名。
 - 若模板内容与 OpenSpec、global-rules、agents 中的 V2.1/V2.2 治理规则不一致，以治理层规则为准。
+
+# 框架级强制执行约束（V2.8 新增）
+
+## 核心原则
+
+> **从「宿主级约定」到「框架级强制保障」**：所有涉及多 Agent 协同的任务执行，必须通过 LangGraph 后端 `/run` API，禁止主 Agent 或子 Agent 手动执行后声称完成。
+
+## 为什么必须这样
+
+| 方式 | 本质 | 问题 | LangGraph 解决 |
+|------|------|------|----------------|
+| 手动执行 + 声称完成 | 宿主级约定 | 可跳过、可虚假标记、无法验证 | StateGraph 编译后代码强制流转 |
+| 依赖 memory/agents.md | 文档约定 | 依赖人阅读遵守，可忽略 | 检查点自动持久化，可验证每一步 |
+| **通过 `/run` API 执行** | **框架级强制** | **不可跳过、不可虚假标记、可验证** | **状态机约束 `pending→running→done/error`** |
+
+## 强制约束（必须遵守）
+
+### 1. 执行入口唯一化
+
+**禁止**：
+- ❌ 主 Agent 手动调用 executor 执行任务
+- ❌ 手动执行脚本后声称「已完成」
+- ❌ 直接修改文件后声称「已编码实现」
+
+**强制**：
+- ✅ 所有任务必须通过 `POST /run` API 调用
+- ✅ 参数：`change_id` + `task_range` + `workspace_root/workspace_projects`
+- ✅ 等待返回结果，不得提前声称完成
+
+### 2. 完成验证强制化
+
+**声称完成前必须验证**（按 `pattern-langgraph-execution-verification`）：
+
+```markdown
+**LangGraph 执行验证声明**
+
+- [ ] 后端健康检查通过：localhost:8000/health → healthy
+- [ ] /run API 已调用：POST /run with change_id=XXX, task_range=YYY
+- [ ] 响应已接收：status 200，feedback 非空
+- [ ] 日志验证：runtime-logs/langgraph-runs/*.jsonl 中找到 change_id=XXX 记录
+- [ ] 检查点可恢复：/resume 返回成功
+
+**验证人**: [Agent 角色]
+**验证时间**: YYYY-MM-DD HH:mm:ss
+```
+
+**未完成验证声明，禁止输出**：
+- 「已完成」
+- 「已执行」
+- 「已落实」
+- 任何完成性/交付性表述
+
+### 3. 失败处理透明化
+
+若 `/run` 调用失败或超时：
+- 记录错误信息到 `runtime-logs/system-events/`
+- 标记任务状态为「框架执行失败，待修复」
+- 不得回退到手动执行后声称完成
+- 优先修复框架问题，而非绕过框架
+
+## 当前框架状态（2026-03-16）
+
+| 场景 | 状态 | 说明 |
+|------|------|------|
+| ai-agent-dev-system 本仓变更 | ✅ 可用 | `test-langgraph-backend` 可正常执行 |
+| 业务项目变更 | ❌ 不可用 | `workspace_root/workspace_projects` 参数解析存在缺陷，需修复 |
+
+**临时措施**（框架缺陷修复前）：
+- 手动执行任务时，必须在迭代日志中明确标记为「非框架级执行」
+- 创建框架缺陷记录，跟踪修复进度
+- 不得虚假声称「已通过 LangGraph 执行」
+
+## 修复后验证标准
+
+框架缺陷修复后，必须验证：
+
+```bash
+# 验证业务项目可执行
+curl -X POST http://localhost:8000/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "change_id": "update-product-template-default-health-compliance-section",
+    "task_range": "2.1",
+    "workspace_root": "/Users/billhu/Cursor Projects/Proj01ShopifyTheme"
+  }'
+
+# 期望：返回 200，feedback 包含执行结果
+# 验证：runtime-logs/langgraph-runs/*.jsonl 中有记录，workspace_root 不为 null
+```
+
+验证通过后，本约束正式生效，所有任务必须通过 `/run` 执行。
