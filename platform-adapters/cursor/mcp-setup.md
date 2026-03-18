@@ -108,3 +108,23 @@
 - 后端始终**先读本仓**（ai-agent-dev-system/openspec/changes/），若找不到该 change_id，再按列表顺序尝试每个业务项目
 - 第一个存在 `openspec/changes/{change_id}/tasks.md` 的项目即命中
 - 留痕中会记录命中的 `project_key` 和 `workspace_root`
+
+---
+
+### 7. 已知现象与故障排除
+
+**Cursor MCP 日志中的 `[error] Processing request of type XRequest` / `undefined`**
+
+在 Cursor 的 MCP 日志（如「Output」面板中 `user-langgraph-backend` 或 `langgraph-backend`）里，可能反复出现：
+
+- `[error] Processing request of type CallToolRequest` / `undefined`
+- `[error] Processing request of type ListToolsRequest` / `undefined`
+- `[error] Processing request of type ListPromptsRequest` / `undefined`
+- `[error] Processing request of type ListResourcesRequest` / `undefined`
+
+**说明**：这是 **Cursor MCP 宿主**在解析请求/响应时打印的日志（其内部某字段为 `undefined`），并非本 MCP 服务返回错误。实际行为上：
+
+- 工具调用会正常完成（如 `Successfully called tool 'run_langgraph'`），Chat 中能看到执行结果；
+- `listPrompts` / listResources / listTools 会正常返回数据（例如 `listPrompts: Found 1 prompts`）。
+
+**建议**：若工具与列表均可用、结果正确，可**忽略**上述 `[error]` 行；无需修改本仓库或 MCP 配置。若希望日志更干净，需由 Cursor 端修复其 MCP 宿主对请求类型的处理与日志输出。

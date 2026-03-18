@@ -23,7 +23,7 @@ alwaysApply: true
 
 | Agent（agents/） | 主导/赋能技能（skills/） | 联动或可选技能 | 说明 |
 |------------------------------|--------------------------|----------------|------|
-| **主 Agent** | — | 全链路协调 | 不直接执行某一技能；统筹 request-analysis → project-analysis → coding-implement → code-review → func-test 全链路，监督各 Agent 按本表触发技能，确保规范落地。 |
+| **主 Agent** | — | 全链路协调 | 不直接执行某一技能；统筹 request-analysis → project-analysis → coding-implement → code-review → func-test 全链路，监督各 Agent 按本表触发技能，确保规范落地。完整质量闭环为 **10 步**（含验收后 **归档 → 复盘 → 全局检查**），见 `memory/patterns/pattern-complete-quality-closed-loop.md`。 |
 | **产品经理 Agent** | request-analysis | image-analysis | 主导需求分析、变更提案与 specs 编写；需求涉及前端或含设计图/截图时联动 image-analysis，解析结果纳入需求与 spec。 |
 | **架构 Agent** | project-analysis、code-review | — | 主导工程结构分析（project.md、design/project-rules/）、OpenSpec CLI 与代码评审；产出技术规范与评审报告，推动规范与实现一致。 |
 | **前端 Agent** | coding-implement（前端） | image-analysis | 按 specs 与 project 约定实现前端代码；引用 image-analysis 的解析结果做 UI/设计图还原与场景描述落地。 |
@@ -217,7 +217,7 @@ alwaysApply: true
   3. **沉淀 Memory**：评估复盘成果是否值得沉淀为 memory（pattern、anti-pattern、preference、playbook、reflection），并创建相关 memory 文档。
   4. **更新迭代日志**：向迭代日志追加复盘记录。
 - **协同关系**：
-  - 与所有前置技能：复盘需要回顾 request-analysis → prd-review → project-analysis → architecture-review → coding-implement → code-review → func-test 全过程。
+  - 与所有前置技能：复盘需要回顾 request-analysis → prd-review → project-analysis → architecture-review → coding-implement → code-review → func-test 全过程，以及验收后的**归档**与 **Step 10 全局检查**（10 步质量闭环 v1.3）。
   - 与 `pattern-five-stage-retrospective`：本技能是 5 阶段复盘法的具体执行实现。
   - 与 `pattern-breakthrough-thinking-redefine-problem-space`：复盘时分析思维模式差异（如 AI vs 用户）。
 - **产出物质量约定**：

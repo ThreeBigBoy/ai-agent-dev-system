@@ -20,9 +20,18 @@ def _get_http_timeout() -> int:
 
 try:
     from mcp.server.fastmcp import FastMCP
+    from mcp.types import CallToolResult, TextContent
 except ImportError:
     print("Please install mcp: pip install mcp", file=sys.stderr)
     sys.exit(1)
+
+
+def _tool_result(text: str, is_error: bool = False) -> CallToolResult:
+    """返回 MCP 协议规定的 CallToolResult，避免 Cursor 解析 CallToolRequest 时得到 undefined。"""
+    return CallToolResult(
+        content=[TextContent(type="text", text=text)],
+        isError=is_error,
+    )
 
 # 默认后端地址（与 langgraph_backend/server.py 一致）
 DEFAULT_BASE = "http://127.0.0.1:8000"
@@ -122,10 +131,23 @@ def _append_hints_if_error(text: str) -> str:
     return text
 
 
-mcp = FastMCP(
-    "langgraph-backend",
-    description="调用 LangGraph 独立后端执行变更任务（/run、/status、/health）",
-)
+# FastMCP 仅传 name（部分 mcp 版本不支持 description 参数）
+mcp = FastMCP("langgraph-backend")
+
+
+@mcp.resource("langgraph-backend://info")
+def _resource_backend_info() -> str:
+    """MCP 资源：返回后端说明，用于满足 ListResourcesRequest 协议，避免 Cursor 报错。"""
+    return json.dumps({
+        "server": "langgraph-backend",
+        "description": "LangGraph workflow backend MCP: run_langgraph, resume_langgraph, health, human_confirm_*",
+    }, ensure_ascii=False, indent=2)
+
+
+@mcp.prompt()
+def _prompt_backend_info() -> str:
+    """MCP 提示：返回后端说明，用于满足 ListPromptsRequest 协议，避免 Cursor 报 undefined。"""
+    return "LangGraph 后端 MCP 可用工具：run_langgraph、resume_langgraph、health、human_confirm_poll、human_confirm_submit。"
 
 
 # 业务项目配置：支持两种形式
@@ -208,7 +230,7 @@ def run_langgraph(
     task_range: str | None = None,
     workspace_root: str | None = None,
     base_url: str = DEFAULT_BASE,
-) -> str:
+) -> CallToolResult:
     """
     调用 LangGraph 后端执行指定 change_id 的任务。
 
@@ -235,7 +257,7 @@ def run_langgraph(
             body["workspace_root"] = workspace_root_legacy
         res = _http_post(url, body)
         formatted = _format_run_response(res)
-        return _append_hints_if_error(formatted)
+        return _tool_result(_append_hints_if_error(formatted))
     except urllib.error.HTTPError as e:
         err_body = ""
         try:
@@ -245,15 +267,15 @@ def run_langgraph(
         out = f"**调用失败**：HTTP {e.code}\n{err_body or str(e)}"
         if e.code == 400 and "tasks.md" in (err_body or ""):
             out += "\n\n**提示**：若该 change-id 属于**业务项目**，请在 **~/.cursor/mcp.json** 的 **langgraph-backend.env** 中配置 **LANGGRAPH_WORKSPACE_PROJECTS**（格式：\"project_key|项目根路径:key2|路径2\"），后端会按 change_id 自动从列表中解析出对应项目，无需单独设置当前项目。"
-        return out
+        return _tool_result(out, is_error=True)
     except urllib.error.URLError as e:
-        return f"**调用失败**：无法连接后端 {url}\n请确认已启动：`cd agent_team_project && source .venv/bin/activate && uvicorn langgraph_backend.server:app --port 8000`\n错误: {e}"
+        return _tool_result(f"**调用失败**：无法连接后端 {url}\n请确认已启动：`cd agent_team_project && source .venv/bin/activate && uvicorn langgraph_backend.server:app --port 8000`\n错误: {e}", is_error=True)
     except Exception as e:
-        return f"**调用失败**：{type(e).__name__}: {e}"
+        return _tool_result(f"**调用失败**：{type(e).__name__}: {e}", is_error=True)
 
 
 @mcp.tool()
-def resume_langgraph(change_id: str, thread_id: str, checkpoint_id: str, base_url: str = DEFAULT_BASE) -> str:
+def resume_langgraph(change_id: str, thread_id: str, checkpoint_id: str, base_url: str = DEFAULT_BASE) -> CallToolResult:
     """
     从检查点恢复执行（断点续跑）。需使用上次 /run 返回的 thread_id 与 checkpoint_id。
 
@@ -266,15 +288,15 @@ def resume_langgraph(change_id: str, thread_id: str, checkpoint_id: str, base_ur
     try:
         res = _http_post(url, {"change_id": change_id, "thread_id": thread_id, "checkpoint_id": checkpoint_id})
         formatted = _format_run_response(res)
-        return _append_hints_if_error(formatted)
+        return _tool_result(_append_hints_if_error(formatted))
     except urllib.error.URLError as e:
-        return f"**调用失败**：无法连接后端 {url}\n错误: {e}"
+        return _tool_result(f"**调用失败**：无法连接后端 {url}\n错误: {e}", is_error=True)
     except Exception as e:
-        return f"**调用失败**：{type(e).__name__}: {e}"
+        return _tool_result(f"**调用失败**：{type(e).__name__}: {e}", is_error=True)
 
 
 @mcp.tool()
-def get_langgraph_status(change_id: str, base_url: str = DEFAULT_BASE) -> str:
+def get_langgraph_status(change_id: str, base_url: str = DEFAULT_BASE) -> CallToolResult:
     """
     查询 LangGraph 后端某 change_id 的执行状态。
 
@@ -284,15 +306,15 @@ def get_langgraph_status(change_id: str, base_url: str = DEFAULT_BASE) -> str:
     url = f"{base_url.rstrip('/')}/status/{change_id}"
     try:
         res = _http_get(url)
-        return json.dumps(res, ensure_ascii=False, indent=2)
+        return _tool_result(json.dumps(res, ensure_ascii=False, indent=2))
     except urllib.error.URLError as e:
-        return f"无法连接后端: {e}"
+        return _tool_result(f"无法连接后端: {e}", is_error=True)
     except Exception as e:
-        return f"{type(e).__name__}: {e}"
+        return _tool_result(f"{type(e).__name__}: {e}", is_error=True)
 
 
 @mcp.tool()
-def langgraph_health(base_url: str = DEFAULT_BASE) -> str:
+def langgraph_health(base_url: str = DEFAULT_BASE) -> CallToolResult:
     """
     探测 LangGraph 后端健康状态。
 
@@ -301,11 +323,83 @@ def langgraph_health(base_url: str = DEFAULT_BASE) -> str:
     url = f"{base_url.rstrip('/')}/health"
     try:
         res = _http_get(url)
-        return json.dumps(res, ensure_ascii=False, indent=2)
+        return _tool_result(json.dumps(res, ensure_ascii=False, indent=2))
     except urllib.error.URLError as e:
-        return f"后端未就绪: {e}"
+        return _tool_result(f"后端未就绪: {e}", is_error=True)
     except Exception as e:
-        return f"{type(e).__name__}: {e}"
+        return _tool_result(f"{type(e).__name__}: {e}", is_error=True)
+
+
+@mcp.tool()
+def human_confirm_poll(
+    change_id: str,
+    timeout_seconds: int = 60,
+    base_url: str = DEFAULT_BASE,
+) -> CallToolResult:
+    """
+    Long Poll：在 timeout_seconds 内等待该 change_id 出现待人工确认项（如 Step 4.5/7.5）。
+    前端可轮询此工具以实时收到「需要确认」通知。
+
+    - change_id: 变更 ID
+    - timeout_seconds: 最长等待秒数（1–120），默认 60
+    - base_url: 后端地址，默认 http://127.0.0.1:8000
+    """
+    url = f"{base_url.rstrip('/')}/confirm/poll?change_id={change_id}&timeout_seconds={max(1, min(timeout_seconds, 120))}"
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout_seconds + 5) as r:
+            res = json.loads(r.read().decode("utf-8"))
+        return _tool_result(json.dumps(res, ensure_ascii=False, indent=2))
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = str(e)
+        return _tool_result(f"请求失败 HTTP {e.code}: {body}", is_error=True)
+    except Exception as e:
+        return _tool_result(f"{type(e).__name__}: {e}", is_error=True)
+
+
+@mcp.tool()
+def human_confirm_submit(
+    change_id: str,
+    request_id: str,
+    decision: str,
+    comment: str = "",
+    reviewer: str = "",
+    base_url: str = DEFAULT_BASE,
+) -> CallToolResult:
+    """
+    提交人工确认结果（approve / reject / comment）。提交后需落盘对应 step4.5/step7.5 确认记录文件，再调用 run_langgraph 继续执行。
+
+    - change_id: 变更 ID
+    - request_id: 待确认项 ID（通常为 human_confirm_poll 返回的 request_id 或 run 返回的 thread_id）
+    - decision: approve | reject | comment
+    - comment: 可选备注
+    - reviewer: 确认人标识
+    - base_url: 后端地址，默认 http://127.0.0.1:8000
+    """
+    if decision not in ("approve", "reject", "comment"):
+        return _tool_result("错误: decision 须为 approve | reject | comment", is_error=True)
+    url = f"{base_url.rstrip('/')}/confirm/submit"
+    try:
+        body = {
+            "change_id": change_id,
+            "request_id": request_id,
+            "decision": decision,
+            "comment": comment or "",
+            "reviewer": reviewer,
+        }
+        res = _http_post(url, body)
+        return _tool_result(json.dumps(res, ensure_ascii=False, indent=2))
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = str(e)
+        return _tool_result(f"提交失败 HTTP {e.code}: {body}", is_error=True)
+    except Exception as e:
+        return _tool_result(f"{type(e).__name__}: {e}", is_error=True)
 
 
 if __name__ == "__main__":

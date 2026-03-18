@@ -64,12 +64,13 @@
   - 主 Agent + 产品经理 Agent + 架构 Agent + 前端 Agent + 后端 Agent + 测试 Agent + 文档 Agent + Bug 修复 Agent。  
   - 角色说明见 `agents/README.md` 及各子文件。
 
-- **运行后端（V2.6 升级）**：  
-  - `agent_team_project/` 是默认运行后端，实现层从文件驱动升级为 **LangGraph 独立后端（FastAPI）**：
-    - 状态图驱动：LangGraph `StateGraph` 强制流转（`parse_tasks → dispatch → collect_feedback`），无断点
+- **运行后端（V2.6 升级，V2.11.1 扩展）**：  
+  - `agent_team_project/` 是默认运行后端，实现 **LangGraph 独立后端（FastAPI）**：
+    - 状态图驱动：`step0_clarification → hc0_gate → parse_tasks → hc2_gate → dispatch → collect_feedback → hc7_gate`，含 Step 0 需求澄清（10 子步骤）与 HC0/HC2/HC7 人工确认门控
     - 检查点持久化：支持断点续跑（`/resume`），状态不丢失
     - 多业务项目：通过 `LANGGRAPH_WORKSPACE_PROJECTS` 配置多项目，按 change_id 自动解析，本仓优先
-    - 独立留痕：执行记录写入 `runtime-logs/langgraph-runs/`，不依赖旧三件（`agent_decision.json` / `agent_feedback.txt` / `agent_skill.log`）
+    - 独立留痕：执行记录写入 `runtime-logs/langgraph-runs/`，不依赖旧三件
+    - 人工确认接口：`/confirm/pending`、`/confirm/poll`（Long Poll）、`/confirm/submit`；MCP 工具 `human_confirm_poll`、`human_confirm_submit`
   - 仅覆盖 5 个执行角色（产品经理、架构师、前端工程师、后端工程师、测试工程师），不改变治理层角色全集。
 
 - **运行日志与长期记忆（V2.3 扩展 + V2.4/V2.4.2 渐进加载 + V2.5 主动唤醒与克制）**：  
@@ -89,9 +90,9 @@
 
 ---
 
-## 新管线运行架构（V2.6 LangGraph 独立后端）
+## 新管线运行架构（V2.6 LangGraph 独立后端，V2.11.1 扩展）
 
-从 V2.6 起，系统采用 **LangGraph 独立后端** 作为默认执行管线，实现从「宿主级约定」到「框架级强制保障」的架构升级：
+从 V2.6 起采用 **LangGraph 独立后端**；V2.11.1 起管线含 **Step 0 需求澄清** 与 **HC0/HC2/HC7 人工确认门控**：
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -102,45 +103,38 @@
 │                              │                              │
 │                              ▼                              │
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │  MCP 工具 / HTTP 调用                                     ││
-│  │  POST /run {change_id, task_range?}                    ││
+│  │  MCP 工具 / HTTP: POST /run · /confirm/pending · poll ││
 │  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼ HTTP / JSON
 ┌─────────────────────────────────────────────────────────────┐
 │                  LangGraph 独立后端 (FastAPI)                │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │  StateGraph: parse_tasks → dispatch → collect_feedback ││
-│  │                                                         ││
-│  │  ┌──────────────┐    ┌──────────┐    ┌──────────────┐  ││
-│  │  │ parse_tasks  │───▶│ dispatch │───▶│ collect_fb   │  ││
-│  │  │ (节点函数)    │    │ (节点函数)│    │ (节点函数)    │  ││
-│  │  └──────────────┘    └──────────┘    └──────────────┘  ││
-│  │       │                    │                  │         ││
-│  │       ▼                    ▼                  ▼         ││
-│  │  ┌─────────────────────────────────────────────────────┐││
-│  │  │ 检查点 (MemorySaver / Redis)                       │││
-│  │  │ state: {change_id, decision, results, feedback}    │││
-│  │  └─────────────────────────────────────────────────────┐││
-│  └─────────────────────────────────────────────────────────┘│
+│  StateGraph (V2.11.1): step0_clarification → hc0_gate →      │
+│  parse_tasks → hc2_gate → dispatch → collect_feedback → hc7_gate
+│  ┌─────────────┐  ┌─────────┐  ┌──────────────┐  ┌────────┐ │
+│  │ Step 0 需求 │─▶│ HC0 门  │─▶│ parse_tasks  │─▶│ HC2 门 │→ … │
+│  │ 澄清(10步)  │  │ (人工)  │  │ (Step1-4检查) │  │ (人工) │   │
+│  └─────────────┘  └─────────┘  └──────────────┘  └────────┘   │
+│  ┌──────────┐  ┌──────────────┐  ┌─────────┐                   │
+│  │ dispatch │─▶│ collect_fb   │─▶│ HC7 门  │→ END               │
+│  └──────────┘  └──────────────┘  │ (验收)  │                   │
 └─────────────────────────────────────────────────────────────┘
                               │
-                              ▼ 调用 7 个 executor
+                              ▼ 调用 executor
 ┌─────────────────────────────────────────────────────────────┐
 │                    API 模型 (SiliconFlow等)                   │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐           │
-│  │ 产品经理 │ │ 架构师   │ │ 前端工程师│ │ 后端工程师│ ...       │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **核心特点**：
-- **状态图驱动**：LangGraph `compile()` 后代码强制流转（`parse_tasks → dispatch → collect_feedback`），100% 无跳过
+- **状态图驱动**：Step 0 → HC0 → parse_tasks → HC2 → dispatch → collect → HC7 强制流转，100% 无跳过
+- **人工确认门控**：HC0（需求澄清后）/ HC2（方案确认后）/ HC7（验收前）需落盘确认文件或调用 `/confirm/submit`
 - **检查点持久化**：内置 `MemorySaver`（MVP）/ Redis（生产），支持断点续跑（`/resume` 接口），状态不丢失
 - **多业务项目支持**：通过 `LANGGRAPH_WORKSPACE_PROJECTS` 配置多项目（JSON 数组或扁平串 `key|path:key2|path2`），按 change_id 自动解析
 - **本仓优先**：后端始终先查本仓 `openspec/changes/`，再按列表顺序尝试业务项目
 - **独立留痕**：执行记录写入 `runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`，不依赖迭代日志或 design/documents
+- **启动诊断与最小验证**：`scripts/diagnose_startup.py` 六项环境检查；`scripts/verify_minimal.py` 可从头到尾自检管线（见 `新用户快速开始.md` 5.2）
 
 **与旧机制对比**：
 | 维度 | 旧机制（已废弃） | 新管线（V2.6） |
@@ -347,6 +341,13 @@
   - **全局检查与联动更新**：
     - 建立变更影响分析机制，确保升级时同步更新相关文档
     - 同步更新「新用户快速开始.md」和4个宿主SOP，增加质量保障机制简介章节
+
+- **V2.11.1（Step 0 需求澄清 + 人工确认门控 + 最小验证）**  
+  - **Step 0 需求澄清层**：Workflow 增加 `step0_clarification`（10 个子步骤 prompt + 跳过/重做）+ `hc0_gate`（Step 0 与 Step 1 之间人工确认）；`agent_team_project/langgraph_backend/step0_prompts/` 与 `openspec/changes/.../step0_checkpoints.md` 定义准入/准出。  
+  - **人工确认门控**：HC0/HC2/HC7 门控节点；后端 `/confirm/pending`、`/confirm/poll`（async Long Poll）、`/confirm/submit`；MCP 工具 `human_confirm_poll`、`human_confirm_submit`；前端 `frontend/src/components/ConfirmPanel.tsx`。  
+  - **启动诊断**：`scripts/diagnose_startup.py` 六项检查（磁盘/Python/内存/网络/配置/端口），支持表格与 JSON 输出。  
+  - **最小验证脚本**：`scripts/verify_minimal.py` 可从头到尾自检管线（诊断 + Workflow 场景 A/B，可选 HTTP），供人工验收使用。  
+  - **生产就绪与可扩展**：安全/稳定/观测/边界/Discovery 等模块实现见 `openspec/changes/deepen-langgraph-v2-11-1/`。
 
 ---
 

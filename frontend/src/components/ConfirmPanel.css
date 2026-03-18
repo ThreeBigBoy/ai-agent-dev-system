@@ -1,0 +1,88 @@
+/* ConfirmPanel 样式 (P1-A6) */
+.confirm-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.confirm-panel {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 520px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.confirm-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+.confirm-panel-change {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+.confirm-panel-summary {
+  margin: 0 0 1rem;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}
+.confirm-panel-artifacts {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+.confirm-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.confirm-panel-actions label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+.confirm-panel-field {
+  margin-bottom: 1rem;
+}
+.confirm-panel-field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+.confirm-panel-field textarea,
+.confirm-panel-field input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+.confirm-panel-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.confirm-panel-buttons button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.confirm-panel-buttons button.primary {
+  background: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}

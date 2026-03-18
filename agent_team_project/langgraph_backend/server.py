@@ -1,6 +1,7 @@
 """FastAPI 服务：/run, /status, /health, /resume。"""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import time
@@ -56,6 +57,24 @@ class RunResponse(BaseModel):
     latency_seconds: float = 0.0
     completed_phases: list[str] = []  # 已完成的所有 phases（新增）
     pending_phases: list[str] = []  # 待执行的 phases（新增）
+    human_confirm_step: str | None = None  # 若为 waiting_hc2/waiting_hc7 时当前等待的步骤（P1-A5）
+
+
+class ConfirmPendingResponse(BaseModel):
+    request_id: str
+    hc_id: str
+    change_id: str
+    step_name: str
+    context_summary: str
+    artifacts: list[str] = []
+
+
+class ConfirmSubmitRequest(BaseModel):
+    change_id: str
+    request_id: str
+    decision: str  # approve | reject | comment
+    comment: str | None = None
+    reviewer: str = ""
 
 
 class ResumeRequest(BaseModel):
@@ -194,17 +213,37 @@ def run(req: RunRequest) -> RunResponse:
             completed_phases=completed_phases,  # 新增
             pending_phases=pending_phases,  # 新增
         )
+        st = res.get("status", "done")
+        hc_step = res.get("human_confirm_step")
+        if st in ("waiting_hc0", "waiting_hc2", "waiting_hc7") and thread_id and req.change_id:
+            step_name = "step0.5_clarification" if st == "waiting_hc0" else ("step4.5_design" if st == "waiting_hc2" else "step7.5_acceptance")
+            hc_id = "HC0" if st == "waiting_hc0" else ("HC2" if st == "waiting_hc2" else "HC3")
+            # 从 state 带入 artifacts，供前端 ConfirmPanel 展示（Minor 修复）
+            if st == "waiting_hc0":
+                artifacts = list(res.get("step0_completed") or [])[:20]
+            else:
+                task_list = res.get("decision") or {}
+                artifacts = [str(t.get("task_id", "")) for t in (task_list.get("task_list") or [])][:20]
+            _pending_confirm[req.change_id] = {
+                "request_id": thread_id,
+                "hc_id": hc_id,
+                "change_id": req.change_id,
+                "step_name": step_name,
+                "context_summary": res.get("feedback", "")[:500],
+                "artifacts": artifacts,
+            }
         return RunResponse(
-            status=res.get("status", "done"),
+            status=st,
             change_id=res.get("change_id", req.change_id),
             thread_id=thread_id,
-            phase=phase,  # 新增
+            phase=phase,
             results=res.get("results", []),
             feedback=res.get("feedback", ""),
             checkpoint_id=ckpt_id,
             latency_seconds=round(latency, 2),
-            completed_phases=completed_phases,  # 新增
-            pending_phases=pending_phases,  # 新增
+            completed_phases=completed_phases,
+            pending_phases=pending_phases,
+            human_confirm_step=hc_step,
         )
     except FileNotFoundError as e:
         _append_langgraph_run_log(
@@ -224,6 +263,9 @@ def run(req: RunRequest) -> RunResponse:
 
 # 内存缓存：thread_id -> 最近一次 state 快照（MVP 用于 /status）
 _status_cache: dict[str, dict] = {}
+
+# 人工确认待处理：change_id -> 待确认项（P1-A5，供 /confirm/pending 与 long poll）
+_pending_confirm: dict[str, dict] = {}
 
 
 @app.get("/status/{change_id}", response_model=StatusResponse)
@@ -329,3 +371,35 @@ def resume(req: ResumeRequest) -> RunResponse:
     except Exception as e:
         logger.exception("resume unexpected error: %s", e)
         raise HTTPException(status_code=500, detail="服务暂时不可用，请稍后重试或查看服务端日志")
+
+
+# ---------- 人工确认接口（P1-A5）----------
+
+@app.get("/confirm/pending", response_model=ConfirmPendingResponse)
+def confirm_pending(change_id: str):
+    """查询当前是否有待人工确认项（waiting_hc2/waiting_hc7 时）。"""
+    pending = _pending_confirm.get(change_id)
+    if not pending:
+        raise HTTPException(status_code=404, detail="无待确认项")
+    return ConfirmPendingResponse(**pending)
+
+
+@app.get("/confirm/poll", response_model=ConfirmPendingResponse | dict)
+async def confirm_poll(change_id: str, timeout_seconds: int = 60):
+    """Long Poll：在 timeout_seconds 内等待直到出现待确认项或超时。使用 asyncio.sleep 避免阻塞 worker（Minor 修复）。"""
+    deadline = time.time() + max(1, min(timeout_seconds, 120))
+    while time.time() < deadline:
+        pending = _pending_confirm.get(change_id)
+        if pending:
+            return ConfirmPendingResponse(**pending)
+        await asyncio.sleep(1)
+    return {"pending": False, "message": "timeout"}
+
+
+@app.post("/confirm/submit")
+def confirm_submit(req: ConfirmSubmitRequest):
+    """提交人工确认结果（approve/reject/comment），清除该 change_id 的待确认状态。"""
+    if req.decision not in ("approve", "reject", "comment"):
+        raise HTTPException(status_code=400, detail="decision 须为 approve | reject | comment")
+    _pending_confirm.pop(req.change_id, None)
+    return {"ok": True, "change_id": req.change_id, "decision": req.decision}

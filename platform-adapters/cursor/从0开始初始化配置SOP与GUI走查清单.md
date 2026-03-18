@@ -225,9 +225,9 @@ OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
 
 ## 8. 质量保障机制简介（V2.7 新增）
 
-ai-agent-dev-system 采用 **8+1 质量闭环** 确保交付质量。了解这些机制有助于你更好地与 AI 协作：
+ai-agent-dev-system 采用 **10 步完整质量闭环** 确保交付质量。了解这些机制有助于你更好地与 AI 协作：
 
-### 8.1 8+1 质量闭环 v1.3
+### 8.1 10 步质量闭环 v1.3
 
 ```
 Step 1: 需求分析 → Step 2: PRD 评审 → Step 3: 工程结构分析 → Step 4: 技术方案评审
@@ -268,7 +268,7 @@ python scripts/openspec-validate/openspec_validate_v2.py --quality-gate
 
 | Memory | 说明 | 何时阅读 |
 |--------|------|---------|
-| `pattern-complete-quality-closed-loop` | 8+1 质量闭环完整流程 | 首次了解质量保障机制 |
+| `pattern-complete-quality-closed-loop` | 10 步质量闭环完整流程 | 首次了解质量保障机制 |
 | `pattern-review-fix-loop` | 评审修复循环模式 | 遇到评审结论为「有条件通过」时 |
 | `anti-pattern-terminology-drift` | 术语定义漂移反模式 | 发现沟通理解偏差时 |
 | `preference-quality-gate-checklist` | 质量门禁检查清单 | 执行具体阶段任务前 |
