@@ -3,6 +3,7 @@
 V2.11.0：Step 1-4 产出物前置检查。
 V2.11.1 P1-A1：Step 4.5/7.5 人工确认门控（hc2_gate/hc7_gate）。
 V2.11.1 P2-A6：Step 0 需求澄清层 + HC0 门控（step0_clarification / hc0_gate）。
+V2.11.2 方案 A：parse_tasks 前增加 tasks.md 与 specs/[capability]/spec.md 存在性检查，缺一则 blocked。
 """
 from __future__ import annotations
 
@@ -39,13 +40,16 @@ class AgentState(TypedDict):
     step0_skip: Optional[List[str]]  # 要跳过的子步骤 ID，如 ["0.2", "0.7"]
     step0_retry: Optional[List[str]]  # 要重做的子步骤 ID
     step0_completed: Optional[List[str]]  # 已完成的子步骤 ID 列表
+    # V2.11.2+：允许 0 条任务仍继续跑（治理类仅跑通门控），默认 False 则 0 任务时阻塞并提示格式
+    allow_zero_tasks: Optional[bool]
 
 
 def _check_prerequisites(change_id: str, workspace_root: Path) -> dict:
     """
-    检查 Step 1-4 产出物是否存在（前置条件检查）。
+    检查 Step 1-4 产出物及 Step 4 后必备产出物是否存在（前置条件检查）。
     返回检查结果，如有缺失则返回详细提示。
     V2.11.0 新增：6.2 短期行动 - Step 1-4 产出物检查
+    V2.11.2 方案 A：增加 tasks.md 与 specs 下至少一份 spec.md 存在性检查，缺一则阻塞
     """
     results = {
         "all_passed": True,
@@ -54,6 +58,7 @@ def _check_prerequisites(change_id: str, workspace_root: Path) -> dict:
     
     change_dir = workspace_root / "design" / "documents" / "changes" / change_id
     records_dir = change_dir / "records"
+    openspec_change_dir = workspace_root / "openspec" / "changes" / change_id
     
     # Step 1: PRD 存在性检查
     prd_files = list(change_dir.glob(f"PRD-{change_id}*.md"))
@@ -99,6 +104,28 @@ def _check_prerequisites(change_id: str, workspace_root: Path) -> dict:
             "name": "技术方案评审纪要",
             "path": f"design/documents/changes/{change_id}/records/技术方案-{change_id}-评审纪要.md",
             "action": "请先执行 architecture-review 评审技术方案"
+        })
+    
+    # V2.11.2 方案 A：Step 4 后必备产出物——tasks.md 与至少一份 spec.md
+    tasks_md = openspec_change_dir / "tasks.md"
+    if not tasks_md.is_file():
+        results["all_passed"] = False
+        results["missing"].append({
+            "step": "4+",
+            "name": "tasks.md",
+            "path": f"openspec/changes/{change_id}/tasks.md",
+            "action": "技术方案评审已通过，请先创建 tasks.md（可参考 request-analysis 任务拆分或主 Agent 拆解）"
+        })
+    specs_dir = openspec_change_dir / "specs"
+    # OpenSpec: specs/[capability]/spec.md，即一层子目录
+    spec_files = list(specs_dir.glob("*/spec.md")) if specs_dir.is_dir() else []
+    if not spec_files:
+        results["all_passed"] = False
+        results["missing"].append({
+            "step": "4+",
+            "name": "spec.md",
+            "path": f"openspec/changes/{change_id}/specs/[capability]/spec.md",
+            "action": "技术方案评审已通过，请先创建至少一份 spec.md（可参考 request-analysis 产出或 design.md 对应能力）"
         })
     
     return results
@@ -353,7 +380,17 @@ def parse_tasks(state: AgentState) -> dict:
     decision["phase"] = phase or "full"  # 记录当前 phase
     decision["total_tasks"] = len(task_list)  # 记录全量任务数
     decision["filtered_task_count"] = len(filtered_tasks)  # 记录过滤后的任务数
-    
+
+    # V2.11.2+：0 条任务时默认阻塞并带格式提示，避免静默「不派发」；治理类可传 allow_zero_tasks=True 放行
+    allow_zero = state.get("allow_zero_tasks") is True
+    if len(task_list) == 0 and not allow_zero:
+        hint = decision.get("parse_format_hint") or "未识别到可派发任务；若需派发请按 OpenSpec 4.4 格式（章节含（Executor）、任务行为 N.M）；若本变更刻意 0 任务可传 allow_zero_tasks=true"
+        return {
+            "decision": {**decision, "zero_tasks_reason": "format_not_matched", "parse_format_hint": hint},
+            "status": "blocked",
+            "feedback": f"tasks.md 解析到 0 条任务，无法派发子 Agent。{hint}",
+        }
+
     out: dict = {"decision": decision, "status": "running"}
     if decision.get("resolved_workspace_root") is not None:
         out["resolved_workspace_root"] = decision["resolved_workspace_root"]

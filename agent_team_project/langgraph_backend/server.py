@@ -39,6 +39,10 @@ class RunRequest(BaseModel):
         None,
         description="兼容：多路径时仅尝试路径中包含该 key 的根",
     )
+    allow_zero_tasks: bool = Field(
+        False,
+        description="V2.11.2+：为 True 时允许解析到 0 条任务仍继续跑（治理类仅跑通门控）；默认 False 则 0 任务时 blocked 并提示 tasks.md 格式",
+    )
 
     def model_post_init(self, __context: Any) -> None:
         """校验：phase 与 task_range 不能同时指定。"""
@@ -58,6 +62,9 @@ class RunResponse(BaseModel):
     completed_phases: list[str] = []  # 已完成的所有 phases（新增）
     pending_phases: list[str] = []  # 待执行的 phases（新增）
     human_confirm_step: str | None = None  # 若为 waiting_hc2/waiting_hc7 时当前等待的步骤（P1-A5）
+    # V2.11.2+：便于主 Agent 写迭代日志与诊断
+    total_tasks: int | None = None  # 解析出的全量任务数（0 时若 blocked 即格式未匹配）
+    tasks_format_hint: str | None = None  # 0 任务且 blocked 时的格式提示（来自 parser parse_format_hint）
 
 
 class ConfirmPendingResponse(BaseModel):
@@ -177,6 +184,7 @@ def run(req: RunRequest) -> RunResponse:
         "workspace_projects": getattr(req, "workspace_projects", None),
         "resolved_workspace_root": None,
         "resolved_project_key": None,
+        "allow_zero_tasks": getattr(req, "allow_zero_tasks", False),
     }
     config: dict[str, Any] = {"configurable": {"thread_id": thread_id}}
     try:
@@ -199,6 +207,7 @@ def run(req: RunRequest) -> RunResponse:
         completed_phases = [phase] if res.get("status") == "done" else []
         pending_phases = []  # 当前 phase 执行完成后，无待执行 phases
         
+        decision = res.get("decision") or {}
         _append_langgraph_run_log(
             change_id=req.change_id,
             thread_id=thread_id,
@@ -209,7 +218,7 @@ def run(req: RunRequest) -> RunResponse:
             project_key=res.get("resolved_project_key") or getattr(req, "project_key", None),
             checkpoint_id=ckpt_id,
             phase=phase,  # 新增
-            total_tasks=len(res.get("results", [])),  # 新增
+            total_tasks=decision.get("total_tasks", len(res.get("results", []))),  # V2.11.2+ 解析任务数
             completed_phases=completed_phases,  # 新增
             pending_phases=pending_phases,  # 新增
         )
@@ -244,6 +253,8 @@ def run(req: RunRequest) -> RunResponse:
             completed_phases=completed_phases,
             pending_phases=pending_phases,
             human_confirm_step=hc_step,
+            total_tasks=decision.get("total_tasks"),
+            tasks_format_hint=decision.get("parse_format_hint") if st == "blocked" else None,
         )
     except FileNotFoundError as e:
         _append_langgraph_run_log(
@@ -324,6 +335,7 @@ def resume(req: ResumeRequest) -> RunResponse:
                 workspace_root=vals.get("resolved_workspace_root") or getattr(req, "workspace_root", None),
                 project_key=vals.get("resolved_project_key"), checkpoint_id=req.checkpoint_id,
             )
+            dec = vals.get("decision") or {}
             return RunResponse(
                 status=vals.get("status", "done"),
                 change_id=vals.get("change_id", req.change_id),
@@ -332,6 +344,8 @@ def resume(req: ResumeRequest) -> RunResponse:
                 feedback=vals.get("feedback", ""),
                 checkpoint_id=req.checkpoint_id,
                 latency_seconds=round(latency, 2),
+                total_tasks=dec.get("total_tasks"),
+                tasks_format_hint=dec.get("parse_format_hint") if vals.get("status") == "blocked" else None,
             )
         # 未结束：从该检查点继续执行
         final = graph.invoke(None, config=config)
@@ -353,12 +367,15 @@ def resume(req: ResumeRequest) -> RunResponse:
             workspace_root=res.get("resolved_workspace_root") or getattr(req, "workspace_root", None),
             project_key=res.get("resolved_project_key"), checkpoint_id=ckpt_id,
         )
+        dec = res.get("decision") or {}
         return RunResponse(
             status=res.get("status", "done"),
             change_id=res.get("change_id", req.change_id),
             thread_id=req.thread_id,
             results=res.get("results", []),
             feedback=res.get("feedback", ""),
+            total_tasks=dec.get("total_tasks"),
+            tasks_format_hint=dec.get("parse_format_hint") if res.get("status") == "blocked" else None,
             checkpoint_id=ckpt_id,
             latency_seconds=round(latency, 2),
         )

@@ -34,9 +34,11 @@ related:
    - 在 `proposal.md` 中显式引用第 2 步中的 design/documents 文档，建立可追溯关系。
 4. **按 tasks.md 推进实现与验证**
    - 将需求拆分为可勾选任务，标注负责人与（如适用）验收清单路径；
-   - 编码、评审与验收均以 `tasks.md` 为单一任务真相来源。
+   - 编码、评审与验收均以 `tasks.md` 为单一任务真相来源；
+   - **若将使用 run_langgraph 且需向子 Agent 派发任务**：tasks.md 须采用 **OpenSpec 4.4** 与运行后端 parser 约定格式（章节含 Executor、任务行为为 N.M 数字编号），参见 `memory/patterns/pattern-run-execution-determinism.md`。
 5. **记录迭代日志与（可选）运行日志**
    - 在每次调用 Agent / 技能完成关键产出后，向 `design/documents/迭代日志.md` 追加一条记录；
+   - **凡通过 run_langgraph 执行后**，须在迭代日志追加一条，注明 change_id、status、任务数及（若有）`runtime-logs/langgraph-runs/` 路径（见 `projects-rules-for-agent.md` 第三节与 `memory/patterns/pattern-run-execution-determinism.md`）；
    - 如有需要，可同时在 `runtime-logs/model-calls/*.jsonl` 中记录本次模型调用的技术指标。
 
 ## 适用场景

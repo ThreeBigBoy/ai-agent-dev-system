@@ -156,6 +156,8 @@ alwaysApply: true
 - **单次编码/重构等用户未指明变更单的任务**：若当前项目已有进行中的变更（如 tasks 或对话上下文已指明某 change-id），则归属该 change-id；否则归属 **`project-early-phase`**（视为项目前期或未归类的项目内工作）。
 
 - **仅当可跳过**：**不在任何项目上下文中**（如纯泛化咨询、未打开任一项目仓库、用户明确未在项目内执行）时，可跳过迭代日志与 1.4 收尾。
+- **run_langgraph 调用须记入迭代日志**：凡通过 MCP 或运行后端执行 **run_langgraph**（推进某 change-id）后，主 Agent 或执行方**须**在 **`design/documents/迭代日志.md`** 中追加一条记录，注明 change_id、本次 run 的 status、任务数（task_count），以及运行留痕路径（若有：`runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`），以便与后端留痕一致、可追溯。详见 `memory/patterns/pattern-run-execution-determinism.md`。
+- **若变更将通过 run_langgraph 执行且需向子 Agent 派发任务**：**tasks.md** 须符合 **OpenSpec 4.4** 规定的运行后端可识别格式（章节含 Executor、任务行为为 N.M 数字编号），否则解析结果为 0 条任务、不会派发。详见 `memory/patterns/pattern-run-execution-determinism.md` 与 `memory/anti-patterns/anti-pattern-tasks-md-checklist-format-zero-dispatch.md`。
 
 ### 3.2 单条记录格式
 

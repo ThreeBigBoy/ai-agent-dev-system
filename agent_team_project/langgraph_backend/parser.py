@@ -230,6 +230,12 @@ def parse_tasks_md(
     # 重排 task_id 为 1,2,3... 以便与 design 示例一致（可选，保留原 101,102 也可）
     for idx, t in enumerate(task_list, 1):
         t["task_id"] = idx
+
+    # V2.11.2+：0 条任务时做格式诊断，便于前端/主 Agent 提示修正（OpenSpec 4.4 与 anti-pattern）
+    parse_format_hint = None
+    if len(task_list) == 0 and len(lines) > 0:
+        parse_format_hint = _diagnose_tasks_md_format(lines)
+
     out: dict = {
         "change_id": change_id,
         "task_complexity": "复杂",
@@ -237,8 +243,34 @@ def parse_tasks_md(
         "reason": f"从 tasks.md 解析 change_id={change_id}",
         "task_list": task_list,
     }
+    if parse_format_hint:
+        out["parse_format_hint"] = parse_format_hint
     if resolved_workspace_root is not None:
         out["resolved_workspace_root"] = resolved_workspace_root
     if resolved_project_key is not None:
         out["resolved_project_key"] = resolved_project_key
     return out
+
+
+def _diagnose_tasks_md_format(lines: list[str]) -> str:
+    """
+    当解析出 0 条任务时，扫描 tasks.md 常见格式问题，返回可读提示。
+    与 OpenSpec 4.4、anti-pattern-tasks-md-checklist-format-zero-dispatch 对齐。
+    """
+    issues: list[str] = []
+    section_without_executor = re.compile(r"^##\s+\d+\.\s+.+")
+    section_with_executor = re.compile(r"^##\s+\d+\.\s+.+?[（(]([^）)]+)[）)]")
+    # 任务行中编号为加粗 **N.M** 或 *N.M*，parser 不识别
+    task_line_bold_id = re.compile(r"^\s*-\s*\[\s*[xX ]?\s*]\s+\*+\d+\.\d+\*+\s*")
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if section_without_executor.match(stripped) and not section_with_executor.search(line):
+            issues.append(f"第{i}行：章节缺少「（Executor）」格式，应为 `## N. 标题（主 Agent）」等")
+        if task_line_bold_id.match(line):
+            issues.append(f"第{i}行：任务编号不可用加粗 **N.M**，应为纯数字 `- [ ] N.M 任务描述`")
+    if not issues:
+        issues.append("未识别到符合 parser 的章节（## N. 标题（Executor））或任务行（- [ ] N.M 描述）；请对照 OpenSpec 4.4 与 agent_team_project/langgraph_backend/parser.py 正则")
+    return "；".join(issues[:5])  # 最多 5 条，避免过长

@@ -49,10 +49,10 @@
 ## 目录
 
 - `config.py`：工作区根与 openspec 路径
-- `parser.py`：从 `openspec/changes/{change_id}/tasks.md` 解析任务，生成决策对象
+- `parser.py`：从 `openspec/changes/{change_id}/tasks.md` 解析任务，生成决策对象；**V2.11.2+** 解析出 0 条任务时返回 `parse_format_hint` 格式诊断（章节缺 Executor、任务行 **N.M** 等）
 - `executors.py`：7 个 executor 单任务执行（调用 API 模型）
-- `workflow.py`：StateGraph 定义（parse_tasks → dispatch → collect_feedback），MemorySaver 检查点
-- `server.py`：FastAPI 服务，/run、/status、/health、/resume（断点续跑）
+- `workflow.py`：StateGraph 定义（parse_tasks → dispatch → collect_feedback），MemorySaver 检查点；**V2.11.2+** 解析到 0 条任务时默认 `blocked` 并带格式提示，请求可传 `allow_zero_tasks=true` 放行治理类 run
+- `server.py`：FastAPI 服务，/run、/status、/health、/resume（断点续跑）；**V2.11.2+** RunRequest 支持 `allow_zero_tasks`，RunResponse 返回 `total_tasks`、`tasks_format_hint` 便于迭代日志与诊断
 - `langgraph_mcp_server.py`：MCP 服务端，封装 HTTP 调用为 `run_langgraph` / `resume_langgraph` 工具
 
 ## 运行
