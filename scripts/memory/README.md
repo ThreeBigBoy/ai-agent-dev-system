@@ -30,5 +30,5 @@ python3 scripts/memory/create_memory_entry.py \
   - 可选 `owner`；
 - 根据类型写入最小正文骨架（pattern / anti-pattern / preference / playbook / reflection 各有不同结构）。
 
-> 建议：在主 Agent 判定需要沉淀长期记忆时，由宿主适配层调用本脚本，并在对应的 `design/documents/[change-id]/records/` 文档中追加对新建 memory 条目的引用。
+> 建议：在主 Agent 判定需要沉淀长期记忆时，由宿主适配层调用本脚本，并在对应的 `design/documents/changes/[change-id]/records/` 文档中追加对新建 memory 条目的引用。
 

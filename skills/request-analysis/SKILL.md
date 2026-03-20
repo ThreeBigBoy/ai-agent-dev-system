@@ -21,8 +21,8 @@ description: 分析用户需求并产出结构化文档；当用户输入「分�
    - 从用户输入与上下文中识别本次需求的名称与范围。  
    - 若已给出或已存在对应变更目录，则沿用 `openspec/changes/[change-id]/`；否则按 OpenSpec 规范为本次需求确定一个新的 `change-id`（kebab-case，动词开头，如 `add-health-food-theme-mvp`）。
 
-2. **产出项目前期方案（design/documents/[change-id]/）**  
-   - 在 `design/documents/` 下为本次需求创建子目录：`design/documents/[change-id]/`。  
+2. **产出项目前期方案（design/documents/changes/[change-id]/）**  
+   - 在 `design/documents/` 下为本次需求创建子目录：`design/documents/changes/[change-id]/`。  
    - 在该子目录下创建或补充（命名可按项目实际约定微调）：  
      - `市场研究与产品方案.md`  
      - `功能需求说明书.md`  
@@ -58,13 +58,13 @@ description: 分析用户需求并产出结构化文档；当用户输入「分�
      - 创建/更新 `proposal.md`：描述本次需求的背景、目标、范围、影响与风险等。  
      - 创建/更新 `tasks.md`：按 [任务拆分 spec](REFERENCE/任务拆分spec.md) 输出可勾选任务列表。  
      - 视情况创建/更新 `design.md`：记录与本次需求直接相关的关键技术/交互设计。  
-     - 在 `openspec/changes/[change-id]/specs/[capability]/spec.md` 下，按 OpenSpec 规范编写结构化需求分析文档（ADDED / MODIFIED / REMOVED Requirements + Scenario），并与 `design/documents/[change-id]/` 中的文档相互引用。
+     - 在 `openspec/changes/[change-id]/specs/[capability]/spec.md` 下，按 OpenSpec 规范编写结构化需求分析文档（ADDED / MODIFIED / REMOVED Requirements + Scenario），并与 `design/documents/changes/[change-id]/` 中的文档相互引用。
 
 6. **前端需求与图片（可选联动 image-analysis）**  
    - 若本次需求涉及前端界面、原型图、设计稿或用户提供截图/图片：  
      - 主动加载或引用 **image-analysis** 技能（若可用），解析图片中的布局、文案、组件与交互要点。  
      - 将解析结果纳入：  
-       - `design/documents/[change-id]/功能需求说明书.md` 中的说明；  
+       - `design/documents/changes/[change-id]/功能需求说明书.md` 中的说明；  
        - 以及对应 `specs/[capability]/spec.md` 中的 Scenario（包括 UI 状态、文案、边界场景等）。
 
 ## 与 OpenSpec 的对应关系

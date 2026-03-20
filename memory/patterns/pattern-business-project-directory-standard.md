@@ -83,7 +83,7 @@ OpenSpec 核心目录，存放本项目工程宪法与规范体系。标准结�
 ### `design/documents/retrospectives/project/<YYYY-MM>/`
 项目级复盘（非单一 change-id）挂载点。路径风格参考 `memory/playbooks/playbook-retrospective-routine.md` 与 `memory/patterns/pattern-retrospective-one-time-production.md`。
 
-### `design/documents/<change-id>/records/`
+### `design/documents/changes/<change-id>/records/`
 沿用 `OpenSpec.md` 对变更级记录类文档定位。存放该变更的验收记录、评审纪要、变更级复盘报告等。项目级复盘不放在单一 change-id 下。
 
 ### `scripts/`
@@ -98,14 +98,14 @@ OpenSpec 核心目录，存放本项目工程宪法与规范体系。标准结�
 ## 关键约束
 
 1. 项目级复盘统一放在 `design/documents/retrospectives/project/<YYYY-MM>/`，不与单一 change-id 目录混放。
-2. 变更级记录继续使用 `design/documents/<change-id>/records/`。
+2. 变更级记录继续使用 `design/documents/changes/<change-id>/records/`。
 3. 迭代日志统一写入 `design/documents/迭代日志.md`。
 
 ## 规范来源
 
 - `OpenSpec.md` 第 1.1 节：`design/project-rules/`、`design/documents/`、`scripts/`、`openspec/` 的定位说明。
 - `OpenSpec.md` 第 3.1 节：`openspec/` 标准结构（`AGENTS.md`、`project.md`、`specs/`、`changes/`）。
-- `OpenSpec.md` 第 5.1、6.1、6.3 节：`project-early-phase` 保留 change-id 与「先 `design/documents/[change-id]/` 后 `openspec/changes/[change-id]/`」顺序。
+- `OpenSpec.md` 第 5.1、6.1、6.3 节：`project-early-phase` 保留 change-id 与「先 `design/documents/changes/[change-id]/` 后 `openspec/changes/[change-id]/`」顺序。
 - `global-rules/projects-rules-for-agent.md` 第三章：`design/documents/迭代日志.md` 的强制记录口径。
 - `global-rules/projects-rules-for-agent.md` 第九章补充规则（项目结构）：通用业务项目目录结构模版与命名模版。
 - `memory/patterns/pattern-retrospective-one-time-production.md`：复盘产出路径应归入 `design/documents/retrospectives/[level]/`。

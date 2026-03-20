@@ -217,7 +217,7 @@ description_long: |
      - 行动计划是否可执行？
 
 产出:
-  - 复盘报告: design/documents/[change-id]/records/复盘报告-YYYYMMDD-主题.md
+  - 复盘报告: design/documents/changes/[change-id]/records/复盘报告-YYYYMMDD-主题.md
   - 或: design/documents/复盘报告-YYYYMMDD-最近N天工作内容复盘.md（跨 change-id）
 ```
 
@@ -310,8 +310,8 @@ description_long: |
 |--------|---------|---------|------|
 | 复盘报告（框架级） | `ai-agent-dev-system/design/documents/retrospectives/framework/[YYYY-QN]/复盘-[主题]-YYYY-MM-DD.md` | **ai-agent-dev-system** | 框架能力成长复盘 |
 | 复盘报告（项目级） | `[业务项目]/design/documents/retrospectives/[YYYY-MM]/复盘-[主题]-YYYY-MM-DD.md` | **业务项目** | 业务项目交付复盘 |
-| 复盘报告（change-id 级） | `[业务项目]/design/documents/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md` | **业务项目** | 单个变更详细复盘 |
-| 排查备忘录 | `[业务项目]/design/documents/[change-id]/records/XXX问题排查备忘录.md` | **业务项目** | 问题诊断型复盘 |
+| 复盘报告（change-id 级） | `[业务项目]/design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md` | **业务项目** | 单个变更详细复盘 |
+| 排查备忘录 | `[业务项目]/design/documents/changes/[change-id]/records/XXX问题排查备忘录.md` | **业务项目** | 问题诊断型复盘 |
 | Memory | `ai-agent-dev-system/memory/{patterns,anti-patterns,preferences,playbooks,reflections}/` | **ai-agent-dev-system** | 经验沉淀 |
 
 ### 复盘报告存放路径决策（分布式管理架构）
@@ -341,7 +341,7 @@ change-id 级复盘（单个变更详细复盘）:
   场景: 具体 change-id 的详细执行分析
   管理方: 各项目自身（业务项目 or ai-agent-dev-system）
   路径: 
-    - 业务项目: Proj01ShopifyTheme/design/documents/[change-id]/records/
+    - 业务项目: Proj01ShopifyTheme/design/documents/changes/[change-id]/records/
     - ai-agent-dev-system: ai-agent-dev-system/design/documents/changes/[change-id]/records/
   命名: 复盘报告-YYYY-MM-DD-[主题].md
   示例: 

@@ -67,7 +67,7 @@ version: 1.0
 
 | # | 检查项 | 检查内容 | 通过标准 |
 |---|-------|---------|---------|
-| 1.1 | PRD 文档产出 | `design/documents/[change-id]/` 下存在 PRD 文档 | ✅ 存在且符合命名规范 |
+| 1.1 | PRD 文档产出 | `design/documents/changes/[change-id]/` 下存在 PRD 文档 | ✅ 存在且符合命名规范 |
 | 1.2 | PRD 结构完整 | 包含 8 类内容（价值分析、竞品调研、迭代目标、成功衡量、产品方案、异常边界、PRD结构、OpenSpec一致、文档命名） | ✅ 自检 9 项全部通过 |
 | 1.3 | OpenSpec 目录创建 | `openspec/changes/[change-id]/` 目录已创建 | ✅ 存在 |
 | 1.4 | 变更提案产出 | `proposal.md` 已产出且引用 design/documents 路径 | ✅ 存在且引用正确 |
@@ -92,7 +92,7 @@ version: 1.0
 | # | 检查项 | 检查内容 | 通过标准 |
 |---|-------|---------|---------|
 | 2.1 | 评审执行 | 已按 SKILL.md 执行系统化评审 | ✅ 已执行 |
-| 2.2 | 评审纪要产出 | `design/documents/[change-id]/records/PRD-[change-id]-评审纪要.md` 已产出 | ✅ 存在且结构完整 |
+| 2.2 | 评审纪要产出 | `design/documents/changes/[change-id]/records/PRD-[change-id]-评审纪要.md` 已产出 | ✅ 存在且结构完整 |
 | 2.3 | 自检清单完成 | 9 项自检全部完成 | ✅ 全部检查 |
 | 2.4 | **评审判定** | 综合判定结果 | ✅ 必须为「通过」（100% 通过） |
 | 2.5 | 评审修复循环 | 如首次评审为「有条件通过」/「不通过」 | ✅ 已修复并重新评审通过 |
@@ -143,7 +143,7 @@ version: 1.0
 | # | 检查项 | 检查内容 | 通过标准 |
 |---|-------|---------|---------|
 | 4.1 | 评审执行 | 已按 SKILL.md 执行系统化评审 | ✅ 已执行 |
-| 4.2 | 评审纪要产出 | `design/documents/[change-id]/records/技术方案-[change-id]-评审纪要.md` 已产出 | ✅ 存在且结构完整 |
+| 4.2 | 评审纪要产出 | `design/documents/changes/[change-id]/records/技术方案-[change-id]-评审纪要.md` 已产出 | ✅ 存在且结构完整 |
 | 4.3 | 自检清单完成 | 技术方案自检全部完成 | ✅ 全部检查 |
 | 4.4 | **评审判定** | 综合判定结果 | ✅ 必须为「通过」（100% 通过） |
 | 4.5 | 评审修复循环 | 如首次评审为「有条件通过」/「不通过」 | ✅ 已修复并重新评审通过 |
@@ -196,7 +196,7 @@ version: 1.0
 | # | 检查项 | 检查内容 | 通过标准 |
 |---|-------|---------|---------|
 | 6.1 | 评审执行 | 已按 SKILL.md v1.1 执行系统化评审 | ✅ 已执行 |
-| 6.2 | 评审纪要产出 | `design/documents/[change-id]/records/[change-id]-code-review.md` 已产出 | ✅ 存在且结构完整 |
+| 6.2 | 评审纪要产出 | `design/documents/changes/[change-id]/records/[change-id]-code-review.md` 已产出 | ✅ 存在且结构完整 |
 | 6.3 | 问题分级 | Blocking/Major/Minor 问题已分类 | ✅ 已分类 |
 | 6.4 | **评审判定** | 综合判定结果 | ✅ 必须为「通过」（100% 通过） |
 | 6.5 | 评审修复循环 | 如首次评审为「有条件通过」/「不通过」 | ✅ 已修复并重新评审通过 |
@@ -228,7 +228,7 @@ version: 1.0
 |---|-------|---------|---------|
 | 7.1 | OpenSpec 第一轮验证 | `openspec validate [change-id]` 已通过 | ✅ 验证通过 |
 | 7.2 | 测试执行 | 已按 spec Scenarios 执行测试 | ✅ 已执行 |
-| 7.3 | 验收记录产出 | `design/documents/[change-id]/records/[change-id]-func-test.md` 已产出 | ✅ 存在且结构完整 |
+| 7.3 | 验收记录产出 | `design/documents/changes/[change-id]/records/[change-id]-func-test.md` 已产出 | ✅ 存在且结构完整 |
 | 7.4 | 问题分级 | Blocking/Major/Minor/需人工验证 已分类 | ✅ 已分类 |
 | 7.5 | **验收判定** | 综合判定结果 | ✅ 必须为「通过」（100% 通过） |
 | 7.6 | 验收修复循环 | 如首次验收为「有条件通过」/「不通过」 | ✅ 已修复并重新验收通过 |

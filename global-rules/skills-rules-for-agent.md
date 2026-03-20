@@ -53,11 +53,11 @@ alwaysApply: true
 - **技能路径**（示例）：`ai-agent-dev-system/skills/request-analysis/`（以实际仓库中规范与技能存放位置为准）。
 - **触发场景**：用户输入「分析需求」「需求分析」或提供功能描述/业务目标，希望得到结构化方案、项目前期文档与变更提案时。
 - **技能产出（示例流程）**：
-  1. 为本次需求确定或复用 `change-id`，在 `design/documents/[change-id]/` 下创建本次需求的子目录，并在其中编写**市场研究与产品方案**、**功能需求说明书**、**需求验收 Checklist** 等项目前期方案文档。
+  1. 为本次需求确定或复用 `change-id`，在 `design/documents/changes/[change-id]/` 下创建本次需求的子目录，并在其中编写**市场研究与产品方案**、**功能需求说明书**、**需求验收 Checklist** 等项目前期方案文档。
   2. 若项目根目录不存在 `openspec/` 或缺少 `openspec/AGENTS.md` / `openspec/project.md`，则按本规范初始化 `openspec/` 目录结构与 AGENTS、project 等项目宪法文件；若已存在则对照本次需求判断是否需要适度更新。
   3. 识别本次需求为**新增类**或**修改类**，并在 `openspec/changes/[change-id]/` 下创建或更新需求变更目录：产出 `proposal.md`、`tasks.md`、可选 `design.md` 以及 `specs/[capability]/spec.md` 结构化需求分析文档（ADDED / MODIFIED / REMOVED Requirements + Scenario）。
   4. 任务拆分遵循该技能 REFERENCE 中的「任务拆分 spec」，输出可勾选任务列表至 `tasks.md`。
-  5. **records/ 归类**：以「反思-」「复盘-」「对齐结论」、「XX验收记录」、「XX测试记录」等命名的过程反思、复盘、对齐结论及验收/测试记录类文档应置于 **`design/documents/[change-id]/records/`**，与功能验收/代码评审记录一起便于按变更聚合与归档（与 OpenSpec 1.1 表一致）。
+  5. **records/ 归类**：以「反思-」「复盘-」「对齐结论」、「XX验收记录」、「XX测试记录」等命名的过程反思、复盘、对齐结论及验收/测试记录类文档应置于 **`design/documents/changes/[change-id]/records/`**，与功能验收/代码评审记录一起便于按变更聚合与归档（与 OpenSpec 1.1 表一致）。
   6. **迭代日志（强制，执行后必做收尾）**：每次在本变更上下文中调用 `agents/` 下 Agent 或 `skills/` 下技能时，**必须在本轮对话内、任务闭环前**在项目级 **`design/documents/迭代日志.md`** 中**追加**一条记录，并在记录中明确写出当前 `change-id`，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」（含使用模型）；文件不存在则新建。**未完成不得视为该次任务完成**。本约定为主 Agent 及所有子 Agent 的必做收尾动作，适用于所有采用 OpenSpec 的项目与所有迭代/变更。
 - **联动**：若需求涉及前端或含设计图/截图，可同时加载 **image-analysis** 技能解析图片，将解析结果纳入需求说明与 spec 中的场景描述。
 
@@ -91,7 +91,7 @@ alwaysApply: true
   - 用户输入「编码实现」「根据这个 change 开始写代码」等；
   - 或在完成需求分析与工程结构分析后，希望 AI 按既定规范生成前后端代码。
 - **核心职责**：
-  1. 以单一 `change-id` 为工作单位，读取 `design/documents/[change-id]/` 及 `openspec/changes/[change-id]/proposal.md`、`design.md`、`specs/*/spec.md`，并结合 `openspec/project.md` 与 `design/project-rules/`，锁定本次实现的范围与规范约束。
+  1. 以单一 `change-id` 为工作单位，读取 `design/documents/changes/[change-id]/` 及 `openspec/changes/[change-id]/proposal.md`、`design.md`、`specs/*/spec.md`，并结合 `openspec/project.md` 与 `design/project-rules/`，锁定本次实现的范围与规范约束。
   2. 根据编码内容类型，选择 `coding-implement/REFERENCE/` 下的相应规范（如前端 `spec-frontend.md`，后端 `spec-backend-*.md`），并据此在项目代码目录中创建或修改符合分层与命名约定的代码文件。
   3. 若本次变更涉及**新增或调整数据库表结构**，在项目根目录下维护 `info-database/`（如表结构说明与 DDL 脚本）；若涉及**新增或调整对外服务接口**，在项目根目录下维护 `info-service-interface/`（接口说明文档），确保与数据模型和接口规范一致。
   4. 实施完成后，回到 `openspec/changes/[change-id]/tasks.md` 更新任务状态，并在需要时补充实现相关的关键设计说明；**实现完成后**须按 coding-implement 技能 **REFERENCE**《实现完成自检》执行自检（路径：`ai-agent-dev-system/skills/coding-implement/REFERENCE/实现完成自检.md`），通过后再进入 code-review 或 func-test。
@@ -111,7 +111,7 @@ alwaysApply: true
   - 或在合并/发布前，希望对某个 `change-id` 进行质量把关并形成记录。
 - **核心职责**：
   1. 以前置技能 `request-analysis`、`project-analysis`、`coding-implement` 的输出为基础，读取 `design/` 与 `openspec/changes/[change-id]/` 下文档与代码改动，对本次变更进行多维度 Review（需求符合性、架构分层、代码质量、安全/性能、日志与监控、测试等）。
-  2. 参考 `code-review/REFERENCE/` 下的通用 review 规范与 OpenSpec 集成规范，在 **`design/documents/[change-id]/records/`** 下输出结构化的评审记录，建议文件名 **`[change-id]-code-review.md`**（包含问题清单与后续行动）；**最小结构与自检**须符合 code-review 技能 **REFERENCE**《评审报告-最小结构与自检》（路径：`ai-agent-dev-system/skills/code-review/REFERENCE/`）。
+  2. 参考 `code-review/REFERENCE/` 下的通用 review 规范与 OpenSpec 集成规范，在 **`design/documents/changes/[change-id]/records/`** 下输出结构化的评审记录，建议文件名 **`[change-id]-code-review.md`**（包含问题清单与后续行动）；**最小结构与自检**须符合 code-review 技能 **REFERENCE**《评审报告-最小结构与自检》（路径：`ai-agent-dev-system/skills/code-review/REFERENCE/`）。
   3. 对 Blocking/Major 级问题，将修复工作转化为 `openspec/changes/[change-id]/tasks.md` 中的任务项，并在问题关闭后勾选完成；如发现需新变更提案或规范调整的内容，则建议创建新的 change-id 或更新相关规范文档。
 - **协同关系**：
   - 与 `coding-implement`：形成「实现 → 评审 → 迭代」闭环；评审建议可作为下一轮实现的输入。
@@ -128,7 +128,7 @@ alwaysApply: true
 - **核心职责**：
   1. 以前置技能 `request-analysis`、`project-analysis`、`coding-implement`（以及可选的 `code-review`）的输出为基础，围绕指定 `change-id` 整理测试范围与用例，对照 `specs/*/spec.md` 的 Requirements + Scenarios 与 `需求验收Checklist` 执行功能测试。
   2. **OpenSpec 本身需包含的操作**：第一轮执行 `openspec validate [change-id]`，验证已开发代码的变更需求与文档一致性；第二轮在执行完测试并输出验收记录后执行 `openspec validate --strict`，严格模式验证通过后再给出是否推荐通过本次验收的结论；两轮结果记入验收记录。
-  3. 参考 `func-test/REFERENCE/` 下的通用功能测试与 OpenSpec 集成规范，在 **`design/documents/[change-id]/records/`** 下输出结构化的验收记录，建议文件名 **`[change-id]-func-test.md`**（或 `-acceptance.md`）；**最小结构与自检**须符合 func-test 技能 **REFERENCE**《验收记录-最小结构与自检》（路径：`ai-agent-dev-system/skills/func-test/REFERENCE/`），两轮 validate 结果须记入记录。
+  3. 参考 `func-test/REFERENCE/` 下的通用功能测试与 OpenSpec 集成规范，在 **`design/documents/changes/[change-id]/records/`** 下输出结构化的验收记录，建议文件名 **`[change-id]-func-test.md`**（或 `-acceptance.md`）；**最小结构与自检**须符合 func-test 技能 **REFERENCE**《验收记录-最小结构与自检》（路径：`ai-agent-dev-system/skills/func-test/REFERENCE/`），两轮 validate 结果须记入记录。
   4. 将测试中发现的关键问题转化为 `openspec/changes/[change-id]/tasks.md` 中的任务，并在问题修复与重测后更新记录与任务状态；如涉及需求或架构层调整，则建议通过新的 change-id 或规范更新进行处理。
 - **协同关系**：
   - 与 `coding-implement`、`code-review`：形成「实现 → 评审 → 功能验收」的质量闭环。
@@ -144,7 +144,7 @@ alwaysApply: true
   - **显式触发**：用户输入「解析这张图」「根据截图写需求」「分析架构图」等。
 - **核心职责**：
   1. 以前置技能 request-analysis、project-analysis 已产出或即将产出的 design/、openspec/ 文档为上下文，聚焦本次需求范围（按 `change-id` 识别）；若有图片，则按 `image-analysis/REFERENCE/` 中的图片分析规范进行解析。
-  2. 将解析结果纳入需求说明与 spec 中的场景描述：写入 `design/documents/[change-id]/` 下功能需求说明书等文档，以及 `openspec/changes/[change-id]/specs/[capability]/spec.md` 中相关 Requirement 的 Scenario（布局、组件、文案、状态、交互等）；若为架构/数据流图，则写入 `design/project-rules/` 或对应 change 的 `design.md`。
+  2. 将解析结果纳入需求说明与 spec 中的场景描述：写入 `design/documents/changes/[change-id]/` 下功能需求说明书等文档，以及 `openspec/changes/[change-id]/specs/[capability]/spec.md` 中相关 Requirement 的 Scenario（布局、组件、文案、状态、交互等）；若为架构/数据流图，则写入 `design/project-rules/` 或对应 change 的 `design.md`。
   3. 在文档中标注解析来源与不确定性（如「需业务/设计确认」），保证可追溯与可验收。
 - **协同关系**：
   - 与 `request-analysis`：需求分析涉及前端或含图片时，request-analysis 调用本技能解析图片，并将结果纳入 design/documents 与 openspec/changes 下的需求与 spec。
@@ -163,7 +163,7 @@ alwaysApply: true
 - **核心职责**：
   1. **加载规范**：首先读取 `skills/request-analysis/REFERENCE/迭代需求说明-PRD最小结构与自检.md`，确保评审标准统一。
   2. **系统化评审**：按照 REFERENCE 中的「三、自检清单」（9 项自检项）逐项评审 PRD，覆盖价值分析、竞品调研、迭代目标、产品方案、异常边界、文档命名规范等维度。
-  3. **详细留痕**：在 `design/documents/[change-id]/records/` 下产出结构化的**评审纪要文档**，命名推荐 `PRD-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
+  3. **详细留痕**：在 `design/documents/changes/[change-id]/records/` 下产出结构化的**评审纪要文档**，命名推荐 `PRD-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
   4. **形成判定**：对每项自检项给出判定（✓ 通过 / △ 有条件通过 / ✗ 不通过），并给出综合判定和后续行动建议。
 - **协同关系**：
   - 与 `request-analysis`：request-analysis 产出 PRD，prd-review 对 PRD 进行质量把关，形成「产出 → 评审 → 完善」闭环。
@@ -184,7 +184,7 @@ alwaysApply: true
   1. **加载规范**：首先读取 `skills/project-analysis/REFERENCE/技术方案与架构产出物-最小结构与自检.md`，确保评审标准统一。
   2. **系统化评审**：按照 REFERENCE 中的「三、自检清单」（9 项自检项）逐项评审技术方案，覆盖变更目标、架构一致性、需求可追溯性、接口与数据、关键流程、异常边界、文档命名规范等维度。
   3. **对照 PRD**：评审技术方案时必须对照 PRD，确保 100% 满足需求、无遗漏无冲突。
-  4. **详细留痕**：在 `design/documents/[change-id]/records/` 或 `openspec/changes/[change-id]/` 下产出结构化的**评审纪要文档**，命名推荐 `技术方案-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
+  4. **详细留痕**：在 `design/documents/changes/[change-id]/records/` 或 `openspec/changes/[change-id]/` 下产出结构化的**评审纪要文档**，命名推荐 `技术方案-[change-id]-评审纪要.md`，必须包含评审基本信息、评审过程记录（逐项自检的详细记录）、问题发现与处理、整体评审结论、附录。
   5. **形成判定**：对每项自检项给出判定（✓ 通过 / △ 有条件通过 / ✗ 不通过），并给出综合判定和后续行动建议。
 - **协同关系**：
   - 与 `project-analysis`：project-analysis 产出技术方案，architecture-review 对技术方案进行质量把关，形成「产出 → 评审 → 完善」闭环。

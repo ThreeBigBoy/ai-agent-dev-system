@@ -22,7 +22,7 @@
 | **`/openspec/AGENTS.md`** | 在某个项目根目录新增 `openspec/` 后，复制本规范中的目录结构，并根据**项目类型**、结合 OpenSpec.md（作为规范与上下文）填写；为 AI 工作说明书，约定可调用的 Skills、需遵循的全局规则等。 |
 | **`/openspec/project.md`** | 同上，在项目根目录 `openspec/` 下；结合 OpenSpec.md 与项目类型填写。**本项目整体宪法规范**：约定项目定位、架构模式、技术栈、目录与命名等顶层规则。 |
 | **`/design/project-rules/`** | 某个项目内目录，存放**工程宪法（project.md）的补充**：对技术实现、格式与流程的细化；与 `project.md` 共同构成完整约定体系，实现与评审时须同时遵守。 |
-| **`/design/documents/`** | 某个项目内目录，存放项目背景、MVP 产品方案、功能需求说明书、技术方案说明书、验收 Checklist 等。按变更组织的子目录 `design/documents/[change-id]/` 下可含需求与验收相关文档；**功能验收/测试记录**建议文件名 `[change-id]-func-test.md` 或 `func-test.md`，**代码评审记录**建议文件名 `[change-id]-code-review.md`，均存放于 **`design/documents/[change-id]/records/`**，与需求、验证清单同属该变更，便于按变更聚合与归档。以「反思-」「复盘-」「对齐结论」、「XX验收记录」、「XX测试记录」等命名的过程反思、复盘、对齐结论及验收/测试记录类文档也应置于 **`design/documents/[change-id]/records/`**。**项目级迭代日志文档**（**强制要求**，适用于所有采用本规范的项目与所有变更/迭代）统一为单一文件 `design/documents/迭代日志.md`，记录所有 change-id（含 `project-early-phase`）的 Agent/技能调用；每次在某一 change-id 上下文中调用 `agents/` 下 Agent 或 `skills/` 下技能时**须在该文件追加一条记录**（记录内容中必须包含本次 change-id），格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」。`design/documents/[change-id]/records/` 继续用于收纳该变更的验收、评审、复盘与对齐结论等记录类文档，不再作为主迭代日志口径。 |
+| **`/design/documents/`** | 某个项目内目录，存放项目背景、MVP 产品方案、功能需求说明书、技术方案说明书、验收 Checklist 等。按变更组织的子目录 `design/documents/changes/[change-id]/` 下可含需求与验收相关文档；**功能验收/测试记录**建议文件名 `[change-id]-func-test.md` 或 `func-test.md`，**代码评审记录**建议文件名 `[change-id]-code-review.md`，均存放于 **`design/documents/changes/[change-id]/records/`**，与需求、验证清单同属该变更，便于按变更聚合与归档。以「反思-」「复盘-」「对齐结论」、「XX验收记录」、「XX测试记录」等命名的过程反思、复盘、对齐结论及验收/测试记录类文档也应置于 **`design/documents/changes/[change-id]/records/`**。**项目级迭代日志文档**（**强制要求**，适用于所有采用本规范的项目与所有变更/迭代）统一为单一文件 `design/documents/迭代日志.md`，记录所有 change-id（含 `project-early-phase`）的 Agent/技能调用；每次在某一 change-id 上下文中调用 `agents/` 下 Agent 或 `skills/` 下技能时**须在该文件追加一条记录**（记录内容中必须包含本次 change-id），格式见 `projects-rules-for-agent.md`「Agent 与技能调用迭代日志」。`design/documents/changes/[change-id]/records/` 继续用于收纳该变更的验收、评审、复盘与对齐结论等记录类文档，不再作为主迭代日志口径。 |
 | **`/scripts/`** | 某个项目根目录下的**标准子目录**，统一存放该项目的自动化脚本（如本地初始化、数据/配置迁移、一致性修复、工具型脚本等）；脚本应在 `scripts/README.md` 或各自子目录的 README 中说明用途与用法，其命名与目录结构须受本项目 `openspec/project.md` 与 `design/project-rules/` 约束，避免在项目根目录散落零散脚本文件。 |
 
 ### 1.2 AI 协作时文档引用与上下文关系
@@ -109,7 +109,7 @@ openspec/changes/[change-id]/
 ### 4.3 proposal.md（变更提案）
 
 - **用途**：声明变更目标、范围、非目标、依赖与风险。
-- **建议结构**：`## Why`（为什么）、`## What Changes`（改什么）、`## Impact`（影响范围，如 Affected specs、Affected code）、可选 `## Non-Goals`、`## Dependencies`、`## Risks`；**可选** `## 协同与技能`（本变更由哪些角色/Agent 按何种技能参与，需求分析产出存放于 `design/documents/[change-id]/` 的哪些文档，便于新项目与现有项目统一追溯）。
+- **建议结构**：`## Why`（为什么）、`## What Changes`（改什么）、`## Impact`（影响范围，如 Affected specs、Affected code）、可选 `## Non-Goals`、`## Dependencies`、`## Risks`；**可选** `## 协同与技能`（本变更由哪些角色/Agent 按何种技能参与，需求分析产出存放于 `design/documents/changes/[change-id]/` 的哪些文档，便于新项目与现有项目统一追溯）。
 
 ### 4.4 tasks.md（任务清单）
 
@@ -121,7 +121,7 @@ openspec/changes/[change-id]/
   - 实现与正则以 `agent_team_project/langgraph_backend/parser.py` 为准；仅跑通流程、不派发子 Agent 的变更可不满足上述格式，但建议在迭代日志中注明「任务数=0、未派发」。
 - **勾选时机与权责**：
   - **纯实现任务**（交付物为代码/文件，无「在…中验证」「确认…一致」等可验证行为）：实现完成（或经 code review）后可将对应项改为 `- [x]`。
-  - **验证类任务**（任务描述中含「在…中验证」「确认…一致」等可验证行为）：须在 tasks.md 中标注**负责人**（如测试 Agent 或验收执行方）及**验收清单路径**（如 `design/documents/[change-id]/xxx-验证清单.md`）；**仅当验收通过后**方可将该任务勾选为 `- [x]`，且应由验收执行方或主 Agent 根据验收记录勾选，**不得由实现方在未经验收时单独勾选**。
+  - **验证类任务**（任务描述中含「在…中验证」「确认…一致」等可验证行为）：须在 tasks.md 中标注**负责人**（如测试 Agent 或验收执行方）及**验收清单路径**（如 `design/documents/changes/[change-id]/xxx-验证清单.md`）；**仅当验收通过后**方可将该任务勾选为 `- [x]`，且应由验收执行方或主 Agent 根据验收记录勾选，**不得由实现方在未经验收时单独勾选**。
 
 ### 4.5 design.md（可选）
 
@@ -131,15 +131,15 @@ openspec/changes/[change-id]/
   - 新的外部依赖或重大数据模型变更
   - 安全、性能或迁移复杂性
   - 需要在编码前做技术决策的模糊点
-- **结构与产出物质量**：由架构 Agent 执行 project-analysis 产出时，**最小结构**（变更目标与范围、架构与模块、接口与数据、关键流程与执行逻辑、异常/安全/性能、与需求/PRD 对应）与**自检**须符合 `ai-agent-dev-system/skills/project-analysis/REFERENCE/技术方案与架构产出物-最小结构与自检.md`。若存在**技术架构图、执行逻辑图、数据流图**等，可存放于 `design/documents/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 中引用，便于实现与 code-review 按图核对。
+- **结构与产出物质量**：由架构 Agent 执行 project-analysis 产出时，**最小结构**（变更目标与范围、架构与模块、接口与数据、关键流程与执行逻辑、异常/安全/性能、与需求/PRD 对应）与**自检**须符合 `ai-agent-dev-system/skills/project-analysis/REFERENCE/技术方案与架构产出物-最小结构与自检.md`。若存在**技术架构图、执行逻辑图、数据流图**等，可存放于 `design/documents/changes/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 中引用，便于实现与 code-review 按图核对。
 
 ### 4.6 specs/[capability]/spec.md（规范增量）
 
-- **用途**：描述本变更对该能力的**增量**（新增、修改、移除），作为编码实现与功能验收（func-test）的**可执行依据**；与 `design/documents/[change-id]/` 下迭代需求说明或功能需求说明书（PRD）中的功能列表、验收标准、需求验收 Checklist 对应，便于从需求 → spec → 实现 → 验收 全链路追溯。
-- **产出时机与技能**：spec 通常由执行 **request-analysis** 时在产出 `design/documents/[change-id]/` 下 PRD 后同步或随后产出；须符合 `ai-agent-dev-system/skills/request-analysis/REFERENCE/` 中新增类/修改类需求分析 spec 的约定（如 ADDED/MODIFIED/REMOVED、Requirements + Scenario 结构），并与 PRD 自检通过后再进入 tasks、编码与验收。
+- **用途**：描述本变更对该能力的**增量**（新增、修改、移除），作为编码实现与功能验收（func-test）的**可执行依据**；与 `design/documents/changes/[change-id]/` 下迭代需求说明或功能需求说明书（PRD）中的功能列表、验收标准、需求验收 Checklist 对应，便于从需求 → spec → 实现 → 验收 全链路追溯。
+- **产出时机与技能**：spec 通常由执行 **request-analysis** 时在产出 `design/documents/changes/[change-id]/` 下 PRD 后同步或随后产出；须符合 `ai-agent-dev-system/skills/request-analysis/REFERENCE/` 中新增类/修改类需求分析 spec 的约定（如 ADDED/MODIFIED/REMOVED、Requirements + Scenario 结构），并与 PRD 自检通过后再进入 tasks、编码与验收。
 - **与 design/documents（PRD）的对应**：
   - spec 中的 **Requirements** 与 **Scenario** 应与 PRD 的「功能列表与验收标准」（REFERENCE 第 6 类）、「需求验收 Checklist」（第 7 类）可互相引用、无冲突；func-test 执行时对照 spec 与 design/documents 下验收 Checklist，产出验收记录。
-  - **Scenario** 的编写可与 PRD 的「场景描述」「产品方案要点」（toC/toB 功能点）对齐；必要时在 spec 或 PRD 中注明引用关系（如「见 design/documents/[change-id]/迭代需求说明.md 5.1」「布局与交互见 design-assets/」）。
+  - **Scenario** 的编写可与 PRD 的「场景描述」「产品方案要点」（toC/toB 功能点）对齐；必要时在 spec 或 PRD 中注明引用关系（如「见 design/documents/changes/[change-id]/迭代需求说明.md 5.1」「布局与交互见 design-assets/」）。
   - **capability** 的划分可与 PRD 的功能点或模块对应（如多语言、页头页脚、首页组装等），便于按能力追溯需求 → spec → 实现。
 - **关键格式要求**：
   - 使用 `## ADDED Requirements`、`## MODIFIED Requirements`、`## REMOVED Requirements` 分段。
@@ -190,7 +190,7 @@ openspec/changes/[change-id]/
 | **`project-early-phase`** | 项目前期，非研发迭代变更性质；供主 Agent、产品经理 Agent 开展立项研究、需求分析、市场研究、产品方案等早期工作 | 自项目启动至首个研发迭代变更创建之前 | 主 Agent、产品经理 Agent | **`design/documents/project-early-phase/`** 存放产出；调用记录统一追加到项目级 **`design/documents/迭代日志.md`** |
 
 - **与一般 change-id 的区分**：`project-early-phase` 为**保留语义**，不受「动词开头」命名约束；不要求必须创建 `openspec/changes/project-early-phase/`（若项目希望为前期工作建 proposal/tasks 可自愿创建）。
-- **何时切换**：一旦项目决定启动首个研发迭代变更（新建功能/迭代/小版本），则创建新的 change-id（如 `init-mvp`、`add-homepage` 等），按 6.1 先建 `design/documents/[change-id]/` 再建 `openspec/changes/[change-id]/`；此后的任务归属该变更，不再使用 `project-early-phase` 作为研发任务的 change-id。
+- **何时切换**：一旦项目决定启动首个研发迭代变更（新建功能/迭代/小版本），则创建新的 change-id（如 `init-mvp`、`add-homepage` 等），按 6.1 先建 `design/documents/changes/[change-id]/` 再建 `openspec/changes/[change-id]/`；此后的任务归属该变更，不再使用 `project-early-phase` 作为研发任务的 change-id。
 
 ---
 
@@ -204,26 +204,26 @@ openspec/changes/[change-id]/
 
 凡新建变更（含新功能、迭代、小版本），须按以下顺序执行：
 
-1. **先**在项目内 `design/documents/` 下创建子目录 **`design/documents/[change-id]/`**，并存放**至少一份**需求侧产出（如《迭代需求说明》《功能需求说明书》《需求验收 Checklist》或《市场研究与产品方案》等）；可由产品经理或执行 request-analysis 技能时产出（先读 `ai-agent-dev-system/skills/request-analysis/SKILL.md`）。
+1. **先**在项目内 `design/documents/` 下创建子目录 **`design/documents/changes/[change-id]/`**，并存放**至少一份**需求侧产出（如《迭代需求说明》《功能需求说明书》《需求验收 Checklist》或《市场研究与产品方案》等）；可由产品经理或执行 request-analysis 技能时产出（先读 `ai-agent-dev-system/skills/request-analysis/SKILL.md`）。
 2. **再**在 `openspec/changes/` 下创建 **`openspec/changes/[change-id]/`** 及 proposal.md、tasks.md、可选 design.md、specs/；proposal.md 中须**引用**上述 design/documents 路径或文档名，建立可追溯关系。
 
-**简化例外**：极小范围热修可在 proposal 中声明「本变更为极小范围热修，已合并需求于 proposal，design/documents 仅保留 README」，并仍建议保留 `design/documents/[change-id]/README.md` 以保持可追溯。
+**简化例外**：极小范围热修可在 proposal 中声明「本变更为极小范围热修，已合并需求于 proposal，design/documents 仅保留 README」，并仍建议保留 `design/documents/changes/[change-id]/README.md` 以保持可追溯。
 
 ### 6.2 变更启动检查清单（新建变更或迭代时必过）
 
 在创建或开始实施变更前，自检以下 5 条（不依赖项目内 AGENTS.md 是否存在，以本规范为准）：
 
-1. 已创建 **`design/documents/[change-id]/`** 并存放至少一份需求/验收文档（产品经理或 request-analysis 产出）。
+1. 已创建 **`design/documents/changes/[change-id]/`** 并存放至少一份需求/验收文档（产品经理或 request-analysis 产出）。
 2. 已创建 **`openspec/changes/[change-id]/`** 且 **proposal.md** 中引用上述 design/documents 路径或文档名。
 3. **tasks.md** 中任务已按能力拆分，并建议标注**负责人**（对应子 Agent）；凡任务描述中含「在…中验证」「确认…一致」等**可验证行为**的，**必须**标注负责人（如测试 Agent）及验收清单路径（或引用 design/documents 下验证清单），且仅验收通过后方可勾选该任务。执行时由主 Agent 拆任务给该负责人，**被指派的执行方**按 **`ai-agent-dev-system/global-rules/skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」先读取该技能 SKILL.md 再按步骤执行（技能由执行方角色 + skills-rules 决定，不按任务类型反推）。
-4. 编码实现前，执行方已读取 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/` 下相关文档；执行方按 skills-rules 中本角色对应技能，须先读 `ai-agent-dev-system/skills/<技能名>/SKILL.md` 再执行。
+4. 编码实现前，执行方已读取 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/` 下相关文档；执行方按 skills-rules 中本角色对应技能，须先读 `ai-agent-dev-system/skills/<技能名>/SKILL.md` 再执行。
 5. **迭代日志（强制）**：已创建或约定首次调用时创建项目级迭代日志文档 **`design/documents/迭代日志.md`**；且**每次**在该变更上下文中调用 Agent 或技能时**须在产出完成后追加一条**记录，并在记录中明确写出当前 `change-id`，格式见 **`projects-rules-for-agent.md`**「Agent 与技能调用迭代日志」。主 Agent 在验收或归档前可核对该项目级迭代日志是否与调用一致。
 
 ### 6.3 新项目 0-1 的适用说明
 
 - **项目一开始**：自项目启动起，**所有任务均须有 change-id**。若项目尚未有 `openspec/`，则按本规范第一节「新项目第一件事」先创建 `openspec/` 并填写 AGENTS.md、project.md。
 - **项目前期（立项研究、需求分析等）**：使用保留的 change-id **`project-early-phase`**（见 5.1）。**必须**在首次进行项目前期工作时创建 **`design/documents/project-early-phase/`**，并在项目级 **`design/documents/迭代日志.md`** 中记录该 change-id 下的每次 Agent/技能调用，格式见 **`projects-rules-for-agent.md`** 第三节。主 Agent、产品经理 Agent 开展早期工作均归属此 change-id；**不要求**创建 `openspec/changes/project-early-phase/`（项目可自愿创建）。
-- **首个研发变更**：当项目决定启动首个研发迭代变更时，新建自定 change-id（如 `init-mvp`），仍须先建 `design/documents/[change-id]/` 并放入需求侧文档，再建 `openspec/changes/[change-id]/`，不因「第一个变更」而跳过顺序。
+- **首个研发变更**：当项目决定启动首个研发迭代变更时，新建自定 change-id（如 `init-mvp`），仍须先建 `design/documents/changes/[change-id]/` 并放入需求侧文档，再建 `openspec/changes/[change-id]/`，不因「第一个变更」而跳过顺序。
 - **proposal 模板**：首个 proposal 与后续所有 proposal 均按本规范 4.3 节建议结构（含可选「协同与技能」）编写，无需已有 proposal 作为拷贝来源。
 
 ### 6.4 规则加载与「用户一发起需求就触发」的前提
@@ -245,7 +245,7 @@ openspec/changes/[change-id]/
 
 - **何时创建提案**：添加新功能；破坏性变更（API、数据库 schema）；架构或模式变更；性能优化（改变行为）；安全模式更新。
 - **何时跳过提案**：Bug 修复（恢复预期行为）；拼写、格式、注释；非破坏性依赖更新；配置变更；现有行为的测试。
-- **步骤**（须符合第六节「变更启动顺序与检查清单」）：查看现有 `specs/` 与进行中的 `changes/` → 选定唯一 change-id → **先**创建 `design/documents/[change-id]/` 并存放至少一份需求/验收文档 → **再**创建 `openspec/changes/[change-id]/` 及 `specs/[capability]/` → 编写 `proposal.md`（可含「协同与技能」）、`tasks.md`、可选 `design.md`、`specs/[capability]/spec.md` → proposal 中引用 design/documents 路径 → 使用 `openspec validate` 校验。
+- **步骤**（须符合第六节「变更启动顺序与检查清单」）：查看现有 `specs/` 与进行中的 `changes/` → 选定唯一 change-id → **先**创建 `design/documents/changes/[change-id]/` 并存放至少一份需求/验收文档 → **再**创建 `openspec/changes/[change-id]/` 及 `specs/[capability]/` → 编写 `proposal.md`（可含「协同与技能」）、`tasks.md`、可选 `design.md`、`specs/[capability]/spec.md` → proposal 中引用 design/documents 路径 → 使用 `openspec validate` 校验。
 
 ### 阶段 2：实施变更（Implementation）
 

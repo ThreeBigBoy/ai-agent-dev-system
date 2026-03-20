@@ -10,7 +10,7 @@ description: 规范在 OpenSpec 项目中如何将图片解析结果纳入 desig
 ## 一、以 change-id 为落点（需求/前端场景）
 
 - 当图片用于**需求分析或前端实现**时，解析结果应绑定当前或即将创建的 `change-id`：
-  - 写入 `design/documents/[change-id]/` 下的需求类文档（如功能需求说明书），在对应章节中增加「界面/交互描述（来自图片解析）」；
+  - 写入 `design/documents/changes/[change-id]/` 下的需求类文档（如功能需求说明书），在对应章节中增加「界面/交互描述（来自图片解析）」；
   - 写入 `openspec/changes/[change-id]/specs/[capability]/spec.md`，将图中可见的布局、组件、文案、状态与交互转化为 **Scenario** 或补充进已有 Scenario。
 
 - 若此时尚未创建 change-id，可先输出结构化解析结果，待 request-analysis 确定 change-id 后，再由同一轮或下一轮对话将内容写入上述路径。
@@ -18,7 +18,7 @@ description: 规范在 OpenSpec 项目中如何将图片解析结果纳入 desig
 ---
 ## 二、需求说明文档中的写入方式
 
-- 在 `design/documents/[change-id]/功能需求说明书.md`（或等价文档）中：
+- 在 `design/documents/changes/[change-id]/功能需求说明书.md`（或等价文档）中：
   - 新增或扩展与图片相关的章节（如「XX 页面/模块」）；
   - 使用「本段内容来自对 [图片简要描述] 的解析」类说明标注来源；
   - 内容结构可与 REFERENCE 中的「界面类解析要点」对齐：布局、组件、文案、状态与交互、可选视觉规范。
@@ -46,7 +46,7 @@ description: 规范在 OpenSpec 项目中如何将图片解析结果纳入 desig
 
 - **request-analysis** 在需求分析中若检测到「涉及前端或含设计图/截图」：
   - 应自动加载 image-analysis，传入图片与当前上下文（如 change-id、已有需求摘要）；
-  - 将 image-analysis 返回的结构化描述纳入 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/specs/*/spec.md`，不重复造轮子。
+  - 将 image-analysis 返回的结构化描述纳入 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/specs/*/spec.md`，不重复造轮子。
 
 - **project-analysis** 在用户提供架构图/数据流图时：
   - 可调用 image-analysis 先做解析，再将解析结果整理进 `project.md` 或 `design/project-rules/`；

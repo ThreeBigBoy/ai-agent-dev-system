@@ -107,7 +107,7 @@ version: 1.0
 2. 相关文档:
    → openspec/changes/[change-id]/proposal.md
    → openspec/changes/[change-id]/tasks.md
-   → design/documents/[change-id]/PRD-xxx.md
+   → design/documents/changes/[change-id]/PRD-xxx.md
    → openspec/changes/[change-id]/design.md
    → design/documents/changes/[change-id]/records/
 
@@ -800,7 +800,7 @@ Why 5: 为什么 [答案 4]？
    示例: Proj01ShopifyTheme/design/documents/retrospectives/2026-03/复盘-商品详情页优化-2026-03-15.md
    
    change-id 级复盘（单个变更详细复盘）:
-   - 业务项目: [业务项目]/design/documents/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
+   - 业务项目: [业务项目]/design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
      示例: Proj01ShopifyTheme/design/documents/update-theme-v1.0.2/records/复盘报告-2026-03-15-商品详情页优化.md
    - ai-agent-dev-system: ai-agent-dev-system/design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
      示例: ai-agent-dev-system/design/documents/changes/check-langgraph-backend/records/复盘报告-2026-03-14-自检脚本超时问题排查.md
@@ -916,7 +916,7 @@ Stage 5: 行动计划 (Action Plan)
 □ 复盘报告（分布式管理，根据类型选择路径）:
    - 框架级: ai-agent-dev-system/design/documents/retrospectives/framework/[YYYY-QN]/复盘-[主题]-YYYY-MM-DD.md
    - 项目级: [业务项目]/design/documents/retrospectives/[YYYY-MM]/复盘-[主题]-YYYY-MM-DD.md
-   - change-id 级（业务项目）: [业务项目]/design/documents/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
+   - change-id 级（业务项目）: [业务项目]/design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
    - change-id 级（ai-agent-dev-system）: ai-agent-dev-system/design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md
 □ 对比表: 目标 vs 实际
 □ 亮点清单

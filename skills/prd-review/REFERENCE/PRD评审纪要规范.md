@@ -26,7 +26,7 @@
 | **定位** | 谁在什么时间做了什么事（日志型） | 评审了什么、结论是什么、为什么（评审型） |
 | **详细程度** | 简明扼要（一行记录） | 详细完整（多章节文档） |
 | **用途** | 追溯执行历史 | 追溯评审决策、支撑质量改进 |
-| **存放** | `design/documents/迭代日志.md` | `design/documents/[change-id]/records/PRD-[change-id]-评审纪要.md` |
+| **存放** | `design/documents/迭代日志.md` | `design/documents/changes/[change-id]/records/PRD-[change-id]-评审纪要.md` |
 
 ### 1.3 为什么必须留痕
 
@@ -46,7 +46,7 @@
 **评审日期**: YYYY-MM-DD  
 **评审人**: [Agent 角色，如 产品经理 Agent / 主 Agent]  
 **PRD 版本**: [如 v1.0]  
-**PRD 路径**: `design/documents/[change-id]/PRD-[change-id]-[关键词].md`
+**PRD 路径**: `design/documents/changes/[change-id]/PRD-[change-id]-[关键词].md`
 
 ---
 
@@ -172,7 +172,7 @@
 1. `ai-agent-dev-system/OpenSpec.md` - OpenSpec 开发规范
 2. `ai-agent-dev-system/skills/request-analysis/REFERENCE/迭代需求说明-PRD最小结构与自检.md` - PRD 最小结构与自检规范
 3. `ai-agent-dev-system/skills/prd-review/SKILL.md` - PRD 评审技能
-4. `design/documents/[change-id]/PRD-[change-id]-[关键词].md` - 被评审的 PRD 文档
+4. `design/documents/changes/[change-id]/PRD-[change-id]-[关键词].md` - 被评审的 PRD 文档
 5. `openspec/changes/[change-id]/proposal.md` - 变更提案
 6. `openspec/changes/[change-id]/specs/[capability]/spec.md` - 规范增量
 
@@ -338,7 +338,7 @@
 │          └── 本规范：内容结构模板、判定标准、示例            │
 ├─────────────────────────────────────────────────────────────┤
 │  产出层                                                      │
-│  └── design/documents/[change-id]/                          │
+│  └── design/documents/changes/[change-id]/                          │
 │      ├── PRD-[change-id]-[关键词].md                        │
 │      │   └── PRD 文档（被评审对象）                          │
 │      └── records/                                          │

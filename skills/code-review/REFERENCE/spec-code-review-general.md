@@ -69,7 +69,7 @@ description: 适用于各类项目与技术栈的通用代码评审规范，用�
   - **严重级别**：Blocking / Major / Minor；
   - **建议**：尽量给出具体、可执行的改进方案。
 
-- 在输出到 `design/documents/[change-id]/records/[change-id]-code-review.md` 时，可按优先级排序问题，便于集中处理。
+- 在输出到 `design/documents/changes/[change-id]/records/[change-id]-code-review.md` 时，可按优先级排序问题，便于集中处理。
 
 ---
 

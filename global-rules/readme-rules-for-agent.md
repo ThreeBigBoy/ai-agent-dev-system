@@ -46,7 +46,7 @@ alwaysApply: true
 
 design/ 存放 [领域] 相关的设计文档、产品说明与验收依据，不参与 [构建/部署]。
 
-- design/documents/：按项目/需求组织的文档（产品方案、需求说明书、技术方案、验收 Checklist）；按变更组织的 `design/documents/[change-id]/records/` 下为验收记录、代码评审记录等，与需求同属该变更便于追溯。
+- design/documents/：按项目/需求组织的文档（产品方案、需求说明书、技术方案、验收 Checklist）；按变更组织的 `design/documents/changes/[change-id]/records/` 下为验收记录、代码评审记录等，与需求同属该变更便于追溯。
 - design/project-rules/：设计侧或领域规范补充，与根目录 project-rules/ 可配合使用。
 
 便于产品/设计回溯与验收，以及 AI 或人工查阅需求与规范。

@@ -142,8 +142,8 @@ version: 1.0
 必须收集:
 - [ ] 迭代日志（`design/documents/迭代日志.md`）
 - [ ] 相关变更目录（`openspec/changes/[change-id]/`）
-- [ ] 评审纪要（`design/documents/[change-id]/records/*-评审纪要.md`）
-- [ ] 验收记录（`design/documents/[change-id]/records/*-func-test.md`）
+- [ ] 评审纪要（`design/documents/changes/[change-id]/records/*-评审纪要.md`）
+- [ ] 验收记录（`design/documents/changes/[change-id]/records/*-func-test.md`）
 
 可选收集:
 - [ ] 代码变更（Git diff）
@@ -247,7 +247,7 @@ version: 1.0
 **报告存放路径**:
 - 框架级复盘: `design/documents/retrospectives/framework/[YYYY-QN]/复盘-[主题]-YYYY-MM-DD.md`
 - 项目级复盘: `[项目]/design/documents/retrospectives/[YYYY-MM]/复盘-[主题]-YYYY-MM-DD.md`
-- change-id 级复盘: `design/documents/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md`
+- change-id 级复盘: `design/documents/changes/[change-id]/records/复盘报告-YYYY-MM-DD-[主题].md`
 
 ---
 

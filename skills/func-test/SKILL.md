@@ -1,6 +1,6 @@
 ---
 name: func-test
-description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结构设计与编码实现，对指定 change-id 范围内的功能进行系统化功能测试与验收；当用户输入「功能验收」「功能测试」等指令时，结合 request-analysis、project-analysis 与 coding-implement 的输出，按通用测试验收规范执行测试、发现并推动 bug 修复，并在 design/documents/[change-id]/records/ 下输出本次验收记录。v1.1 升级：明确「有条件通过」必须修复并重新验收后才能进入下一阶段。
+description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结构设计与编码实现，对指定 change-id 范围内的功能进行系统化功能测试与验收；当用户输入「功能验收」「功能测试」等指令时，结合 request-analysis、project-analysis 与 coding-implement 的输出，按通用测试验收规范执行测试、发现并推动 bug 修复，并在 design/documents/changes/[change-id]/records/ 下输出本次验收记录。v1.1 升级：明确「有条件通过」必须修复并重新验收后才能进入下一阶段。
 ---
 
 # 功能测试与验收技能（func-test）
@@ -10,7 +10,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
 - 实现行为与 `openspec/changes/[change-id]/specs/*/spec.md` 中的 Requirements + Scenarios 一一对应；
 - 覆盖正常、边界与异常场景，不遗漏关键用例；
 - 发现的问题被记录、分级，并通过任务与变更体系推动修复；
-- 在 `design/documents/[change-id]/records/` 中形成可追溯的功能验收记录；
+- 在 `design/documents/changes/[change-id]/records/` 中形成可追溯的功能验收记录；
 - **OpenSpec 本身需包含的操作**：第一轮 `openspec validate [change-id]`（验证已开发代码的变更需求与文档一致性），第二轮 `openspec validate --strict`（严格模式验证，用于验收结论前整体校验）。
 
 **产出物质量约定**：验收记录须符合本技能 **REFERENCE**《验收记录-最小结构与自检》中的最小结构与产出后自检清单，详见 `ai-agent-dev-system/skills/func-test/REFERENCE/验收记录-最小结构与自检.md`。
@@ -25,7 +25,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
   - 「按照规范把当前需求的功能跑一遍并记录结果」
 
 - **前置技能依赖**：
-  - `request-analysis`：提供本次需求的背景、场景与规范增量（`design/documents/[change-id]/` 与 `openspec/changes/[change-id]/specs/*/spec.md`）。
+  - `request-analysis`：提供本次需求的背景、场景与规范增量（`design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/specs/*/spec.md`）。
   - `project-analysis`：提供项目宪法与工程结构约定，帮助理解依赖环境与重要数据/接口。
   - `coding-implement`：对应 change-id 的功能已完成初步实现，并 ideally 通过了基本自测与 code-review。
   - （可选）`code-review`：如果已进行过 Code Review，可引用其中的问题清单与风险点，作为测试重点。
@@ -33,7 +33,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
 - **前置资料来源**：
   - `openspec/changes/[change-id]/specs/*/spec.md`：作为测试用例与验收标准的主要来源；
   - `openspec/changes/[change-id]/design.md`：了解关键技术/交互设计与依赖；
-  - `design/documents/[change-id]/需求验收Checklist*.md`（如存在）：作为补充验收清单；
+  - `design/documents/changes/[change-id]/需求验收Checklist*.md`（如存在）：作为补充验收清单；
   - `info-database/` 与 `info-service-interface/`：涉及数据或对外接口测试时的结构与约束参考。
 
 ---
@@ -97,7 +97,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
    ```
 
 6. **输出测试验收记录**
-   - 在 **`design/documents/[change-id]/records/`** 下创建本次验收记录文件，建议文件名 **`[change-id]-func-test.md`**（或 `func-test.md`）；
+   - 在 **`design/documents/changes/[change-id]/records/`** 下创建本次验收记录文件，建议文件名 **`[change-id]-func-test.md`**（或 `func-test.md`）；
    - 记录**最小结构与自检**须符合 REFERENCE《验收记录-最小结构与自检》：含基本信息、范围说明、用例与结果汇总、问题与 bug 列表、结论与建议；两轮 `openspec validate` 结果须记入记录；产出后执行该 REFERENCE 中的自检清单，通过后再给出是否推荐通过验收的结论。
    - **如首次验收为「有条件通过」或「不通过」**，修复后必须执行**重新验收**，产出**重新验收记录**（文件命名：`[change-id]-func-test-重新验收.md`）
 
@@ -120,7 +120,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析、工程结
   - 若 Scenario 描述不足以支撑测试，应在验收记录中提出，并推动 spec 补充。
 
 - **与 documents/ 的关系**
-  - `design/documents/[change-id]/` 中的需求说明与验收 Checklist 是测试计划的重要来源；
+  - `design/documents/changes/[change-id]/` 中的需求说明与验收 Checklist 是测试计划的重要来源；
   - `documents/records/[change-id]-func-test*.md` 是实际执行与结果的落地记录，两者应形成「计划-执行」闭环。
 
 ---

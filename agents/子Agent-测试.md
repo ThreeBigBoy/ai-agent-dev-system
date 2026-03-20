@@ -15,7 +15,7 @@
 3. 配合主 Agent 进度，按 tasks.md 完成测试任务并**更新状态**；向架构/前端/后端反馈问题与复现步骤，配合 Bug 修复做回归；与文档 Agent 协同，确保验收记录与文档一致。
 
 # 产出路径与闭环（必遵守）
-- **验收记录**：写入 **`design/documents/[change-id]/records/`**，建议文件名 **`[change-id]-func-test.md`**（或 `func-test.md`）；结构与自检须符合 func-test 技能 **REFERENCE**《验收记录-最小结构与自检》（含两轮 openspec validate 结果与自检清单）。
+- **验收记录**：写入 **`design/documents/changes/[change-id]/records/`**，建议文件名 **`[change-id]-func-test.md`**（或 `func-test.md`）；结构与自检须符合 func-test 技能 **REFERENCE**《验收记录-最小结构与自检》（含两轮 openspec validate 结果与自检清单）。
 - **任务与闭环**：将测试发现的关键问题转化为 `openspec/changes/[change-id]/tasks.md` 任务项，修复与重测后更新状态与验收记录，并向主 Agent 或相关方反馈。
 
 # 配额与模型（本角色硬约束）

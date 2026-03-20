@@ -60,7 +60,7 @@ alwaysApply: true
 | # | 自检项 | 说明 |
 |---|--------|------|
 | 1 | **执行方与技能** | 是否已按本规则 1.2 及 `skills-rules-for-agent.md` 中「Agents 与 Skills 赋能对应关系」表确定执行方？执行方是否已读取该角色对应的 **`ai-agent-dev-system/skills/`** 下技能目录的 **SKILL.md**？ |
-| 2 | **新建变更顺序** | 若本次为新建需求/新建变更/迭代，是否已先创建 **`design/documents/[change-id]/`** 并存放至少一份需求/验收文档，再创建 **`openspec/changes/[change-id]/`**？（见 OpenSpec.md 第六节。） |
+| 2 | **新建变更顺序** | 若本次为新建需求/新建变更/迭代，是否已先创建 **`design/documents/changes/[change-id]/`** 并存放至少一份需求/验收文档，再创建 **`openspec/changes/[change-id]/`**？（见 OpenSpec.md 第六节。） |
 | 3 | **验证类任务** | 若任务描述中含「在…中验证」「确认…一致」等可验证行为，是否已明确负责人及验收清单路径，且约定仅验收通过后方可勾选该任务？ |
 | 4 | **迭代日志** | 若本次在某一项目上下文中（即须有 change-id，见 OpenSpec 5.1 与第三节 3.1），是否将在**本次调用产出完成后、作出完成性回复之前**，向当前项目统一的迭代日志文档 **`design/documents/迭代日志.md`** **追加一条**记录？记录内容中是否已明确本次对应的 change-id（含 `project-early-phase`）？格式见第三节「Agent 与技能调用迭代日志」。 |
 
@@ -96,7 +96,7 @@ alwaysApply: true
    **同时满足以下条件时，一般可按 simple 处理**：  
    - 只涉及单个或极少数文件的小改动，不改变接口签名、数据结构或安全边界；  
    - 更像一次性本地/工具层操作（如重命名、轻量文案和注释修订），对项目长期脉络影响有限；  
-   - 与 OpenSpec 文档体系（`openspec/`、`design/documents/[change-id]/` 等）几乎无交集。  
+   - 与 OpenSpec 文档体系（`openspec/`、`design/documents/changes/[change-id]/` 等）几乎无交集。  
    simple 模式下：可以仅依赖 `.cursor/rules/*.mdc` + 少量必要规则片段 + `memory/` 中相关条目完成任务，不强制创建或修改 `openspec/changes/*`，是否写入迭代日志可按实际价值判断。
 
 3. **判定记录与从 simple → heavy 的调整**  
@@ -121,8 +121,8 @@ alwaysApply: true
 当用户**发起新需求、新建变更或迭代**（如「帮我做 XXX 功能」「做一个 YYY 的迭代」「按这个需求出方案」等）时，在遵循**一、任务执行通用机制**的前提下，**第一步必须**：
 
 1. **先读取**同仓库或可访问路径下的 **`ai-agent-dev-system/OpenSpec.md`** 的**第六节「变更启动顺序与检查清单」**及**第 4.3 节（proposal 建议结构）**，以及 **`memory/patterns/pattern-openspec-change-workflow.md`**，再按该节顺序与检查清单执行，确保「先 design/documents，再 openspec/changes」及多 Agent × 多 Skill 机制（见 `skills-rules-for-agent.md`）被触发。
-2. **若当前项目尚未有 `openspec/` 目录**（新项目 0-1）：先按 OpenSpec.md 第一节「新项目第一件事」创建 `openspec/` 并填写 `AGENTS.md`、`project.md`；**项目前期的任何任务**（立项研究、需求分析等）使用保留的 change-id **`project-early-phase`**，须建 `design/documents/project-early-phase/`，并在项目级 **`design/documents/迭代日志.md`** 中记录相关调用（见 OpenSpec 5.1、6.3）。当项目决定启动**首个研发变更**时，再按第六节执行（先建 `design/documents/[change-id]/`，再建 `openspec/changes/[change-id]/`）。
-3. **不得**在未读 OpenSpec.md 第六节与 4.3 节、未建 `design/documents/[change-id]/` 的情况下，直接创建 `openspec/changes/[change-id]/` 或开始编码。
+2. **若当前项目尚未有 `openspec/` 目录**（新项目 0-1）：先按 OpenSpec.md 第一节「新项目第一件事」创建 `openspec/` 并填写 `AGENTS.md`、`project.md`；**项目前期的任何任务**（立项研究、需求分析等）使用保留的 change-id **`project-early-phase`**，须建 `design/documents/project-early-phase/`，并在项目级 **`design/documents/迭代日志.md`** 中记录相关调用（见 OpenSpec 5.1、6.3）。当项目决定启动**首个研发变更**时，再按第六节执行（先建 `design/documents/changes/[change-id]/`，再建 `openspec/changes/[change-id]/`）。
+3. **不得**在未读 OpenSpec.md 第六节与 4.3 节、未建 `design/documents/changes/[change-id]/` 的情况下，直接创建 `openspec/changes/[change-id]/` 或开始编码。
 
 4. **路径不可达时的降级**：当无法访问 **`ai-agent-dev-system/OpenSpec.md`** 或 **`ai-agent-dev-system/skills/`**（例如仅打开单项目且未挂载 ai-agent-dev-system）时，以**当前项目**根目录下可见的宿主入口文件、**`openspec/AGENTS.md`**（若存在）及本项目内可见的 proposal、tasks 为准；仍须遵守「先 design/documents 再 openspec/changes」的目录顺序（若本项目已有或即将创建 openspec）。**change-id 确定时机**：新需求/新建变更时，change-id 由主 Agent 或产品经理 Agent 在产出 proposal 时确定，须符合 `openspec/project.md` 中的命名规则；若用户已指定则从其指定。
 
@@ -130,7 +130,7 @@ alwaysApply: true
 
 当用户要求**推进某变更的某任务**或**落地 tasks 中某条**（如「推进 1.4」「完成 2.2」）时，在遵循**一、任务执行通用机制**的前提下：
 
-1. **主 Agent（或当前统筹方）**：读取该变更的 `openspec/changes/[change-id]/proposal.md`、`tasks.md`、`design.md`（如有）及 `design/documents/[change-id]/` 下至少一份需求/验收文档，明确该任务的定义与验收标准；根据 tasks.md 中该任务的**负责人**（对应子 Agent）确定执行方，若未标注则按任务性质指派给对应子 Agent。若项目启用了运行时后端（如 `agent_team_project`），则由该后端承接执行，但不改变执行方角色语义。
+1. **主 Agent（或当前统筹方）**：读取该变更的 `openspec/changes/[change-id]/proposal.md`、`tasks.md`、`design.md`（如有）及 `design/documents/changes/[change-id]/` 下至少一份需求/验收文档，明确该任务的定义与验收标准；根据 tasks.md 中该任务的**负责人**（对应子 Agent）确定执行方，若未标注则按任务性质指派给对应子 Agent。若项目启用了运行时后端（如 `agent_team_project`），则由该后端承接执行，但不改变执行方角色语义。
 2. **被指派执行的子 Agent**：按 **`skills-rules-for-agent.md`** 中**本 Agent 角色**的「主导/联动技能」，**先读取**该技能 **SKILL.md** 再按其中步骤执行；不得跳过「按角色 → 查 skills-rules → 读 SKILL」直接改代码或写验收清单。
 3. **不得**在未明确执行方、未按 skills-rules 确定技能并读取 SKILL 的情况下直接实施。
 4. **验证类任务**（任务描述中含「在…中验证」「确认…一致」等）：若 tasks.md 已标注负责人与验收清单，须由该负责人按验收清单执行并通过后**再由验收方或主 Agent 勾选**；若未标注，须先补全负责人与验收清单路径（或约定由整变更验收如 6.2 覆盖），**不得由实现方在未经验收时单独勾选**。

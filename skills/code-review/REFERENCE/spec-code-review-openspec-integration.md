@@ -23,7 +23,7 @@ description: 规范在 OpenSpec 项目中如何将 Code Review 结果与 change-
 
 ## 二、review 记录文件约定
 
-- 统一将 Code Review 记录输出到 **`design/documents/[change-id]/records/`** 下，建议文件名 **`[change-id]-code-review.md`**（与 func-test 验收记录同目录，符合 OpenSpec 1.1 表约定）。
+- 统一将 Code Review 记录输出到 **`design/documents/changes/[change-id]/records/`** 下，建议文件名 **`[change-id]-code-review.md`**（与 func-test 验收记录同目录，符合 OpenSpec 1.1 表约定）。
 
 - 建议的记录结构：
   1. **基本信息**
@@ -75,7 +75,7 @@ description: 规范在 OpenSpec 项目中如何将 Code Review 结果与 change-
 
 - 在重要里程碑（如 MVP 上线、版本发布）前，建议：
   - 确认所有 P0/P1 级 change-id 至少完成一轮 Code Review；
-  - `design/documents/[change-id]/records/` 中存在相应的 code-review 记录；
+  - `design/documents/changes/[change-id]/records/` 中存在相应的 code-review 记录；
   - 关键问题已在 `tasks.md` 中闭环或在记录中说明延期/降级的原因。
 
 ---

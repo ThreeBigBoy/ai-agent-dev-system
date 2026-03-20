@@ -175,7 +175,7 @@ description: 技术方案/架构设计产出物规范性评审技能；当用户
 
 ### 5. 产出评审纪要
 
-在 `design/documents/[change-id]/records/` 或 `openspec/changes/[change-id]/` 下创建评审纪要文档，命名：
+在 `design/documents/changes/[change-id]/records/` 或 `openspec/changes/[change-id]/` 下创建评审纪要文档，命名：
 - 推荐：`技术方案-[change-id]-评审纪要.md`
 - 兼容：`技术方案评审纪要.md`
 
@@ -249,9 +249,9 @@ description: 技术方案/架构设计产出物规范性评审技能；当用户
 | 产出物 | 位置 | 说明 |
 |--------|------|------|
 | 技术方案文档 | `openspec/changes/[change-id]/design.md` | 评审对象（标准位置） |
-| 技术方案文档 | `design/documents/[change-id]/技术方案-[change-id]-[关键词].md` | 评审对象（兼容位置） |
-| PRD 文档 | `design/documents/[change-id]/PRD-[change-id]-[关键词].md` | 评审参考（确保技术方案与需求一致） |
-| 评审纪要 | `design/documents/[change-id]/records/技术方案-[change-id]-评审纪要.md` | 本技能产出 |
+| 技术方案文档 | `design/documents/changes/[change-id]/技术方案-[change-id]-[关键词].md` | 评审对象（兼容位置） |
+| PRD 文档 | `design/documents/changes/[change-id]/PRD-[change-id]-[关键词].md` | 评审参考（确保技术方案与需求一致） |
+| 评审纪要 | `design/documents/changes/[change-id]/records/技术方案-[change-id]-评审纪要.md` | 本技能产出 |
 | 规范依据 | `skills/project-analysis/REFERENCE/技术方案与架构产出物-最小结构与自检.md` | 必须读取的 REFERENCE |
 
 ## 执行后必做收尾

@@ -18,7 +18,7 @@
 | 序号 | 项 | 说明 | 勾选 |
 |------|----|------|------|
 | 2.1 | 「Agents 与 Skills 赋能对应关系」表 | 在表中新增一行：Agent 名称、主导技能、联动技能、说明。 | ☐ |
-| 2.2 | 技能触发约定（若为新技能） | 若该 Agent 对应新 Skill，在 skills-rules 中增加对应 9.x 小节（技能路径、触发场景、核心职责/产出）；若产出含**记录文件**（如验收/评审记录），路径须与 OpenSpec 1.1 表及该技能 SKILL.md 一致（如 `design/documents/[change-id]/records/`）。若涉及**迭代日志**，须统一遵循项目级 `design/documents/迭代日志.md` 口径。若复用现有技能则跳过。 | ☐ |
+| 2.2 | 技能触发约定（若为新技能） | 若该 Agent 对应新 Skill，在 skills-rules 中增加对应 9.x 小节（技能路径、触发场景、核心职责/产出）；若产出含**记录文件**（如验收/评审记录），路径须与 OpenSpec 1.1 表及该技能 SKILL.md 一致（如 `design/documents/changes/[change-id]/records/`）。若涉及**迭代日志**，须统一遵循项目级 `design/documents/迭代日志.md` 口径。若复用现有技能则跳过。 | ☐ |
 | 2.3 | 使用说明 | 若主 Agent 分配任务逻辑需体现新角色，可酌情在「使用说明」段补充一句。 | ☐ |
 
 ### 3. 配额说明（按需）
@@ -61,7 +61,7 @@
 | C1 | 职责无重叠冲突 | 新角色与主 Agent、其他子 Agent 的职责边界清晰，无「同一件事两个 Agent 都主导」或「没人负责」的缺口。 | ☐ |
 | C2 | 技能对应一致 | skills-rules 表中该 Agent 的「主导/联动技能」与 子Agent-xxx.md、SKILL.md 中的约定一致；主 Agent 拆任务时能正确指派到该角色并触发对应技能。 | ☐ |
 | C3 | 配额无冲突 | 新角色配额（强模型/快速/慢速/是否建议外部复核等）与 projects-rules、主 Agent 的「配额分配指导」一致；主 Agent 不会误把「需要强模型或外部复核」的任务派给「仅慢速/禁止快速请求」的新角色。若子Agent-xxx 有特殊配额，projects-rules 第六章中应有对应一句或汇总，便于单处查阅。 | ☐ |
-| C4 | 产出路径与规范 | 新角色的产出物（如验收记录、任务更新）路径与 OpenSpec（含 1.1 表）、对应技能 SKILL.md 约定一致；验收/评审类**记录路径**（如 design/documents/[change-id]/records/）以 OpenSpec 与 SKILL 为准，skills-rules 9.x 小节须与之一致。 | ☐ |
+| C4 | 产出路径与规范 | 新角色的产出物（如验收记录、任务更新）路径与 OpenSpec（含 1.1 表）、对应技能 SKILL.md 约定一致；验收/评审类**记录路径**（如 design/documents/changes/[change-id]/records/）以 OpenSpec 与 SKILL 为准，skills-rules 9.x 小节须与之一致。 | ☐ |
 | C5 | 主 Agent 描述已更新 | 主 Agent.md 中角色总数、角色全集、配置统筹/配额处已更新，主 Agent 在「配置核对报告」等输出中能覆盖新角色。 | ☐ |
 | C6 | 多规则表述一致 | 同一约定（如配额、技能、产出路径）若出现在多处（子Agent .md、skills-rules、projects-rules、AGENTS.md），表述一致。**权威来源**：配额/行为以 projects-rules、skills-rules 与主Agent 为准；**产出/记录路径**以 OpenSpec 1.1 表与各技能 SKILL.md 为准，skills-rules 9.x 仅摘要须与之一致。若有分歧，按上述权威同步修正。 | ☐ |
 | C6.1 | 迭代日志口径一致 | 若新增或调整角色涉及日志表述，须确认所有文档统一采用项目级 `design/documents/迭代日志.md`，不再使用“逐 change-id 的 records 目录迭代日志”作为主口径。 | ☐ |

@@ -26,7 +26,7 @@ description: PRD（产品需求文档）评审技能；当用户输入「评审 
 
 - 从用户输入或上下文中识别本次评审的 **change-id**
 - 若未给出 change-id，应向用户询问
-- 检查 `design/documents/[change-id]/` 目录是否存在 PRD 文档
+- 检查 `design/documents/changes/[change-id]/` 目录是否存在 PRD 文档
   - 按命名规范检查以下可能的文件名：
     - `PRD-[change-id]-[关键词].md`（推荐新格式）
     - `PRD-[change-id].md`
@@ -90,7 +90,7 @@ description: PRD（产品需求文档）评审技能；当用户输入「评审 
 
 ### 5. 产出评审纪要
 
-在 `design/documents/[change-id]/records/` 下创建评审纪要文档，命名：
+在 `design/documents/changes/[change-id]/records/` 下创建评审纪要文档，命名：
 - 推荐：`PRD-[change-id]-评审纪要.md`
 - 兼容：`PRD评审纪要.md`
 
@@ -163,8 +163,8 @@ description: PRD（产品需求文档）评审技能；当用户输入「评审 
 
 | 产出物 | 位置 | 说明 |
 |--------|------|------|
-| PRD 文档 | `design/documents/[change-id]/PRD-[change-id]-[关键词].md` | 评审对象 |
-| 评审纪要 | `design/documents/[change-id]/records/PRD-[change-id]-评审纪要.md` | 本技能产出 |
+| PRD 文档 | `design/documents/changes/[change-id]/PRD-[change-id]-[关键词].md` | 评审对象 |
+| 评审纪要 | `design/documents/changes/[change-id]/records/PRD-[change-id]-评审纪要.md` | 本技能产出 |
 | 规范依据 | `skills/request-analysis/REFERENCE/迭代需求说明-PRD最小结构与自检.md` | 必须读取的 REFERENCE |
 
 ## 执行后必做收尾

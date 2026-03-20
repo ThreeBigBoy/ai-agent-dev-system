@@ -7,7 +7,7 @@
 
 ## 一、最小结构（模板）
 
-产出 `design/documents/[change-id]/` 下的**迭代需求说明**或**功能需求说明书 + 市场研究与产品方案**时，须覆盖以下 8 类内容（可合并为单文档或拆为多文档，与项目约定一致）。
+产出 `design/documents/changes/[change-id]/` 下的**迭代需求说明**或**功能需求说明书 + 市场研究与产品方案**时，须覆盖以下 8 类内容（可合并为单文档或拆为多文档，与项目约定一致）。
 
 ### 1. 需求来源与背景
 
@@ -116,7 +116,7 @@ PRD-[change-id]-[关键词].md
 无论采用何种命名格式，PRD 文档统一存放于：
 
 ```
-design/documents/[change-id]/
+design/documents/changes/[change-id]/
 ```
 
 ---
@@ -154,7 +154,7 @@ design/documents/[change-id]/
 
 ### 4.2 评审纪要内容结构
 
-每次 PRD 自检后，须在 `design/documents/[change-id]/records/` 下创建**评审纪要文档**，命名建议：
+每次 PRD 自检后，须在 `design/documents/changes/[change-id]/records/` 下创建**评审纪要文档**，命名建议：
 - `PRD-[change-id]-评审纪要.md`（遵循新命名规范）
 - `PRD评审纪要.md`（传统命名，仍兼容）
 
@@ -296,15 +296,15 @@ design/documents/[change-id]/
 
 ### 7.2 存放位置与 PRD 引用
 
-- **存放**：`design/documents/[change-id]/` 下，可建子目录如 `wireframes/`、`mockups/`、`flows/`，或统一 `design-assets/`；文件命名建议含功能点或页面名（如 `home-sections-wireframe.png`、`editor-header-footer-flow.md`）。
-- **在 PRD 中引用**：在迭代需求说明或功能需求说明书的对应小节（如 5.1 toC、5.2 toB）中写明「布局与交互见：`design/documents/[change-id]/wireframes/xxx.png`」或「交互链路见：`design/documents/[change-id]/flows/xxx.md`」，便于前端/后端/测试按图实现。
+- **存放**：`design/documents/changes/[change-id]/` 下，可建子目录如 `wireframes/`、`mockups/`、`flows/`，或统一 `design-assets/`；文件命名建议含功能点或页面名（如 `home-sections-wireframe.png`、`editor-header-footer-flow.md`）。
+- **在 PRD 中引用**：在迭代需求说明或功能需求说明书的对应小节（如 5.1 toC、5.2 toB）中写明「布局与交互见：`design/documents/changes/[change-id]/wireframes/xxx.png`」或「交互链路见：`design/documents/changes/[change-id]/flows/xxx.md`」，便于前端/后端/测试按图实现。
 - **与 image-analysis 技能**：若需求分析时用户提供了设计稿或截图，可经 image-analysis 解析后，将解析结论写入 PRD 并保存原图至上述目录，建立「图 → 文档」可追溯。
 
 ### 7.3 何时需要、何时可省略
 
 - **建议补充**：界面与交互较复杂、多状态、多角色、易歧义时；或需与设计/视觉对齐时。
 - **可注明不单独出图**：完全沿用平台标准（如仅用 Shopify 主题编辑器标准控件、Dawn 参考布局）时，可在 PRD 中写明「toC/toB 布局与交互沿用 [平台/参考主题] 标准，不单独产出线框图/视觉图」；自检时勾选「已明确沿用标准」即可。
-- **由后续设计阶段产出**：若本次仅需求分析、设计阶段在后，可在 PRD 中注明「线框图/视觉图/交互链路图由设计阶段产出后补充至 design/documents/[change-id]/」，并在自检项 5c 中勾选「已注明由后续设计产出」。
+- **由后续设计阶段产出**：若本次仅需求分析、设计阶段在后，可在 PRD 中注明「线框图/视觉图/交互链路图由设计阶段产出后补充至 design/documents/changes/[change-id]/」，并在自检项 5c 中勾选「已注明由后续设计产出」。
 
 ---
 

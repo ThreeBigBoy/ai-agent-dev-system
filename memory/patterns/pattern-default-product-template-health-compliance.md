@@ -36,7 +36,7 @@ related:
 
 ### Step 1：在 PRD 中显式定义「默认模板行为」
 
-1. 在 `design/documents/[change-id]/迭代需求说明.md` 中，增加一节「默认产品模板行为」：
+1. 在 `design/documents/changes/[change-id]/迭代需求说明.md` 中，增加一节「默认产品模板行为」：
    - 明确：默认 product 模板（通常是 `templates/product.json`）**SHALL** 包含健康合规模块 section；
    - 说明适用范围：仅默认模板必须包含，其它 product 模板可选；
    - 将此作为独立的功能项与验收标准。

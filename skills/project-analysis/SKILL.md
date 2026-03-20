@@ -79,7 +79,7 @@ description: 分析与管理工程结构与技术实现方案；在采用 OpenSp
        - 参考 `memory/patterns/pattern-observable-small-steps` 阶段化执行模式
        - 参考 `memory/patterns/pattern-problem-analysis-3-layer` 三层穿透分析法
      - 如有必要，在相关 `specs/[capability]/spec.md` 中，以 `ADDED` / `MODIFIED` / `REMOVED` Requirements + Scenario 的形式，对工程结构约束进行结构化描述。
-   - 若产出**技术架构图、执行逻辑图、数据流图**等，存放于 `design/documents/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 或 project-rules 对应章节中引用；约定见 REFERENCE 同文档。
+   - 若产出**技术架构图、执行逻辑图、数据流图**等，存放于 `design/documents/changes/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 或 project-rules 对应章节中引用；约定见 REFERENCE 同文档。
 
 5. **与用户及其他技能协同**
    - 当判断「是否构成重大结构变化」「change-id 如何选择或创建」「设计取舍」等关键问题需要业务/产品决策时：
@@ -117,7 +117,7 @@ description: 分析与管理工程结构与技术实现方案；在采用 OpenSp
   - `design.md`：给出与实现紧密相关的架构与技术设计细节；**最小结构**（变更目标与范围、架构与模块、接口与数据、关键流程与执行逻辑、异常/安全/性能、与需求/PRD 对应）与**自检**见 REFERENCE《技术方案与架构产出物-最小结构与自检》。
   - `specs/[capability]/spec.md`：使用 OpenSpec 形式记录与工程结构、约束相关的 Requirements + Scenarios。
 - **4. 架构图等设计产出物**
-  - 技术架构图、执行逻辑图、数据流图、序列图等：建议存放于 `design/documents/[change-id]/architecture/` 或 `design/project-rules/`；在 design.md、project-rules 对应章节中引用。类型、存放与引用约定见 REFERENCE 同文档。
+  - 技术架构图、执行逻辑图、数据流图、序列图等：建议存放于 `design/documents/changes/[change-id]/architecture/` 或 `design/project-rules/`；在 design.md、project-rules 对应章节中引用。类型、存放与引用约定见 REFERENCE 同文档。
 
 ---
 

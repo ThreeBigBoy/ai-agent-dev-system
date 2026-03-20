@@ -19,7 +19,7 @@ description: 适用于各类应用工程的通用功能测试与验收规范，�
 - 阅读与本次变更相关的文档：
   - `openspec/changes/[change-id]/specs/*/spec.md`；
   - `openspec/changes/[change-id]/design.md`；
-  - `design/documents/[change-id]/` 下的需求说明与验收 Checklist（如存在）；
+  - `design/documents/changes/[change-id]/` 下的需求说明与验收 Checklist（如存在）；
   - 与本次测试密切相关的配置说明、数据模型与接口文档。
 
 ---

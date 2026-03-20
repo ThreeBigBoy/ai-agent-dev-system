@@ -9,11 +9,11 @@
 
 | 场景 | 用法 |
 |------|------|
-| **有图** | image-analysis 解析图片 → 输出结构化描述；**补充**：根据解析结果用 Mermaid 产出**流程图、状态图、页面跳转图**等，写入 `design/documents/[change-id]/design-assets/flows/` 或对应 .md，与 PRD/设计产出物一起引用。 |
+| **有图** | image-analysis 解析图片 → 输出结构化描述；**补充**：根据解析结果用 Mermaid 产出**流程图、状态图、页面跳转图**等，写入 `design/documents/changes/[change-id]/design-assets/flows/` 或对应 .md，与 PRD/设计产出物一起引用。 |
 | **无图（产品经理侧）** | 按需求或 **PRD**（迭代需求说明/功能需求说明书）用 Mermaid 产出 **产品与交互向** 设计产出物，与 request-analysis REFERENCE「PRD 补充物」对应：**① 布局线框图**（flowchart 表示关键页/区块结构、分区与层级）→ `design-assets/wireframes/`；**② 交互链路设计图**（flowchart/stateDiagram 表示用户操作路径、状态流转、正常/异常分支）→ `design-assets/flows/`；**③ 功能界面要素示意**（可与 mockups 文档配合，用 flowchart/subgraph 表示首屏/CTA/设置面板等区域与组件关系）→ `design-assets/mockups/` 或 wireframes。在迭代需求说明或功能需求说明书对应小节引用，供**前端、后端、测试**按图实现与验收。 |
-| **无图（架构侧）** | 按 **design.md** 或 **project-rules** 用 Mermaid 产出 **技术实现向** 图示，与 project-analysis REFERENCE「技术方案与架构产出物」对应：**① 技术架构图**（flowchart/subgraph 表示系统/模块/层次、边界与依赖）→ `design/documents/[change-id]/architecture/` 或 `design/project-rules/`；**② 执行逻辑图/流程图**（flowchart/stateDiagram 表示关键业务流程、状态机、决策分支）→ `architecture/` 或 flows 子目录；**③ 数据流图**（flowchart 表示数据在模块/服务间的流向与转换）→ 同上或 project-rules 下 data-flows；**④ 序列图/时序图**（sequenceDiagram 表示跨模块/服务调用顺序）→ 同上。在 design.md 或 project-rules 对应章节引用，供**前端/后端按图实现、code-review/func-test 对照**。 |
+| **无图（架构侧）** | 按 **design.md** 或 **project-rules** 用 Mermaid 产出 **技术实现向** 图示，与 project-analysis REFERENCE「技术方案与架构产出物」对应：**① 技术架构图**（flowchart/subgraph 表示系统/模块/层次、边界与依赖）→ `design/documents/changes/[change-id]/architecture/` 或 `design/project-rules/`；**② 执行逻辑图/流程图**（flowchart/stateDiagram 表示关键业务流程、状态机、决策分支）→ `architecture/` 或 flows 子目录；**③ 数据流图**（flowchart 表示数据在模块/服务间的流向与转换）→ 同上或 project-rules 下 data-flows；**④ 序列图/时序图**（sequenceDiagram 表示跨模块/服务调用顺序）→ 同上。在 design.md 或 project-rules 对应章节引用，供**前端/后端按图实现、code-review/func-test 对照**。 |
 
-产出物路径约定：**产品经理侧**与 request-analysis REFERENCE「PRD 补充物」一致，为 `design/documents/[change-id]/design-assets/` 下 `wireframes/`、`flows/`、`mockups/`，并在迭代需求说明或功能需求说明书中引用；**架构侧**与 project-analysis REFERENCE 一致，为 `design/documents/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 与 project-rules 中引用。
+产出物路径约定：**产品经理侧**与 request-analysis REFERENCE「PRD 补充物」一致，为 `design/documents/changes/[change-id]/design-assets/` 下 `wireframes/`、`flows/`、`mockups/`，并在迭代需求说明或功能需求说明书中引用；**架构侧**与 project-analysis REFERENCE 一致，为 `design/documents/changes/[change-id]/architecture/` 或 `design/project-rules/`，并在 design.md 与 project-rules 中引用。
 
 ---
 
@@ -99,7 +99,7 @@ sequenceDiagram
 
 ### 3.6 与 OpenSpec / 设计产出物的对应
 
-- **文件位置**：与 request-analysis、project-analysis 约定一致，Mermaid 图放在 **`design/documents/[change-id]/design-assets/flows/xxx.md`** 或 **wireframes/xxx.md**** 中，一文件可含多段 \`\`\`mermaid。
+- **文件位置**：与 request-analysis、project-analysis 约定一致，Mermaid 图放在 **`design/documents/changes/[change-id]/design-assets/flows/xxx.md`** 或 **wireframes/xxx.md**** 中，一文件可含多段 \`\`\`mermaid。
 - **在 PRD 中引用**：在迭代需求说明或功能需求说明书对应小节写明「交互链路见 design-assets/flows/xxx.md」「线框结构见 wireframes/xxx.md」。
 - **与解析结果的结合**：image-analysis 解析设计图后，可将「步骤、状态、参与方」抽成结构化列表，再按上表选择 Mermaid 类型生成对应图，并写入上述路径。
 
@@ -119,7 +119,7 @@ sequenceDiagram
 - [ ] 代码块已用 \`\`\`mermaid 包裹，且语法正确（预览可渲染）。
 - [ ] 图类型与用途匹配（流程用 flowchart、状态用 stateDiagram、调用顺序用 sequenceDiagram）。
 - [ ] 单图节点/步骤不过多，必要时已拆图。
-- [ ] 文件已放在 design/documents/[change-id]/design-assets/ 下合适子目录，且在 PRD 或需求说明中已引用。
+- [ ] 文件已放在 design/documents/changes/[change-id]/design-assets/ 下合适子目录，且在 PRD 或需求说明中已引用。
 - [ ] 图中关键节点/状态/步骤与需求或 image-analysis 解析结果可对应，无矛盾。
 
 ---

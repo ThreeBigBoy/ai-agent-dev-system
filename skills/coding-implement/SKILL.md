@@ -24,7 +24,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
   - 「按当前方案生成接口实现/页面代码」
 
 - **必须先完成的前置技能**：
-  - `request-analysis`：已为本次需求（`change-id`）在 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/` 下产出前期方案、需求说明、变更提案与任务拆分。
+  - `request-analysis`：已为本次需求（`change-id`）在 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/` 下产出前期方案、需求说明、变更提案与任务拆分。
   - `project-analysis`：已检查并在需要时更新 `openspec/project.md` 与 `design/project-rules/`，确保架构模式、技术栈、目录结构与命名约定明确。
 
 - **前置资料来源（编码前需要主动阅读）**：

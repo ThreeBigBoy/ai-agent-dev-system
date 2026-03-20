@@ -15,7 +15,7 @@
 - **边界**：主 Agent 负责选择和驱动运行后端，不负责实现运行后端；运行后端承接执行，不改变治理层角色边界。
 
 # 关键流程与规范（必遵守）
-- **变更入口**：新建变更须**先** `design/documents/[change-id]/` **再** `openspec/changes/[change-id]/`，详见 OpenSpec 第六节；不得跳过。
+- **变更入口**：新建变更须**先** `design/documents/changes/[change-id]/` **再** `openspec/changes/[change-id]/`，详见 OpenSpec 第六节；不得跳过。
 - **任务拆解**：拆解须贴合各 Agent 核心能力，完成标准可量化、可验证，与 specs 验收标准一致；负责人、时间节点、任务状态写入 `openspec/changes/[change-id]/tasks.md`。
 - **应急**：突发情况快速响应，优先调用对应核心 Agent 协同处理，合理使用稀缺配额；决策后同步相关 Agent，明确整改与任务安排。
 
@@ -44,7 +44,7 @@
        2) **执行动词集合**（任一命中即满足）：  
           「推进」「落实」「执行」「完成」「验收」「测试」「回归」「归档」「发布」「新增」「新建」「创建」「发起」「这轮变更」「这个迭代」「这次发布」  
      - 若指令中同时包含明显的轻量化否定语（如「先别跑后端」「这次只是随便看下」「仅改文案，不需要协同」「本次练习，不要记录到后端」），则即便同时命中对象关键词与执行动词，也应优先按 simple 处理，不触发运行后端。  
-     - **目录初始化约束（当给出具体 change-id 值时）**：当识别到显式 change-id 具体值，但 `design/documents/[change-id]/` 或 `openspec/changes/[change-id]/`（至少包含 `proposal.md` 与 `tasks.md` 作为骨架）不存在时，主 Agent 必须先按 OpenSpec 第六节「变更启动顺序」创建对应目录与最小骨架文件，再进入 heavy + `run_langgraph`。  
+     - **目录初始化约束（当给出具体 change-id 值时）**：当识别到显式 change-id 具体值，但 `design/documents/changes/[change-id]/` 或 `openspec/changes/[change-id]/`（至少包含 `proposal.md` 与 `tasks.md` 作为骨架）不存在时，主 Agent 必须先按 OpenSpec 第六节「变更启动顺序」创建对应目录与最小骨架文件，再进入 heavy + `run_langgraph`。  
    - **自动行为（heavy + 运行后端，新管线）**：  
      - 在判定为 heavy 且满足「change-id + 变更推进关键词」但未被轻量否定语覆盖时，主 Agent 应自动执行：  
        1. 识别当前 change-id，并将本轮任务上下文绑定到该 change-id；  
@@ -130,7 +130,7 @@
        `python3 scripts/runtime-logging/summarize_model_calls.py --group-by day|change-id|host`，并根据输出结果给出简要结论（例如：某 change-id 在本次迭代中总共调用了多少次、失败/限流次数等）。
   - **长期记忆沉淀（memory/）**：
     - **创建前须读**：在调用脚本或手写 memory 条目前，须先读 `memory/schema.md`，遵守 `related`、正文「关联模式」与克制机制（3～5 条 related、一跳加载、不递归遍历）。
-    - **候选判定**：在复盘 `design/documents/[change-id]/records/` 时，主 Agent 应判断本次经验是否具备长期复用价值，至少满足以下之一：
+    - **候选判定**：在复盘 `design/documents/changes/[change-id]/records/` 时，主 Agent 应判断本次经验是否具备长期复用价值，至少满足以下之一：
       - 同类问题/模式已在 ≥2 个不同 `change-id` 的 records/ 中出现；
       - 本次复盘中已抽象出清晰的模式/反模式/偏好/剧本/反思，而非仅事件描述；
       - 用户在对话中明确要求将某条经验写入长期记忆（尤其是 preference 类）。
@@ -173,7 +173,7 @@
 |--------|--------|--------|----------|----------|
 | **产品经理 Agent** | 变更提案（proposal）、关键需求文档（PRD/需求说明书）、specs 初稿 | **主 Agent**：合理性、可行性、优先级；通过/驳回并明确修改建议。重大方案可协同架构做技术可行性确认。 | — | 主 Agent 输出【提案审核意见】反馈产品经理；产品经理按审核意见修订 proposal、design/documents、specs，修订后可再次提交审核或进入任务拆解。 |
 | **架构 Agent** | 工程结构分析、project.md、design.md、技术规范、code-review 评审报告 | **主 Agent**：顶层架构决策、重大技术方案做「顶层架构审核」；日常 project.md、design.md 等可按需抽检或结合归档前 CLI 验证一并把关。架构与产品经理协同时，产品侧可对技术可行性提出反馈。 | — | 架构按主 Agent 或产品经理的审核/反馈意见修订；code-review 发现的问题由前端/后端按评审报告与 tasks 整改。 |
-| **前端 Agent / 后端 Agent** | 代码实现、tasks 状态更新 | **架构 Agent**：对代码做多维度评审（需求符合性、架构分层、质量、安全等），输出评审记录与问题清单，Blocking/Major 纳入 tasks。**测试 Agent**：功能验收时对照 specs 与验收 Checklist 做功能质量把关。 | **架构**→code-review（先读 `ai-agent-dev-system/skills/code-review/SKILL.md` 再执行；产出 `design/documents/[change-id]/records/[change-id]-code-review.md`）。**测试**→func-test（先读 `ai-agent-dev-system/skills/func-test/SKILL.md` 再执行；产出 `design/documents/[change-id]/records/[change-id]-func-test.md`）。 | 前端/后端按 code-review 问题清单与 tasks 整改，必要时由架构复核；验收不通过项由开发或 Bug 修复 Agent 修复后回归，测试再验。 |
+| **前端 Agent / 后端 Agent** | 代码实现、tasks 状态更新 | **架构 Agent**：对代码做多维度评审（需求符合性、架构分层、质量、安全等），输出评审记录与问题清单，Blocking/Major 纳入 tasks。**测试 Agent**：功能验收时对照 specs 与验收 Checklist 做功能质量把关。 | **架构**→code-review（先读 `ai-agent-dev-system/skills/code-review/SKILL.md` 再执行；产出 `design/documents/changes/[change-id]/records/[change-id]-code-review.md`）。**测试**→func-test（先读 `ai-agent-dev-system/skills/func-test/SKILL.md` 再执行；产出 `design/documents/changes/[change-id]/records/[change-id]-func-test.md`）。 | 前端/后端按 code-review 问题清单与 tasks 整改，必要时由架构复核；验收不通过项由开发或 Bug 修复 Agent 修复后回归，测试再验。 |
 | **文档 Agent** | AGENTS.md、project.md、README、接口文档等 | **主 Agent、架构**：对 AGENTS.md、project.md 等规范类文档提出审核要求或【规范审核意见】。 | — | 文档 Agent 按主 Agent、架构的审核意见修订，保持与 openspec/、design/ 一致、可追溯。 |
 
 **执行约定**：① 审核意见须具体、可操作（如指出文件/段落与修改方向）；被审核方须按意见改进并在 tasks 或记录中体现闭环，主 Agent 可结合进度与 tasks 勾选情况做闭环确认。② **涉及技能的审核**：当审核方为架构（代码评审）或测试（功能验收）时，须按 `skills-rules-for-agent.md` 与上表「涉及技能」执行——**先读取对应技能 SKILL.md 再按其中步骤执行**，产出路径与格式符合该技能约定，与 OpenSpec 1.1 表一致。

@@ -7,7 +7,7 @@
 
 # 主导技能与联动（必遵守）
 - **主导技能**：request-analysis。**联动**：image-analysis（需求含设计图/截图时）。触发时须**先读取**对应技能目录下 SKILL.md，再按步骤执行。
-- **产出路径**：需求与方案文档纳入 `design/documents/[change-id]/`；变更提案、任务列表、规范增量写入 `openspec/changes/[change-id]/` 下 proposal.md、tasks.md、specs/[capability]/spec.md；与 openspec/、design/ 保持一致。
+- **产出路径**：需求与方案文档纳入 `design/documents/changes/[change-id]/`；变更提案、任务列表、规范增量写入 `openspec/changes/[change-id]/` 下 proposal.md、tasks.md、specs/[capability]/spec.md；与 openspec/、design/ 保持一致。
 
 # 核心能力要点
 1. **行业与市场**：行业研判、市场分析、数据洞察，输出报告纳入 design/documents；结论支撑需求与变更提案。

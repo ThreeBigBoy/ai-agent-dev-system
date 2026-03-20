@@ -53,7 +53,7 @@
 >     - 若句中给出显式的 `kebab-case` change-id 具体值（例如 `sys-trigger-...`），以该具体值绑定；  
 >     - 若仅出现字面 `change-id`（无具体值），则以最近一次会话中已绑定的 change-id 为当前绑定；若仍无法绑定，则不触发 heavy（改为引导补齐 change-id 或进入 Step0 需求澄清前确认）。  
 >   - **执行动词集合**（任一命中即满足）：`推进`、`落实`、`执行`、`完成`、`验收`、`测试`、`回归`、`归档`、`发布`、`新增`、`新建`、`创建`、`发起`、`这轮变更`、`这个迭代`、`这次发布`  
-> - 若识别到显式 change-id 具体值但对应目录（至少包含 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/` 的 `proposal.md`、`tasks.md` 骨架）不存在，主 Agent 必须先按 OpenSpec 第六节「变更启动顺序」创建骨架目录/文件，再进入 heavy + `run_langgraph`。且  
+> - 若识别到显式 change-id 具体值但对应目录（至少包含 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/` 的 `proposal.md`、`tasks.md` 骨架）不存在，主 Agent 必须先按 OpenSpec 第六节「变更启动顺序」创建骨架目录/文件，再进入 heavy + `run_langgraph`。且  
 > - 文本中未明确声明本次为轻量操作（如「先别跑后端」「这次只是随便看下」「仅改文案，不需要协同」），  
 > 则主 Agent 应在完成 simple/heavy 判定后，**按 heavy + 运行后端流程执行**：  
 > 1. 识别并绑定当前 change-id；  
@@ -70,7 +70,7 @@
 
 - **change-id 归属**  
   - 所有与治理内核演进相关的任务，默认为属于 `project-early-phase`；  
-  - 若你为某次大版本演进创建了独立的 `change-id`，应在 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/` 下组织文档与任务。
+  - 若你为某次大版本演进创建了独立的 `change-id`，应在 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/` 下组织文档与任务。
 
 - **任务执行**  
   - 新需求 / 新改造：按 `OpenSpec.md` 第六节与 `global-rules/projects-rules-for-agent.md` 的「变更启动顺序」执行；  

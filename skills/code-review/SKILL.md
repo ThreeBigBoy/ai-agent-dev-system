@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结构设计，对指定 change-id 范围内的代码进行系统化 Code Review；当用户输入「编码实现」「代码评审」「帮我 Review 这个 change」等指令时，结合 request-analysis 与 project-analysis 的输出，按通用 review 规范检查并提出修改建议，并在 design/documents/[change-id]/records/ 下输出本次 review 记录。v1.1 升级：明确「有条件通过」必须修复并重新评审后才能进入下一阶段。
+description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结构设计，对指定 change-id 范围内的代码进行系统化 Code Review；当用户输入「编码实现」「代码评审」「帮我 Review 这个 change」等指令时，结合 request-analysis 与 project-analysis 的输出，按通用 review 规范检查并提出修改建议，并在 design/documents/changes/[change-id]/records/ 下输出本次 review 记录。v1.1 升级：明确「有条件通过」必须修复并重新评审后才能进入下一阶段。
 ---
 
 # Code Review 技能（code-review）
@@ -9,7 +9,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
 
 - 代码实现与 `openspec/changes/[change-id]/specs/*/spec.md` 中的 Requirements + Scenarios 一一对应；
 - 遵守 `openspec/project.md` 与 `design/project-rules/` 中的架构、技术栈、分层、命名与约束；
-- 发现并记录问题、改进建议与后续行动项，在 **`design/documents/[change-id]/records/`** 中形成可追溯的 review 记录（建议文件名 `[change-id]-code-review.md`），与 func-test 验收记录同目录，便于按变更归档。
+- 发现并记录问题、改进建议与后续行动项，在 **`design/documents/changes/[change-id]/records/`** 中形成可追溯的 review 记录（建议文件名 `[change-id]-code-review.md`），与 func-test 验收记录同目录，便于按变更归档。
 
 **产出物质量约定**：评审记录须符合本技能 **REFERENCE**《评审报告-最小结构与自检》中的最小结构与产出后自检清单，详见 `ai-agent-dev-system/skills/code-review/REFERENCE/评审报告-最小结构与自检.md`。
 
@@ -23,7 +23,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
   - 「帮我 review 当前改动是否符合 OpenSpec 规范」
 
 - **前置技能依赖**：
-  - `request-analysis`：已为当前需求（`change-id`）产出 `design/documents/[change-id]/` 与 `openspec/changes/[change-id]/` 下的前期资料、变更提案、规范增量与任务拆分。
+  - `request-analysis`：已为当前需求（`change-id`）产出 `design/documents/changes/[change-id]/` 与 `openspec/changes/[change-id]/` 下的前期资料、变更提案、规范增量与任务拆分。
   - `project-analysis`：已按需要更新 `openspec/project.md` 与 `design/project-rules/`，使工程结构与约定清晰统一。
   - `coding-implement`（通常）：已根据前述文档完成初步编码实现或修改，形成可 review 的代码差异。
 
@@ -88,7 +88,7 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
    ```
 
 5. **输出 review 记录**
-   - 在 **`design/documents/[change-id]/records/`** 下，为本次 review 创建记录文件，建议文件名 **`[change-id]-code-review.md`**（与 func-test 验收记录同目录，符合 OpenSpec 1.1 表约定）；
+   - 在 **`design/documents/changes/[change-id]/records/`** 下，为本次 review 创建记录文件，建议文件名 **`[change-id]-code-review.md`**（与 func-test 验收记录同目录，符合 OpenSpec 1.1 表约定）；
    - 记录**最小结构与自检**须符合 REFERENCE《评审报告-最小结构与自检》：含基本信息、整体结论、问题清单（Blocking/Major/Minor）、后续行动；产出后执行该 REFERENCE 中的自检清单，通过后再视为本次评审完成。
    - **如首次评审为「有条件通过」或「不通过」**，修复后必须执行**重新评审**，产出**重新评审纪要**（文件命名：`[change-id]-code-review-重新评审纪要.md`）
 
