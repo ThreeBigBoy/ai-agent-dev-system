@@ -134,7 +134,7 @@
 - **多业务项目支持**：通过 `LANGGRAPH_WORKSPACE_PROJECTS` 配置多项目（JSON 数组或扁平串 `key|path:key2|path2`），按 change_id 自动解析
 - **本仓优先**：后端始终先查本仓 `openspec/changes/`，再按列表顺序尝试业务项目
 - **独立留痕**：执行记录写入 `runtime-logs/langgraph-runs/YYYY-MM-DD.jsonl`，不依赖迭代日志或 design/documents
-- **启动诊断与最小验证**：`scripts/diagnose_startup.py` 六项环境检查；`scripts/verify_minimal.py` 可从头到尾自检管线（见 `新用户快速开始.md` 5.2）
+- **启动诊断与最小验证**：`scripts/diagnose_startup/diagnose_startup.py` 六项环境检查；`scripts/verify-minimal/verify_minimal.py` 可从头到尾自检管线（见 `新用户快速开始.md` 5.2）
 
 **与旧机制对比**：
 | 维度 | 旧机制（已废弃） | 新管线（V2.6） |
@@ -345,8 +345,8 @@
 - **V2.11.1（Step 0 需求澄清 + 人工确认门控 + 最小验证）**  
   - **Step 0 需求澄清层**：Workflow 增加 `step0_clarification`（10 个子步骤 prompt + 跳过/重做）+ `hc0_gate`（Step 0 与 Step 1 之间人工确认）；`agent_team_project/langgraph_backend/step0_prompts/` 与 `openspec/changes/.../step0_checkpoints.md` 定义准入/准出。  
   - **人工确认门控**：HC0/HC2/HC7 门控节点；后端 `/confirm/pending`、`/confirm/poll`（async Long Poll）、`/confirm/submit`；MCP 工具 `human_confirm_poll`、`human_confirm_submit`；前端 `frontend/src/components/ConfirmPanel.tsx`。  
-  - **启动诊断**：`scripts/diagnose_startup.py` 六项检查（磁盘/Python/内存/网络/配置/端口），支持表格与 JSON 输出。  
-  - **最小验证脚本**：`scripts/verify_minimal.py` 可从头到尾自检管线（诊断 + Workflow 场景 A/B，可选 HTTP），供人工验收使用。  
+  - **启动诊断**：`scripts/diagnose_startup/diagnose_startup.py` 六项检查（磁盘/Python/内存/网络/配置/端口），支持表格与 JSON 输出。
+  - **最小验证脚本**：`scripts/verify-minimal/verify_minimal.py` 可从头到尾自检管线（诊断 + Workflow 场景 A/B，可选 HTTP），供人工验收使用。
   - **生产就绪与可扩展**：安全/稳定/观测/边界/Discovery 等模块实现见 `openspec/changes/deepen-langgraph-v2-11-1/`。
 
 ---

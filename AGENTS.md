@@ -86,7 +86,7 @@
   - `platform-adapters/cursor/README.md`
   - `platform-adapters/cursor/mcp-setup.md`
   - `agent_team_project/runtime_config.json`
-- **执行管线（V2.11.1）**：默认后端实现 Step 0 需求澄清 → HC0/HC2/HC7 人工确认门控 → parse_tasks → dispatch → collect_feedback；人工确认接口与 MCP 工具见 `README.md` 与 `新用户快速开始.md`；最小验证脚本：`scripts/verify_minimal.py`。
+- **执行管线（V2.11.1）**：默认后端实现 Step 0 需求澄清 → HC0/HC2/HC7 人工确认门控 → parse_tasks → dispatch → collect_feedback；人工确认接口与 MCP 工具见 `README.md` 与 `新用户快速开始.md`；最小验证脚本：`scripts/verify-minimal/verify_minimal.py`。
 
 ---
 

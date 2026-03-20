@@ -142,6 +142,9 @@ description: 在 OpenSpec 项目中，根据已完成的需求分析与工程结
   - 代码结构应利于单元测试与集成测试，避免过长函数和高耦合模块；
   - 对关键路径应考虑日志、监控与告警的埋点位置，以便后续运维。
 
+### 5.1 微信小程序代码约束（Reference）
+- 本段为索引入口：当本次实现目标明确为微信小程序时，coding-implement 必须遵循 `coding-implement/REFERENCE/spec-wechat-miniprogram.md` 中的约束。
+
 ---
 
 ## 六、示例使用流程（某具体项目）

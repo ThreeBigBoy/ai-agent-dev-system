@@ -7,6 +7,9 @@
 | 脚本 | 用途 | 用法示例 |
 |------|------|----------|
 | **check-langgraph-backend/** | LangGraph 后端一键自检（health、AGENT_TEAM_PROJECT_ROOT、LANGGRAPH_WORKSPACE_PROJECTS、本仓/业务 /run 与留痕） | `python scripts/check-langgraph-backend/check_langgraph_backend.py`，可选 `--skip-run`、`--base-url`；见 `check-langgraph-backend/README.md` |
+| **diagnose_startup/** | 启动问题环境诊断（磁盘/Python/内存/网络/配置/端口等） | `python scripts/diagnose_startup/diagnose_startup.py --workspace /path/to/ai-agent-dev-system`；见 `diagnose_startup/README.md` |
+| **verify-minimal/** | LangGraph 管线最小验证（diagnose + 本地 invoke；可选 HTTP） | `python scripts/verify-minimal/verify_minimal.py [--workspace /path/to/repo] [--skip-http]`；见 `verify-minimal/README.md` |
+| **smoke-http/** | 后端已启动时的 HTTP 冒烟测试（/health、/run、/confirm/pending/poll） | `./scripts/smoke-http/smoke_http.sh [BASE_URL]`；见 `smoke-http/README.md` |
 | **cursor-usage-to-iteration-log/** | 迭代日志相关 | 见 `cursor-usage-to-iteration-log/README.md` |
 | **memory/** | 记忆条目创建 | 见 `memory/README.md` |
 | **runtime-logging/** | 运行日志追加与汇总 | 见 `runtime-logging/README.md` |

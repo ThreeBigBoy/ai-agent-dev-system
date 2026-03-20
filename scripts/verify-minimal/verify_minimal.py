@@ -3,7 +3,7 @@
 最小验证脚本：从头到尾人工验证 LangGraph 管线（V2.11.1）。
 
 从 ai-agent-dev-system 仓库根执行：
-  python scripts/verify_minimal.py [--workspace /path/to/repo] [--skip-http]
+  python scripts/verify-minimal/verify_minimal.py [--workspace /path/to/repo] [--skip-http]
 
 步骤：
   1. 运行 diagnose_startup.py（环境与配置检查）
@@ -35,9 +35,9 @@ def _repo_root(workspace: Path | None) -> Path:
 
 def run_diagnose(root: Path) -> bool:
     """执行 diagnose_startup.py，返回是否通过（healthy 或 仅 network 失败视为可接受）。"""
-    script = root / "scripts" / "diagnose_startup.py"
+    script = root / "scripts" / "diagnose_startup" / "diagnose_startup.py"
     if not script.exists():
-        print("[FAIL] scripts/diagnose_startup.py 不存在")
+        print("[FAIL] scripts/diagnose_startup/diagnose_startup.py 不存在")
         return False
     out = subprocess.run(
         [sys.executable, str(script), "--workspace", str(root)],

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 联调/冒烟测试：在 LangGraph 后端已启动（默认 http://127.0.0.1:8000）时执行。
-# 用法: ./scripts/smoke_http.sh [BASE_URL]
+# 用法: ./scripts/smoke-http/smoke_http.sh [BASE_URL]
 set -e
 BASE="${1:-http://127.0.0.1:8000}"
 CHANGE_ID="deepen-langgraph-v2-11-1"

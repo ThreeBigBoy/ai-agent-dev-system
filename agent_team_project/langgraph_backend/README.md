@@ -93,6 +93,28 @@ uvicorn langgraph_backend.server:app --reload --port 8000
 4. **验收**  
    Cursor → MCP（run_langgraph）→ HTTP /run → 后端执行 → 返回 feedback/results → 展示在 Chat。
 
+## 仓库根自检与冒烟脚本（不在本进程内自动执行）
+
+`langgraph_backend` 服务进程、MCP `langgraph_mcp_server.py` **均不会**自动调用下列脚本。它们位于 **ai-agent-dev-system 仓库根**的 `scripts/` 下，供你在本机终端**手动**或 **CI** 中做环境检查、管线最小验证、HTTP 冒烟与「一键自检」。
+
+| 脚本目录 | 作用摘要 | 文档 |
+|----------|----------|------|
+| [`scripts/diagnose_startup/`](../../scripts/diagnose_startup/) | 启动前环境诊断（磁盘 / Python / 内存 / 网络 / 配置 / 端口等） | [README.md](../../scripts/diagnose_startup/README.md) |
+| [`scripts/verify-minimal/`](../../scripts/verify-minimal/) | 最小管线验证：先跑诊断，再本地 `invoke` workflow（HC0/HC7 场景），可选请求 `/health` 与 `/confirm/pending` | [README.md](../../scripts/verify-minimal/README.md) |
+| [`scripts/smoke-http/`](../../scripts/smoke-http/) | 后端**已启动**时，用 `curl` 打 `/health`、`/run`、`/confirm/*` 做快速冒烟 | [README.md](../../scripts/smoke-http/README.md) |
+| [`scripts/check-langgraph-backend/`](../../scripts/check-langgraph-backend/) | 一键自检：`/health`、`AGENT_TEAM_PROJECT_ROOT`、解析 `~/.cursor/mcp.json` 中工作区、对本仓/业务 `change_id` 调 `/run` 并查留痕 | [README.md](../../scripts/check-langgraph-backend/README.md) |
+
+**`verify-minimal` 与 `check-langgraph-backend` 怎么选**：
+
+- **`verify-minimal`**：侧重 **本机 StateGraph / 门控（如 HC0/HC7）逻辑**——会先跑 `diagnose_startup`，再在进程内 `invoke` workflow；**可不启动 HTTP 服务**就覆盖大部分检查；**不读取** `~/.cursor/mcp.json`，也不按「MCP 多项目根 + 真实留痕文件」做系统性验收。
+- **`check-langgraph-backend`**：侧重 **与 Cursor 真链路一致的集成验收**——要求后端已监听 HTTP，走真实 **`POST /run`**，并校验 `AGENT_TEAM_PROJECT_ROOT`、从 **`mcp.json` 解析 `LANGGRAPH_WORKSPACE_PROJECTS`**、核对 `runtime-logs/langgraph-runs/` 等；适合 MCP、多业务仓库根、留痕路径都配好后的**整体验证**。
+
+**对比一句**：前者像「单元 + 本地图跑通」；后者像「按你真实宿主配置打一遍 HTTP 并查日志」。可先后都跑：先 `verify-minimal` 缩小代码/环境问题，再跑一键自检确认 MCP 与多根目录（详见 [`check-langgraph-backend/README.md`](../../scripts/check-langgraph-backend/README.md) 前言与「何时使用」表）。
+
+**从本文件所在目录理解路径**：`langgraph_backend/` 的上一级是 `agent_team_project/`，再上一级即仓库根；上述链接已按相对路径指向 `../../scripts/...`。
+
+更多入口说明见仓库根 [`新用户快速开始.md`](../../新用户快速开始.md)（含 §5.2 启动与验证）、[`scripts/README.md`](../../scripts/README.md)。
+
 ## 状态说明
 
 - 状态图内使用 `ckpt_ref` 代替 `checkpoint_id`，避免与 LangGraph 保留通道名冲突。
